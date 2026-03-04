@@ -3,84 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reviewer v2.7 - Thẩm định An toàn điện VSIP</title>
+    <title>Reviewer v2.9 - Thẩm định An toàn điện VSIP</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <style>
         :root { --primary: #0056b3; --success: #28a745; --danger: #dc3545; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f9; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .header { text-align: center; border-bottom: 2px solid var(--primary); margin-bottom: 20px; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         
-        /* Modal kiểm tra tên */
-        #name-check-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; }
-        .modal-box { background: white; padding: 30px; border-radius: 8px; width: 400px; text-align: center; }
-        .modal-box input { width: 100%; padding: 10px; margin: 15px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; text-align: center; }
+        /* Modal kiểm tra danh tính */
+        #name-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 40px; border-radius: 12px; width: 450px; text-align: center; }
+        .modal-box h2 { color: var(--primary); margin-top: 0; }
+        .modal-box input { width: 100%; padding: 15px; margin: 20px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 18px; text-align: center; box-sizing: border-box; }
         
-        .auth-box { text-align: center; padding: 40px; border: 2px dashed #007bff; border-radius: 10px; }
-        .question-card { border-left: 6px solid var(--primary); background: #f8f9fa; padding: 20px; margin: 20px 0; }
-        .ans-box { background: #d1ecf1; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; border: 1px solid #bee5eb; }
-        .review-panel { background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 20px; }
-        textarea { width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #ccc; margin-top: 10px; box-sizing: border-box; }
-        .btn { padding: 12px 20px; border: none; border-radius: 6px; color: white; cursor: pointer; font-weight: bold; }
-        #btn-next { background: var(--primary); width: 100%; display: none; margin-top: 15px; }
+        .auth-box { text-align: center; padding: 60px 20px; border: 3px dashed #cbd5e0; border-radius: 20px; background: #fff; }
+        .question-card { border-left: 8px solid var(--primary); background: #f8f9fa; padding: 25px; margin: 25px 0; border-radius: 8px; font-size: 1.1em; }
+        .ans-box { background: #d4edda; border: 1px solid #c3e6cb; padding: 20px; border-radius: 10px; margin-top: 20px; display: none; }
+        .review-panel { background: #fff3cd; padding: 20px; border-radius: 12px; margin-top: 30px; border: 1px solid #ffeeba; }
+        textarea { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 8px; margin-top: 10px; box-sizing: border-box; font-size: 16px; }
+        .btn { padding: 15px 30px; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; }
+        #btn-next { background: var(--primary); width: 100%; display: none; margin-top: 20px; }
+        .user-tag { background: #2d3748; color: white; padding: 8px 15px; border-radius: 20px; font-size: 14px; }
     </style>
 </head>
 <body>
 
-<div id="name-check-modal">
+<div id="name-modal">
     <div class="modal-box">
-        <h3>XÁC NHẬN DANH TÍNH</h3>
-        <p>Hệ thống ghi nhận tên bạn là:</p>
-        <input type="text" id="verify-name" placeholder="Nhập họ và tên thật của bạn">
-        <p id="name-error" style="color:red; display:none; font-size: 0.8em;">Vui lòng nhập tên thật đầy đủ (không chứa số hoặc ký tự lạ).</p>
-        <button class="btn" style="background: var(--success); width: 100%;" onclick="validateAndStart()">XÁC NHẬN & BẮT ĐẦU</button>
+        <h2>XÁC THỰC REVIEWER</h2>
+        <p>Hệ thống ghi nhận từ Google: <br><b id="raw-name"></b></p>
+        <p>Vui lòng xác nhận <b>Họ và Tên thật</b> của anh:</p>
+        <input type="text" id="real-name-input" placeholder="Ví dụ: Trần Công Đẹp">
+        <p id="error-msg" style="color:red; display:none; font-weight:bold;">Tên không hợp lệ (Phải có ít nhất 2 chữ, không chứa số)!</p>
+        <button class="btn" style="background: var(--success); width: 100%;" onclick="confirmIdentity()">XÁC NHẬN & VÀO REVIEW</button>
     </div>
 </div>
 
 <div class="container">
-    <div class="header">
-        <h2>HỘI ĐỒNG THẨM ĐỊNH VSIP</h2>
-        <p>Phê duyệt Ngân hàng 530 câu hỏi</p>
-    </div>
-
     <div id="auth-section" class="auth-box">
-        <div id="g_id_onload" data-client_id="670121705534-vsk5g6g36h.apps.googleusercontent.com" data-callback="handleCredentialResponse"></div>
-        <div class="g_id_signin" data-type="standard"></div>
+        <h1 style="color: var(--primary); margin-bottom: 10px;">VSIP SAFETY REVIEW</h1>
+        <p style="color: #718096; margin-bottom: 30px;">Vui lòng đăng nhập Google để thực hiện thẩm định bộ đề.</p>
+        <div id="g_id_onload" 
+             data-client_id="670121705534-vsk5g6g36h.apps.googleusercontent.com" 
+             data-callback="handleCredentialResponse"></div>
+        <div class="g_id_signin" data-type="standard" data-size="large" data-theme="filled_blue"></div>
     </div>
 
     <div id="main-content" style="display:none;">
-        <div style="background:#343a40; color:white; padding:10px; border-radius:8px; margin-bottom:20px; display:flex; justify-content:space-between;">
-            <span id="user-display"></span>
-            <button onclick="location.reload()" style="background:none; border:1px solid white; color:white; cursor:pointer;">Thoát</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <span class="user-tag" id="display-user"></span>
+            <button onclick="location.reload()" style="background:none; border:1px solid #718096; border-radius:5px; cursor:pointer;">Thoát</button>
         </div>
 
-        <b>Chọn Bậc:</b>
-        <select id="level" onchange="loadQuestions()" style="padding:8px;">
-            <option value="1">Bậc 1/5</option><option value="2">Bậc 2/5</option>
-            <option value="3">Bậc 3/5</option><option value="4">Bậc 4/5</option>
-            <option value="5">Bậc 5/5</option>
-        </select>
+        <div style="background: #edf2f7; padding: 15px; border-radius: 8px;">
+            <b>Bậc an toàn:</b> 
+            <select id="level" onchange="loadQuestions()" style="padding:8px; border-radius:5px;">
+                <option value="1">Bậc 1/5</option><option value="2">Bậc 2/5</option>
+                <option value="3">Bậc 3/5</option><option value="4">Bậc 4/5</option>
+                <option value="5">Bậc 5/5</option>
+            </select>
+        </div>
 
-        <div id="quiz-area">
-            <div id="question-content"></div>
+        <div id="content-area">
+            <div id="q-text"></div>
+            
             <div id="answer-reveal" class="ans-box">
-                <p><b>ĐÁP ÁN:</b> <span id="txt-ans" style="color:var(--primary); font-weight:bold;"></span></p>
-                <p><b>Giải thích:</b> <span id="txt-explain"></span></p>
-                <p><b>Căn cứ:</b> <span id="txt-source"></span></p>
+                <p><b style="color:#155724">ĐÁP ÁN ĐÚNG:</b> <span id="val-ans" style="font-size:1.3em; font-weight:bold;"></span></p>
+                <p><b>Giải thích kỹ thuật:</b> <span id="val-explain"></span></p>
+                <p><b>Căn cứ pháp lý:</b> <span id="val-source"></span></p>
             </div>
 
             <div class="review-panel">
-                <b>Ý KIẾN REVIEW:</b>
-                <textarea id="review-note" rows="2" placeholder="Nhận xét nội dung..."></textarea>
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <button class="btn" style="background:var(--success); flex:1" onclick="submitReview('OK')">OK</button>
-                    <button class="btn" style="background:var(--danger); flex:1" onclick="submitReview('RECHECK')">RECHECK</button>
+                <b>ĐÁNH GIÁ CỦA ANH:</b>
+                <textarea id="note" rows="3" placeholder="Nhập ý kiến hiệu chỉnh nếu có..."></textarea>
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <button class="btn" style="background: var(--success); flex:1" onclick="sendReview('OK')">ĐỒNG Ý (OK)</button>
+                    <button class="btn" style="background: var(--danger); flex:1" onclick="sendReview('RECHECK')">CẦN SỬA (RECHECK)</button>
                 </div>
             </div>
-            <button id="btn-next" class="btn" onclick="nextQuestion()">CÂU TIẾP THEO >></button>
+
+            <button id="btn-next" class="btn" onclick="nextQ()">CÂU TIẾP THEO >></button>
         </div>
     </div>
 </div>
@@ -97,85 +102,81 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let currentUser = null;
-    let questions = [];
-    let currentIdx = 0;
+    let reviewer = { name: "", email: "" };
+    let questionList = [];
+    let currentPos = 0;
 
     function handleCredentialResponse(response) {
-        const payload = JSON.parse(atob(response.credential.split('.')[1]));
-        currentUser = { rawName: payload.name, email: payload.email };
-        
-        // Hiển thị modal kiểm tra tên
-        document.getElementById('verify-name').value = currentUser.rawName;
-        document.getElementById('name-check-modal').style.display = 'flex';
+        const data = JSON.parse(atob(response.credential.split('.')[1]));
+        reviewer.email = data.email;
+        document.getElementById('raw-name').innerText = data.name;
+        document.getElementById('real-name-input').value = data.name;
+        document.getElementById('name-modal').style.display = 'flex';
     }
 
-    function validateAndStart() {
-        const nameInput = document.getElementById('verify-name').value.trim();
-        const nameRegex = /^[A-Za-zÀ-ỹ\s]{5,50}$/; // Chỉ cho phép chữ và khoảng trắng, từ 5-50 ký tự
-        
-        // Kiểm tra tên có ít nhất 2 từ
-        const wordCount = nameInput.split(/\s+/).length;
+    function confirmIdentity() {
+        const nameVal = document.getElementById('real-name-input').value.trim();
+        const hasNumber = /\d/.test(nameVal);
+        const wordCount = nameVal.split(/\s+/).length;
 
-        if (nameRegex.test(nameInput) && wordCount >= 2) {
-            currentUser.name = nameInput;
-            document.getElementById('name-check-modal').style.display = 'none';
+        if (wordCount >= 2 && !hasNumber && nameVal.length > 5) {
+            reviewer.name = nameVal;
+            document.getElementById('name-modal').style.display = 'none';
             document.getElementById('auth-section').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
-            document.getElementById('user-display').innerText = "👤 Reviewer: " + currentUser.name;
+            document.getElementById('display-user').innerText = "👤 Reviewer: " + reviewer.name;
             loadQuestions();
         } else {
-            document.getElementById('name-error').style.display = 'block';
-            document.getElementById('verify-name').style.borderColor = 'red';
+            document.getElementById('error-msg').style.display = 'block';
+            document.getElementById('real-name-input').style.border = "2px solid red";
         }
     }
 
     async function loadQuestions() {
         const lvl = document.getElementById('level').value;
-        const snapshot = await db.ref('bank_questions/bac_' + lvl).once('value');
-        questions = Object.values(snapshot.val() || {});
-        currentIdx = 0;
-        if(questions.length > 0) renderQuestion();
+        const snap = await db.ref('bank_questions/bac_' + lvl).once('value');
+        questionList = Object.values(snap.val() || {});
+        currentPos = 0;
+        if(questionList.length > 0) render();
     }
 
-    function renderQuestion() {
-        const q = questions[currentIdx];
+    function render() {
+        const q = questionList[currentPos];
         document.getElementById('answer-reveal').style.display = 'none';
         document.getElementById('btn-next').style.display = 'none';
-        document.getElementById('review-note').value = "";
+        document.getElementById('note').value = "";
         
-        document.getElementById('question-content').innerHTML = `
+        document.getElementById('q-text').innerHTML = `
             <div class="question-card">
-                <p><b>Câu ${currentIdx + 1}/${questions.length}:</b> ${q.content}</p>
-                <p>A. ${q.options.A}<br>B. ${q.options.B}<br>C. ${q.options.C}<br>D. ${q.options.D}</p>
+                <p><b>Câu ${currentPos + 1}/${questionList.length}:</b> ${q.content}</p>
+                <div style="padding-left: 20px; line-height: 2;">
+                    A. ${q.options.A}<br>B. ${q.options.B}<br>C. ${q.options.C}<br>D. ${q.options.D}
+                </div>
             </div>
         `;
-        document.getElementById('txt-ans').innerText = q.answer;
-        document.getElementById('txt-explain').innerText = q.explain || "N/A";
-        document.getElementById('txt-source').innerText = q.source || "N/A";
+        document.getElementById('val-ans').innerText = q.answer;
+        document.getElementById('val-explain').innerText = q.explain || "N/A";
+        document.getElementById('val-source').innerText = q.source || "N/A";
     }
 
-    function submitReview(status) {
+    function sendReview(status) {
         const lvl = document.getElementById('level').value;
-        db.ref('thẩm_định/bac_' + lvl + '/' + questions[currentIdx].id).push({
-            name: currentUser.name,
-            email: currentUser.email,
+        db.ref('thẩm_định/bac_' + lvl + '/' + questionList[currentPos].id).push({
+            name: reviewer.name,
+            email: reviewer.email,
             status: status,
-            note: document.getElementById('review-note').value,
-            time: new Date().toLocaleString('vi-VN')
+            note: document.getElementById('note').value,
+            timestamp: new Date().toLocaleString('vi-VN')
         }).then(() => {
             document.getElementById('answer-reveal').style.display = 'block';
             document.getElementById('btn-next').style.display = 'block';
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         });
     }
 
-    function nextQuestion() {
-        if(currentIdx < questions.length - 1) {
-            currentIdx++;
-            renderQuestion();
-        } else {
-            alert("Đã xong bộ đề này!");
-        }
+    function nextQ() {
+        if(currentPos < questionList.length - 1) { currentPos++; render(); }
+        else { alert("Đã hoàn thành duyệt bộ đề này!"); }
     }
 </script>
 </body>
