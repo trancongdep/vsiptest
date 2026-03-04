@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor - Hiệu chỉnh Ngân hàng câu hỏi VSIP</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        :root { --primary: #007bff; --dark: #343a40; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8f9fa; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; }
+        .header { background: var(--dark); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .filter-bar { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; gap: 15px; }
+        select { padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
+        .q-list { display: grid; gap: 10px; }
+        .q-item { background: white; padding: 15px; border-radius: 6px; border-left: 5px solid #ccc; cursor: pointer; transition: 0.2s; }
+        .q-item:hover { border-left-color: var(--primary); background: #f1f8ff; }
+        .q-item h4 { margin: 0 0 10px 0; color: #333; }
+        .badge { font-size: 12px; padding: 3px 8px; border-radius: 10px; background: #eee; margin-right: 5px; }
+
+        /* Modal Sửa */
+        #editModal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 1000; }
+        .modal-content { background: white; width: 90%; max-width: 700px; margin: 50px auto; padding: 25px; border-radius: 8px; max-height: 80vh; overflow-y: auto; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input[type="text"], textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
+        .btn-group { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-save { background: #28a745; }
+        .btn-close { background: #6c757d; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h2 style="margin:0">TRÌNH HIỆU CHỈNH CÂU HỎI</h2>
+            <small>Hệ thống dữ liệu VSIP v2.2</small>
+        </div>
+        <button onclick="loadData()" style="padding: 8px 15px; cursor:pointer">Làm mới danh sách</button>
+    </div>
+
+    <div class="filter-bar">
+        <div>
+            <label>Bậc:</label>
+            <select id="f-level" onchange="loadData()">
+                <option value="1">Bậc 1/5</option>
+                <option value="2">Bậc 2/5</option>
+                <option value="3">Bậc 3/5</option>
+                <option value="4">Bậc 4/5</option>
+                <option value="5">Bậc 5/5</option>
+            </select>
+        </div>
+        <div>
+            <label>Ngành nghề:</label>
+            <select id="f-sector" onchange="filterLocal()">
+                <option value="all">-- Tất cả ngành --</option>
+                <option value="110kV">Vận hành TBA 110kV</option>
+                <option value="22kV">Vận hành ĐZ & TBA 22kV</option>
+                <option value="Hate">Hạ thế Khách hàng</option>
+                <option value="Chieusang">Hệ thống chiếu sáng</option>
+                <option value="Vanphong">Hệ thống điện văn phòng</option>
+                <option value="Solar">Solar áp mái</option>
+                <option value="BESS">Lưu trữ năng lượng BESS</option>
+            </select>
+        </div>
+        <div style="flex-grow: 1">
+            <input type="text" id="f-search" placeholder="Tìm từ khóa nội dung..." onkeyup="filterLocal()">
+        </div>
+    </div>
+
+    <div id="status"></div>
+    <div id="questionList" class="q-list"></div>
+</div>
+
+<div id="editModal">
+    <div class="modal-content">
+        <h3>Hiệu chỉnh câu hỏi</h3>
+        <input type="hidden" id="edit-id">
+        <div class="form-group">
+            <label>Nội dung câu hỏi:</label>
+            <textarea id="edit-content" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Lựa chọn A:</label><input type="text" id="edit-A">
+        </div>
+        <div class="form-group">
+            <label>Lựa chọn B:</label><input type="text" id="edit-B">
+        </div>
+        <div class="form-group">
+            <label>Lựa chọn C:</label><input type="text" id="edit-C">
+        </div>
+        <div class="form-group">
+            <label>Lựa chọn D:</label><input type="text" id="edit-D">
+        </div>
+        <div style="display: flex; gap: 20px;">
+            <div class="form-group" style="flex:1">
+                <label>Đáp án đúng (A,B,C,D):</label>
+                <input type="text" id="edit-ans">
+            </div>
+            <div class="form-group" style="flex:1">
+                <label>Ngành nghề (Tag):</label>
+                <input type="text" id="edit-tag" placeholder="Ví dụ: 110kV">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Giải thích:</label>
+            <textarea id="edit-explain" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Căn cứ:</label>
+            <input type="text" id="edit-source">
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-close" onclick="closeModal()">Hủy</button>
+            <button class="btn btn-save" onclick="saveChange()">LƯU THAY ĐỔI</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Cấu hình Firebase của anh Trần Công Đẹp
+    const firebaseConfig = {
+        apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
+        authDomain: "tavietnam-78ae8.firebaseapp.com",
+        projectId: "tavietnam-78ae8",
+        storageBucket: "tavietnam-78ae8.firebasestorage.app",
+        messagingSenderId: "670121705534",
+        appId: "1:670121705534:web:1027ad98550573ad37116f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let currentData = [];
+
+    // Tải dữ liệu từ Firebase
+    async function loadData() {
+        const lvl = document.getElementById('f-level').value;
+        const listDiv = document.getElementById('questionList');
+        listDiv.innerHTML = "Đang tải dữ liệu...";
+        
+        const snapshot = await db.ref('bank_questions/bac_' + lvl).once('value');
+        const data = snapshot.val();
+        
+        if(!data) {
+            listDiv.innerHTML = "Không có dữ liệu cho bậc này.";
+            currentData = [];
+            return;
+        }
+
+        currentData = Object.values(data);
+        renderList(currentData);
+    }
+
+    // Hiển thị danh sách
+    function renderList(dataArr) {
+        const listDiv = document.getElementById('questionList');
+        listDiv.innerHTML = "";
+        
+        dataArr.forEach((q, index) => {
+            const item = document.createElement('div');
+            item.className = 'q-item';
+            item.onclick = () => openEdit(q, index);
+            item.innerHTML = `
+                <h4>Câu ${index + 1}: ${q.content}</h4>
+                <div>
+                    <span class="badge">ĐA: ${q.answer}</span>
+                    <span class="badge" style="background:#e3f2fd">Ngành: ${q.tag || 'Chưa phân loại'}</span>
+                </div>
+            `;
+            listDiv.appendChild(item);
+        });
+    }
+
+    // Lọc dữ liệu tại chỗ (Local Filter)
+    function filterLocal() {
+        const sector = document.getElementById('f-sector').value;
+        const search = document.getElementById('f-search').value.toLowerCase();
+        
+        let filtered = currentData.filter(q => {
+            const matchSector = (sector === 'all' || (q.tag && q.tag.includes(sector)) || q.content.includes(sector));
+            const matchSearch = q.content.toLowerCase().includes(search);
+            return matchSector && matchSearch;
+        });
+        
+        renderList(filtered);
+    }
+
+    // Mở Modal sửa
+    function openEdit(q, index) {
+        document.getElementById('edit-id').value = index;
+        document.getElementById('edit-content').value = q.content;
+        document.getElementById('edit-A').value = q.options.A;
+        document.getElementById('edit-B').value = q.options.B;
+        document.getElementById('edit-C').value = q.options.C;
+        document.getElementById('edit-D').value = q.options.D;
+        document.getElementById('edit-ans').value = q.answer;
+        document.getElementById('edit-tag').value = q.tag || "";
+        document.getElementById('edit-explain').value = q.explain || "";
+        document.getElementById('edit-source').value = q.source || "";
+        
+        document.getElementById('editModal').style.display = 'block';
+    }
+
+    function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+
+    // Lưu thay đổi lên Firebase
+    function saveChange() {
+        const lvl = document.getElementById('f-level').value;
+        const id = document.getElementById('edit-id').value;
+        
+        const updatedQ = {
+            content: document.getElementById('edit-content').value,
+            options: {
+                A: document.getElementById('edit-A').value,
+                B: document.getElementById('edit-B').value,
+                C: document.getElementById('edit-C').value,
+                D: document.getElementById('edit-D').value
+            },
+            answer: document.getElementById('edit-ans').value.toUpperCase(),
+            tag: document.getElementById('edit-tag').value,
+            explain: document.getElementById('edit-explain').value,
+            source: document.getElementById('edit-source').value
+        };
+
+        db.ref('bank_questions/bac_' + lvl + '/' + id).update(updatedQ)
+        .then(() => {
+            alert("Đã lưu thay đổi thành công!");
+            closeModal();
+            loadData();
+        })
+        .catch(err => alert("Lỗi: " + err.message));
+    }
+
+    // Load dữ liệu lần đầu
+    window.onload = loadData;
+</script>
+</body>
+</html>
