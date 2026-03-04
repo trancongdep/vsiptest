@@ -3,87 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reviewer - Thẩm định Ngân hàng câu hỏi VSIP</title>
+    <title>Reviewer v2.7 - Thẩm định An toàn điện VSIP</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <style>
-        :root { --primary: #0056b3; --success: #28a745; --danger: #dc3545; --warning: #ffc107; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; padding: 20px; }
+        :root { --primary: #0056b3; --success: #28a745; --danger: #dc3545; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f7f9; padding: 20px; }
         .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .auth-box { text-align: center; padding: 20px; border: 1px dashed #ccc; margin-bottom: 20px; }
-        .question-card { border-left: 5px solid var(--primary); background: #fafafa; padding: 20px; margin: 20px 0; }
-        .ans-box { background: #e7f3ff; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; border: 1px solid #b8daff; }
-        .review-panel { background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px solid #ffeeba; }
-        textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-top: 10px; }
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        .btn { flex: 1; padding: 12px; border: none; border-radius: 5px; color: white; cursor: pointer; font-weight: bold; }
-        #btn-ok { background: var(--success); }
-        #btn-recheck { background: var(--danger); }
-        #btn-next { background: var(--primary); margin-top: 20px; width: 100%; display: none;}
-        .user-info { font-size: 0.9em; color: #666; margin-bottom: 10px; }
+        .header { text-align: center; border-bottom: 2px solid var(--primary); margin-bottom: 20px; }
+        
+        /* Modal kiểm tra tên */
+        #name-check-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 30px; border-radius: 8px; width: 400px; text-align: center; }
+        .modal-box input { width: 100%; padding: 10px; margin: 15px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; text-align: center; }
+        
+        .auth-box { text-align: center; padding: 40px; border: 2px dashed #007bff; border-radius: 10px; }
+        .question-card { border-left: 6px solid var(--primary); background: #f8f9fa; padding: 20px; margin: 20px 0; }
+        .ans-box { background: #d1ecf1; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; border: 1px solid #bee5eb; }
+        .review-panel { background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 20px; }
+        textarea { width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #ccc; margin-top: 10px; box-sizing: border-box; }
+        .btn { padding: 12px 20px; border: none; border-radius: 6px; color: white; cursor: pointer; font-weight: bold; }
+        #btn-next { background: var(--primary); width: 100%; display: none; margin-top: 15px; }
     </style>
 </head>
 <body>
 
+<div id="name-check-modal">
+    <div class="modal-box">
+        <h3>XÁC NHẬN DANH TÍNH</h3>
+        <p>Hệ thống ghi nhận tên bạn là:</p>
+        <input type="text" id="verify-name" placeholder="Nhập họ và tên thật của bạn">
+        <p id="name-error" style="color:red; display:none; font-size: 0.8em;">Vui lòng nhập tên thật đầy đủ (không chứa số hoặc ký tự lạ).</p>
+        <button class="btn" style="background: var(--success); width: 100%;" onclick="validateAndStart()">XÁC NHẬN & BẮT ĐẦU</button>
+    </div>
+</div>
+
 <div class="container">
-    <div style="text-align: center;">
-        <h2>HỆ THỐNG THẨM ĐỊNH CÂU HỎI VSIP</h2>
-        <p><i>Dành cho Ban kỹ thuật & Giảng viên nội bộ</i></p>
+    <div class="header">
+        <h2>HỘI ĐỒNG THẨM ĐỊNH VSIP</h2>
+        <p>Phê duyệt Ngân hàng 530 câu hỏi</p>
     </div>
 
     <div id="auth-section" class="auth-box">
-        <p>Vui lòng đăng nhập Google để bắt đầu review</p>
-        <div id="g_id_onload"
-             data-client_id="670121705534-vsk5g6g36h.apps.googleusercontent.com"
-             data-callback="handleCredentialResponse">
-        </div>
+        <div id="g_id_onload" data-client_id="670121705534-vsk5g6g36h.apps.googleusercontent.com" data-callback="handleCredentialResponse"></div>
         <div class="g_id_signin" data-type="standard"></div>
     </div>
 
     <div id="main-content" style="display:none;">
-        <div class="user-info" id="user-display"></div>
-        <div class="setup-box" style="margin-bottom:20px;">
-            Chọn Bậc: 
-            <select id="level" onchange="loadQuestions()">
-                <option value="1">Bậc 1/5</option><option value="2">Bậc 2/5</option>
-                <option value="3">Bậc 3/5</option><option value="4">Bậc 4/5</option>
-                <option value="5">Bậc 5/5</option>
-            </select>
+        <div style="background:#343a40; color:white; padding:10px; border-radius:8px; margin-bottom:20px; display:flex; justify-content:space-between;">
+            <span id="user-display"></span>
+            <button onclick="location.reload()" style="background:none; border:1px solid white; color:white; cursor:pointer;">Thoát</button>
         </div>
+
+        <b>Chọn Bậc:</b>
+        <select id="level" onchange="loadQuestions()" style="padding:8px;">
+            <option value="1">Bậc 1/5</option><option value="2">Bậc 2/5</option>
+            <option value="3">Bậc 3/5</option><option value="4">Bậc 4/5</option>
+            <option value="5">Bậc 5/5</option>
+        </select>
 
         <div id="quiz-area">
             <div id="question-content"></div>
-            
             <div id="answer-reveal" class="ans-box">
-                <p><b style="color:var(--primary)">DÁP ÁN ĐÚNG:</b> <span id="txt-ans"></span></p>
+                <p><b>ĐÁP ÁN:</b> <span id="txt-ans" style="color:var(--primary); font-weight:bold;"></span></p>
                 <p><b>Giải thích:</b> <span id="txt-explain"></span></p>
                 <p><b>Căn cứ:</b> <span id="txt-source"></span></p>
             </div>
 
             <div class="review-panel">
-                <b>ĐÁNH GIÁ CỦA REVIEWER:</b>
-                <textarea id="review-note" placeholder="Nhập ý kiến phản hồi (nếu có)..."></textarea>
-                <div class="btn-group">
-                    <button id="btn-ok" class="btn" onclick="submitReview('OK')">ĐỒNG Ý (OK)</button>
-                    <button id="btn-recheck" class="btn" onclick="submitReview('RECHECK')">CẦN SỬA (RECHECK)</button>
+                <b>Ý KIẾN REVIEW:</b>
+                <textarea id="review-note" rows="2" placeholder="Nhận xét nội dung..."></textarea>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button class="btn" style="background:var(--success); flex:1" onclick="submitReview('OK')">OK</button>
+                    <button class="btn" style="background:var(--danger); flex:1" onclick="submitReview('RECHECK')">RECHECK</button>
                 </div>
             </div>
-
-            <button id="btn-next" class="btn" onclick="nextQuestion()">CÂU TIẾP THEO >> </button>
+            <button id="btn-next" class="btn" onclick="nextQuestion()">CÂU TIẾP THEO >></button>
         </div>
     </div>
 </div>
 
 <script>
-    // Config Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
         authDomain: "tavietnam-78ae8.firebaseapp.com",
         projectId: "tavietnam-78ae8",
-        databaseURL: "https://tavietnam-78ae8-default-rtdb.firebaseio.com", // Đảm bảo URL này đúng
         storageBucket: "tavietnam-78ae8.firebasestorage.app",
         messagingSenderId: "670121705534",
         appId: "1:670121705534:web:1027ad98550573ad37116f"
@@ -95,14 +101,33 @@
     let questions = [];
     let currentIdx = 0;
 
-    // Xử lý đăng nhập Google
     function handleCredentialResponse(response) {
         const payload = JSON.parse(atob(response.credential.split('.')[1]));
-        currentUser = { name: payload.name, email: payload.email };
-        document.getElementById('auth-section').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
-        document.getElementById('user-display').innerText = "Reviewer: " + currentUser.name + " (" + currentUser.email + ")";
-        loadQuestions();
+        currentUser = { rawName: payload.name, email: payload.email };
+        
+        // Hiển thị modal kiểm tra tên
+        document.getElementById('verify-name').value = currentUser.rawName;
+        document.getElementById('name-check-modal').style.display = 'flex';
+    }
+
+    function validateAndStart() {
+        const nameInput = document.getElementById('verify-name').value.trim();
+        const nameRegex = /^[A-Za-zÀ-ỹ\s]{5,50}$/; // Chỉ cho phép chữ và khoảng trắng, từ 5-50 ký tự
+        
+        // Kiểm tra tên có ít nhất 2 từ
+        const wordCount = nameInput.split(/\s+/).length;
+
+        if (nameRegex.test(nameInput) && wordCount >= 2) {
+            currentUser.name = nameInput;
+            document.getElementById('name-check-modal').style.display = 'none';
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('user-display').innerText = "👤 Reviewer: " + currentUser.name;
+            loadQuestions();
+        } else {
+            document.getElementById('name-error').style.display = 'block';
+            document.getElementById('verify-name').style.borderColor = 'red';
+        }
     }
 
     async function loadQuestions() {
@@ -111,7 +136,6 @@
         questions = Object.values(snapshot.val() || {});
         currentIdx = 0;
         if(questions.length > 0) renderQuestion();
-        else alert("Chưa có dữ liệu bậc này!");
     }
 
     function renderQuestion() {
@@ -120,46 +144,28 @@
         document.getElementById('btn-next').style.display = 'none';
         document.getElementById('review-note').value = "";
         
-        let html = `
+        document.getElementById('question-content').innerHTML = `
             <div class="question-card">
                 <p><b>Câu ${currentIdx + 1}/${questions.length}:</b> ${q.content}</p>
-                <ul>
-                    <li>A. ${q.options.A}</li>
-                    <li>B. ${q.options.B}</li>
-                    <li>C. ${q.options.C}</li>
-                    <li>D. ${q.options.D}</li>
-                </ul>
+                <p>A. ${q.options.A}<br>B. ${q.options.B}<br>C. ${q.options.C}<br>D. ${q.options.D}</p>
             </div>
         `;
-        document.getElementById('question-content').innerHTML = html;
-        
-        // Chuẩn bị sẵn nội dung đáp án nhưng chưa hiện
         document.getElementById('txt-ans').innerText = q.answer;
-        document.getElementById('txt-explain').innerText = q.explain || "Không có giải thích";
-        document.getElementById('txt-source').innerText = q.source || "Chưa cập nhật căn cứ";
+        document.getElementById('txt-explain').innerText = q.explain || "N/A";
+        document.getElementById('txt-source').innerText = q.source || "N/A";
     }
 
     function submitReview(status) {
         const lvl = document.getElementById('level').value;
-        const qId = questions[currentIdx].id;
-        const note = document.getElementById('review-note').value;
-
-        const reviewData = {
-            reviewer: currentUser.name,
+        db.ref('thẩm_định/bac_' + lvl + '/' + questions[currentIdx].id).push({
+            name: currentUser.name,
             email: currentUser.email,
             status: status,
-            note: note,
-            timestamp: new Date().toISOString()
-        };
-
-        // Lưu vào nhánh feedback riêng để anh Đẹp tiện theo dõi
-        db.ref('feedbacks/bac_' + lvl + '/' + qId).push(reviewData)
-        .then(() => {
-            // Hiện đáp án sau khi bấm OK/Recheck
+            note: document.getElementById('review-note').value,
+            time: new Date().toLocaleString('vi-VN')
+        }).then(() => {
             document.getElementById('answer-reveal').style.display = 'block';
             document.getElementById('btn-next').style.display = 'block';
-            if(status === 'OK') alert("Đã ghi nhận Đồng ý!");
-            else alert("Đã ghi nhận yêu cầu Sửa!");
         });
     }
 
@@ -168,7 +174,7 @@
             currentIdx++;
             renderQuestion();
         } else {
-            alert("Đã hoàn thành review toàn bộ bộ đề này!");
+            alert("Đã xong bộ đề này!");
         }
     }
 </script>
