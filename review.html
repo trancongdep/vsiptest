@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviewer - Thẩm định Ngân hàng câu hỏi VSIP</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <style>
+        :root { --primary: #0056b3; --success: #28a745; --danger: #dc3545; --warning: #ffc107; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .auth-box { text-align: center; padding: 20px; border: 1px dashed #ccc; margin-bottom: 20px; }
+        .question-card { border-left: 5px solid var(--primary); background: #fafafa; padding: 20px; margin: 20px 0; }
+        .ans-box { background: #e7f3ff; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; border: 1px solid #b8daff; }
+        .review-panel { background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px solid #ffeeba; }
+        textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-top: 10px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 5px; color: white; cursor: pointer; font-weight: bold; }
+        #btn-ok { background: var(--success); }
+        #btn-recheck { background: var(--danger); }
+        #btn-next { background: var(--primary); margin-top: 20px; width: 100%; display: none;}
+        .user-info { font-size: 0.9em; color: #666; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="text-align: center;">
+        <h2>HỆ THỐNG THẨM ĐỊNH CÂU HỎI VSIP</h2>
+        <p><i>Dành cho Ban kỹ thuật & Giảng viên nội bộ</i></p>
+    </div>
+
+    <div id="auth-section" class="auth-box">
+        <p>Vui lòng đăng nhập Google để bắt đầu review</p>
+        <div id="g_id_onload"
+             data-client_id="670121705534-vsk5g6g36h.apps.googleusercontent.com"
+             data-callback="handleCredentialResponse">
+        </div>
+        <div class="g_id_signin" data-type="standard"></div>
+    </div>
+
+    <div id="main-content" style="display:none;">
+        <div class="user-info" id="user-display"></div>
+        <div class="setup-box" style="margin-bottom:20px;">
+            Chọn Bậc: 
+            <select id="level" onchange="loadQuestions()">
+                <option value="1">Bậc 1/5</option><option value="2">Bậc 2/5</option>
+                <option value="3">Bậc 3/5</option><option value="4">Bậc 4/5</option>
+                <option value="5">Bậc 5/5</option>
+            </select>
+        </div>
+
+        <div id="quiz-area">
+            <div id="question-content"></div>
+            
+            <div id="answer-reveal" class="ans-box">
+                <p><b style="color:var(--primary)">DÁP ÁN ĐÚNG:</b> <span id="txt-ans"></span></p>
+                <p><b>Giải thích:</b> <span id="txt-explain"></span></p>
+                <p><b>Căn cứ:</b> <span id="txt-source"></span></p>
+            </div>
+
+            <div class="review-panel">
+                <b>ĐÁNH GIÁ CỦA REVIEWER:</b>
+                <textarea id="review-note" placeholder="Nhập ý kiến phản hồi (nếu có)..."></textarea>
+                <div class="btn-group">
+                    <button id="btn-ok" class="btn" onclick="submitReview('OK')">ĐỒNG Ý (OK)</button>
+                    <button id="btn-recheck" class="btn" onclick="submitReview('RECHECK')">CẦN SỬA (RECHECK)</button>
+                </div>
+            </div>
+
+            <button id="btn-next" class="btn" onclick="nextQuestion()">CÂU TIẾP THEO >> </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Config Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
+        authDomain: "tavietnam-78ae8.firebaseapp.com",
+        projectId: "tavietnam-78ae8",
+        databaseURL: "https://tavietnam-78ae8-default-rtdb.firebaseio.com", // Đảm bảo URL này đúng
+        storageBucket: "tavietnam-78ae8.firebasestorage.app",
+        messagingSenderId: "670121705534",
+        appId: "1:670121705534:web:1027ad98550573ad37116f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let currentUser = null;
+    let questions = [];
+    let currentIdx = 0;
+
+    // Xử lý đăng nhập Google
+    function handleCredentialResponse(response) {
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        currentUser = { name: payload.name, email: payload.email };
+        document.getElementById('auth-section').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('user-display').innerText = "Reviewer: " + currentUser.name + " (" + currentUser.email + ")";
+        loadQuestions();
+    }
+
+    async function loadQuestions() {
+        const lvl = document.getElementById('level').value;
+        const snapshot = await db.ref('bank_questions/bac_' + lvl).once('value');
+        questions = Object.values(snapshot.val() || {});
+        currentIdx = 0;
+        if(questions.length > 0) renderQuestion();
+        else alert("Chưa có dữ liệu bậc này!");
+    }
+
+    function renderQuestion() {
+        const q = questions[currentIdx];
+        document.getElementById('answer-reveal').style.display = 'none';
+        document.getElementById('btn-next').style.display = 'none';
+        document.getElementById('review-note').value = "";
+        
+        let html = `
+            <div class="question-card">
+                <p><b>Câu ${currentIdx + 1}/${questions.length}:</b> ${q.content}</p>
+                <ul>
+                    <li>A. ${q.options.A}</li>
+                    <li>B. ${q.options.B}</li>
+                    <li>C. ${q.options.C}</li>
+                    <li>D. ${q.options.D}</li>
+                </ul>
+            </div>
+        `;
+        document.getElementById('question-content').innerHTML = html;
+        
+        // Chuẩn bị sẵn nội dung đáp án nhưng chưa hiện
+        document.getElementById('txt-ans').innerText = q.answer;
+        document.getElementById('txt-explain').innerText = q.explain || "Không có giải thích";
+        document.getElementById('txt-source').innerText = q.source || "Chưa cập nhật căn cứ";
+    }
+
+    function submitReview(status) {
+        const lvl = document.getElementById('level').value;
+        const qId = questions[currentIdx].id;
+        const note = document.getElementById('review-note').value;
+
+        const reviewData = {
+            reviewer: currentUser.name,
+            email: currentUser.email,
+            status: status,
+            note: note,
+            timestamp: new Date().toISOString()
+        };
+
+        // Lưu vào nhánh feedback riêng để anh Đẹp tiện theo dõi
+        db.ref('feedbacks/bac_' + lvl + '/' + qId).push(reviewData)
+        .then(() => {
+            // Hiện đáp án sau khi bấm OK/Recheck
+            document.getElementById('answer-reveal').style.display = 'block';
+            document.getElementById('btn-next').style.display = 'block';
+            if(status === 'OK') alert("Đã ghi nhận Đồng ý!");
+            else alert("Đã ghi nhận yêu cầu Sửa!");
+        });
+    }
+
+    function nextQuestion() {
+        if(currentIdx < questions.length - 1) {
+            currentIdx++;
+            renderQuestion();
+        } else {
+            alert("Đã hoàn thành review toàn bộ bộ đề này!");
+        }
+    }
+</script>
+</body>
+</html>
