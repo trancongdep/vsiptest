@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Nạp Ngân hàng câu hỏi VSIP v2.0</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; background: #f4f4f4; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        textarea { width: 100%; height: 300px; margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        select, button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        button { background: #28a745; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #218838; }
+        #status { margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>QUẢN TRỊ NGÂN HÀNG CÂU HỎI VSIP</h2>
+    <p><i>Version 2.0 - Hệ thống nạp dữ liệu tự động</i></p>
+    
+    <label>1. Chọn Bậc an toàn:</label><br>
+    <select id="levelSelect">
+        <option value="1">Bậc 1/5</option>
+        <option value="2">Bậc 2/5</option>
+        <option value="3">Bậc 3/5</option>
+        <option value="4">Bậc 4/5</option>
+        <option value="5">Bậc 5/5</option>
+    </select>
+    
+    <br><br>
+    <label>2. Dán nội dung câu hỏi (Copy từ Word):</label>
+    <textarea id="rawInput" placeholder="Cấu trúc: Câu 1. Nội dung... A. ... B. ... C. ... D. ... Đáp án: A Giải thích: ... Căn cứ: ..."></textarea>
+    
+    <button onclick="uploadData()">TẢI LÊN FIREBASE</button>
+    <div id="status"></div>
+</div>
+
+<script>
+    // Cấu hình Firebase của anh
+    const firebaseConfig = {
+        apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
+        authDomain: "tavietnam-78ae8.firebaseapp.com",
+        projectId: "tavietnam-78ae8",
+        storageBucket: "tavietnam-78ae8.firebasestorage.app",
+        messagingSenderId: "670121705534",
+        appId: "1:670121705534:web:1027ad98550573ad37116f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    function uploadData() {
+        const level = document.getElementById('levelSelect').value;
+        const text = document.getElementById('rawInput').value;
+        const status = document.getElementById('status');
+        
+        if(!text.trim()) { alert("Vui lòng dán dữ liệu!"); return; }
+
+        status.innerText = "Đang xử lý dữ liệu...";
+        
+        // Tách câu hỏi dựa trên từ khóa "Câu "
+        const rawQuestions = text.split(/Câu\s+\d+[\.:]/g).filter(q => q.trim().length > 0);
+        const questionsData = [];
+
+        rawQuestions.forEach((q, index) => {
+            try {
+                const lines = q.trim().split('\n');
+                const content = lines[0].trim();
+                
+                const optA = q.match(/A\.\s*(.*)/)?.[1] || "";
+                const optB = q.match(/B\.\s*(.*)/)?.[1] || "";
+                const optC = q.match(/C\.\s*(.*)/)?.[1] || "";
+                const optD = q.match(/D\.\s*(.*)/)?.[1] || "";
+                
+                const answer = q.match(/Đáp án(?:\s+đúng)?:\s*([A-D,\s]+)/i)?.[1].trim().toUpperCase() || "";
+                const explain = q.match(/Giải thích:\s*(.*)/i)?.[1] || "";
+                const source = q.match(/Căn cứ:\s*(.*)/i)?.[1] || "";
+
+                questionsData.push({
+                    id: index + 1,
+                    content: content,
+                    options: { A: optA, B: optB, C: optC, D: optD },
+                    answer: answer,
+                    explain: explain,
+                    source: source,
+                    type: answer.includes(',') ? 'n' : '1'
+                });
+            } catch (e) {
+                console.error("Lỗi tại câu: " + index, e);
+            }
+        });
+
+        // Đẩy lên Firebase theo Bậc
+        database.ref('bank_questions/bac_' + level).set(questionsData)
+            .then(() => {
+                status.style.color = "green";
+                status.innerText = "Thành công! Đã nạp " + questionsData.length + " câu vào Bậc " + level + "/5";
+                document.getElementById('rawInput').value = "";
+            })
+            .catch(err => {
+                status.style.color = "red";
+                status.innerText = "Lỗi: " + err.message;
+            });
+    }
+</script>
+</body>
+</html>
