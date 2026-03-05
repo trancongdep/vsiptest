@@ -30,7 +30,6 @@
         let currentQuestionIndex = 0;
         let userResponses = {}; 
 
-        // Dữ liệu mẫu (3 câu đầu trích từ PDF), có thể dán tiếp 62 câu còn lại vào mảng này
         const questions = [
             {
                 id: 1,
@@ -63,7 +62,7 @@
                     "C. Biển báo phải được gắn cố định ở độ cao từ 1,7 m đến 2,0 m so với mặt đất.",
                     "D. Chỉ cần đặt biển báo ở các cửa ra vào và các góc khuất của hệ thống hàng rào."
                 ],
-                type: "multiple" // Sử dụng Checkbox do có nhiều đáp án đúng
+                type: "multiple" 
             }
         ];
 
@@ -91,10 +90,13 @@
                 currentUser = user;
                 authScreen.classList.add('d-none');
                 
-                // Lấy lại tên nếu đã từng nhập
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                if (userDoc.exists() && userDoc.data().fullName) {
-                    document.getElementById('fullNameInput').value = userDoc.data().fullName;
+                try {
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if (userDoc.exists() && userDoc.data().fullName) {
+                        document.getElementById('fullNameInput').value = userDoc.data().fullName;
+                    }
+                } catch (error) {
+                    console.warn("Chưa thể đọc dữ liệu từ Firestore (có thể do chưa tạo DB hoặc lỗi quyền):", error);
                 }
                 
                 infoScreen.classList.remove('d-none');
@@ -116,11 +118,15 @@
             }
             userFullName = nameInput;
             
-            await setDoc(doc(db, "users", currentUser.uid), {
-                email: currentUser.email,
-                fullName: userFullName,
-                lastLogin: new Date()
-            }, { merge: true });
+            try {
+                await setDoc(doc(db, "users", currentUser.uid), {
+                    email: currentUser.email,
+                    fullName: userFullName,
+                    lastLogin: new Date()
+                }, { merge: true });
+            } catch (error) {
+                console.warn("Chưa thể lưu thông tin user vào Firestore:", error);
+            }
 
             infoScreen.classList.add('d-none');
             quizScreen.classList.remove('d-none');
@@ -168,17 +174,23 @@
 
             userResponses[currentQuestionIndex] = { answers: selected, feedback: feedback };
 
-            // Lưu dữ liệu chi tiết vào collection 'answers'
-            const docId = `${currentUser.uid}_q${questions[currentQuestionIndex].id}`;
-            await setDoc(doc(db, "answers", docId), {
-                uid: currentUser.uid,
-                email: currentUser.email,
-                fullName: userFullName,
-                questionId: questions[currentQuestionIndex].id,
-                answers: selected,
-                feedback: feedback,
-                timestamp: new Date()
-            });
+            try {
+                const docId = `${currentUser.uid}_q${questions[currentQuestionIndex].id}`;
+                await setDoc(doc(db, "answers", docId), {
+                    uid: currentUser.uid,
+                    email: currentUser.email,
+                    fullName: userFullName,
+                    questionId: questions[currentQuestionIndex].id,
+                    answers: selected,
+                    feedback: feedback,
+                    timestamp: new Date()
+                });
+                return true;
+            } catch (error) {
+                console.error("Lỗi lưu câu trả lời vào Firestore:", error);
+                alert("Lưu thất bại. Vui lòng kiểm tra lại kết nối cơ sở dữ liệu Firestore!");
+                return false;
+            }
         }
 
         prevBtn.addEventListener('click', async () => {
@@ -194,17 +206,22 @@
         okBtn.addEventListener('click', async () => {
             okBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang lưu...';
             okBtn.disabled = true;
-            await saveCurrentResponse();
             
-            // Đổi màu nút tạm thời để báo thành công
-            okBtn.classList.replace('btn-success', 'btn-primary');
-            okBtn.innerHTML = 'Đã Lưu!';
+            const success = await saveCurrentResponse();
+            
+            if (success) {
+                okBtn.classList.replace('btn-success', 'btn-primary');
+                okBtn.innerHTML = 'Đã Lưu!';
+            } else {
+                okBtn.classList.replace('btn-success', 'btn-danger');
+                okBtn.innerHTML = 'Lỗi!';
+            }
             
             setTimeout(() => {
-                okBtn.classList.replace('btn-primary', 'btn-success');
-                okBtn.innerHTML = 'OK';
+                okBtn.className = 'btn btn-success px-4 fw-bold shadow-sm';
+                okBtn.innerHTML = 'OK (Lưu) ✔';
                 okBtn.disabled = false;
-            }, 1000);
+            }, 1500);
         });
 
         recheckBtn.addEventListener('click', () => {
@@ -221,7 +238,7 @@
     <div class="container mt-2">
         <div class="row">
             <div class="col text-end">
-                <span class="badge bg-secondary">v1.0</span>
+                <span class="badge bg-secondary">v1.1</span>
             </div>
         </div>
     </div>
@@ -272,7 +289,7 @@
                     </svg>
                     Góp ý / Đề xuất sửa đổi câu hỏi này:
                 </label>
-                <textarea class="form-control border-warning shadow-sm" id="feedbackInput" rows="3" placeholder="Ghi chú các lỗi kỹ thuật, lỗi chính tả, hoặc ý kiến thay đổi câu hỏi/đáp án..."></textarea>
+                <textarea class="form-control border-warning shadow-sm" id="feedbackInput" rows="3" placeholder="Ghi chú các lỗi kỹ thuật, lỗi chính tả, hoặc ý kiến thay đổi câu/đáp án..."></textarea>
             </div>
 
             <div class="d-flex justify-content-between flex-wrap gap-2 mt-4 pt-4 border-top">
