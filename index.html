@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống Sát hạch An toàn điện VSIP 2026</title>
+    <title>Sát hạch An toàn điện VSIP 2026</title>
     <style>
         :root { --primary-blue: #004a99; --accent-orange: #f37021; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); }
@@ -12,10 +12,10 @@
         header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
 
         .main-content { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .card { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        .card { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; min-height: 200px; }
 
-        .user-info { margin-bottom: 20px; padding: 15px; background: #eef6ff; border-radius: 8px; border-left: 5px solid var(--primary-blue); display: none; }
-        .user-info p { margin: 0; font-weight: 600; color: var(--primary-blue); }
+        .user-welcome { margin-bottom: 20px; padding: 15px; background: #eef6ff; border-radius: 8px; border-left: 5px solid var(--primary-blue); }
+        .user-welcome p { margin: 0; font-weight: 600; color: var(--primary-blue); font-size: 1.1rem; }
 
         label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--primary-blue); font-size: 1rem; }
         input[type="text"], select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin-bottom: 20px; box-sizing: border-box; outline: none; }
@@ -23,19 +23,17 @@
 
         .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         .btn-google { background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-google:hover { background: #f8f8f8; }
         .btn-primary { background: var(--primary-blue); color: white; margin-top: 10px; }
         .btn-primary:hover { background: #003366; }
 
         footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); line-height: 1.6; }
         .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
 
-        #auth-section { display: block; text-align: center; }
-        #name-section { display: none; }
-        #selection-section { display: none; }
+        /* Các vùng hiển thị */
+        #auth-section, #name-section, #selection-section { display: none; }
         #topic-container { display: none; }
         
-        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
+        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -47,33 +45,38 @@
 
 <div class="main-content">
     <div class="card">
-        <div id="loading" class="loading-spinner"></div>
+        <div id="loader" style="text-align: center;">
+            <div class="loading-spinner"></div>
+            <p style="color:#666">Đang xác thực hệ thống...</p>
+        </div>
 
-        <div id="auth-section">
-            <h3 style="margin-top:0">Vui lòng đăng nhập để bắt đầu</h3>
-            <p style="color:#666; font-size: 0.9rem;">Sử dụng tài khoản Gmail của bạn</p>
+        <div id="auth-section" style="text-align: center;">
+            <h3 style="margin-top:0">Yêu cầu đăng nhập</h3>
+            <p style="color:#666; font-size: 0.95rem; margin-bottom: 25px;">Vui lòng sử dụng Gmail để bắt đầu làm bài</p>
             <button class="btn btn-google" id="loginBtn">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="20" alt="Google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="20">
                 Đăng nhập với Google
             </button>
         </div>
 
         <div id="name-section">
-            <label for="userName">Họ và tên người kiểm tra:</label>
-            <input type="text" id="userName" placeholder="Nhập đầy đủ họ tên...">
-            <button class="btn btn-primary" id="saveNameBtn">Xác nhận thông tin</button>
+            <h3 style="margin-top:0; color: var(--primary-blue);">Thông tin người kiểm tra</h3>
+            <p style="font-size: 0.9rem; color: #666;">Đây là lần đầu bạn sử dụng hệ thống, vui lòng nhập họ tên để lưu kết quả.</p>
+            <label for="userName">Họ và tên đầy đủ:</label>
+            <input type="text" id="userName" placeholder="VD: Nguyễn Văn A">
+            <button class="btn btn-primary" id="saveNameBtn">Lưu thông tin & Tiếp tục</button>
         </div>
 
         <div id="selection-section">
-            <div class="user-info" id="userInfoBox">
-                <p>Người kiểm tra: <span id="displayName">...</span></p>
-                <a href="#" id="logoutBtn" style="font-size: 11px; color: red;">Đăng xuất</a>
+            <div class="user-welcome">
+                <p>Chào bạn: <span id="displayName" style="color: var(--accent-orange);">...</span></p>
+                <button id="logoutBtn" style="background:none; border:none; color:red; cursor:pointer; font-size:12px; padding:0; text-decoration: underline;">Đăng xuất tài khoản</button>
             </div>
 
             <form id="quizForm">
                 <label for="level">Chọn bậc an toàn điện:</label>
                 <select id="level" required>
-                    <option value="" disabled selected>-- Vui lòng chọn bậc --</option>
+                    <option value="" disabled selected>-- Chọn bậc --</option>
                     <option value="1/5">Bậc 1/5</option>
                     <option value="2/5">Bậc 2/5</option>
                     <option value="3/5">Bậc 3/5</option>
@@ -98,7 +101,7 @@
                     </select>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Bắt đầu làm bài</button>
+                <button type="submit" class="btn btn-primary">Bắt đầu ôn tập</button>
             </form>
         </div>
     </div>
@@ -128,64 +131,77 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    const authSec = document.getElementById('auth-section');
-    const nameSec = document.getElementById('name-section');
-    const selectionSec = document.getElementById('selection-section');
-    const loading = document.getElementById('loading');
+    const sections = {
+        loader: document.getElementById('loader'),
+        auth: document.getElementById('auth-section'),
+        name: document.getElementById('name-section'),
+        selection: document.getElementById('selection-section')
+    };
 
-    // Kiểm tra trạng thái đăng nhập
+    function showSection(name) {
+        Object.values(sections).forEach(s => s.style.display = 'none');
+        sections[name].style.display = 'block';
+    }
+
+    // Xử lý trạng thái người dùng
     onAuthStateChanged(auth, async (user) => {
-        loading.style.display = 'block';
-        authSec.style.display = 'none';
-        nameSec.style.display = 'none';
-        selectionSec.style.display = 'none';
-
         if (user) {
-            // Đã đăng nhập, kiểm tra tên trong Firestore
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists()) {
-                // Đã có tên -> Vào trang chọn đề
-                document.getElementById('displayName').innerText = userDoc.data().fullName;
-                selectionSec.style.display = 'block';
-                document.getElementById('userInfoBox').style.display = 'block';
-            } else {
-                // Chưa có tên -> Yêu cầu nhập tên
-                nameSec.style.display = 'block';
+            // Đã đăng nhập Gmail -> Kiểm tra tên trong Firestore
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists() && userDoc.data().fullName) {
+                    // Đã có tên hợp lệ
+                    document.getElementById('displayName').innerText = userDoc.data().fullName;
+                    showSection('selection');
+                } else {
+                    // Chưa có tên trong Database
+                    showSection('name');
+                }
+            } catch (error) {
+                console.error("Lỗi truy vấn Firestore:", error);
+                alert("Lỗi kết nối dữ liệu người dùng.");
             }
         } else {
             // Chưa đăng nhập
-            authSec.style.display = 'block';
+            showSection('auth');
         }
-        loading.style.display = 'none';
     });
 
-    // Xử lý Login
+    // Sự kiện nút đăng nhập
     document.getElementById('loginBtn').onclick = () => {
-        signInWithPopup(auth, provider).catch(e => alert("Lỗi đăng nhập: " + e.message));
+        signInWithPopup(auth, provider).catch(e => alert("Lỗi: " + e.message));
     };
 
-    // Xử lý Lưu tên
+    // Sự kiện lưu tên
     document.getElementById('saveNameBtn').onclick = async () => {
-        const name = document.getElementById('userName').value.trim();
-        if (!name) return alert("Vui lòng nhập họ tên!");
-        
-        loading.style.display = 'block';
-        await setDoc(doc(db, "users", auth.currentUser.uid), {
-            fullName: name,
-            email: auth.currentUser.email,
-            createdAt: new Date().toISOString()
-        });
-        location.reload(); // Load lại để check state mới
+        const nameInput = document.getElementById('userName').value.trim();
+        if (nameInput.length < 3) return alert("Vui lòng nhập họ tên đầy đủ!");
+
+        sections.loader.style.display = 'block';
+        sections.name.style.display = 'none';
+
+        try {
+            await setDoc(doc(db, "users", auth.currentUser.uid), {
+                fullName: nameInput,
+                email: auth.currentUser.email,
+                updateAt: new Date().toISOString()
+            });
+            // Tự động load lại qua onAuthStateChanged
+        } catch (e) {
+            alert("Lỗi khi lưu tên: " + e.message);
+            showSection('name');
+        }
     };
 
-    // Xử lý Chọn bậc ẩn hiện chuyên đề
+    // Ẩn hiện chuyên đề
     const levelSelect = document.getElementById('level');
     const topicContainer = document.getElementById('topic-container');
     levelSelect.onchange = () => {
-        topicContainer.style.display = ['3/5','4/5','5/5'].includes(levelSelect.value) ? 'block' : 'none';
+        const val = levelSelect.value;
+        topicContainer.style.display = ['3/5', '4/5', '5/5'].includes(val) ? 'block' : 'none';
     };
 
-    // Chuyển trang làm bài
+    // Chuyển sang trang test
     document.getElementById('quizForm').onsubmit = (e) => {
         e.preventDefault();
         const level = levelSelect.value;
@@ -194,8 +210,10 @@
         window.location.href = `test.html?level=${level}&topic=${topic}&name=${encodeURIComponent(name)}`;
     };
 
-    // Logout
-    document.getElementById('logoutBtn').onclick = () => signOut(auth);
+    // Đăng xuất
+    document.getElementById('logoutBtn').onclick = () => {
+        if(confirm("Bạn muốn đăng xuất?")) signOut(auth);
+    };
 
 </script>
 </body>
