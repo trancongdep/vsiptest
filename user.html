@@ -3,13 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý người dùng - VSIP 2026</title>
+    <title>Quản lý người dùng - v1.1</title>
     <style>
-        :root { --primary: #004a99; --accent: #f37021; --bg: #f4f7f9; }
+        :root { --primary: #004a99; --accent: #f37021; --bg: #f4f7f9; --danger: #dc3545; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
-        header { background: var(--primary); color: white; padding: 20px; text-align: center; }
-        .container { flex: 1; max-width: 900px; margin: 20px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
+        header { background: var(--primary); color: white; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 1.5rem; text-transform: uppercase; }
+        .container { flex: 1; max-width: 1000px; margin: 20px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        
+        /* Toolbar buttons */
+        .toolbar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn-tool { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: 0.3s; color: white; }
+        .btn-home { background: #6c757d; }
+        .btn-feedback { background: var(--accent); }
+        .btn-logout { background: var(--danger); }
+        .btn-tool:hover { opacity: 0.8; transform: translateY(-1px); }
+
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th { text-align: left; padding: 12px; background: #f8f9fa; border-bottom: 2px solid #eee; color: var(--primary); }
         td { padding: 12px; border-bottom: 1px solid #eee; }
@@ -17,12 +27,12 @@
         .admin { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
         .user { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
         .btn-toggle { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
-        footer { background: #eef2f6; padding: 20px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary); }
+        footer { background: #eef2f6; padding: 20px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary); margin-top: auto; }
     </style>
 </head>
 <body>
 
-<header><h1>QUẢN LÝ QUYỀN HỆ THỐNG</h1></header>
+<header><h1>HỆ THỐNG QUẢN TRỊ NHÂN SỰ</h1></header>
 
 <div class="container">
     <div id="admin-check" style="text-align:center; padding:50px; display:none;">
@@ -31,10 +41,16 @@
     </div>
 
     <div id="main-content" style="display:none">
+        <div class="toolbar">
+            <button class="btn-tool btn-home" onclick="location.href='index.html'">« Về trang chủ</button>
+            <button class="btn-tool btn-feedback" onclick="location.href='gopy.html'">Xem tất cả góp ý</button>
+            <button class="btn-tool btn-logout" id="logoutBtn">Đăng xuất</button>
+        </div>
+
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2 style="color:var(--primary); margin:0;">Danh sách nhân sự</h2>
-                <button onclick="loadUsers()" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">Làm mới</button>
+                <h2 style="color:var(--primary); margin:0;">Danh sách thành viên</h2>
+                <button onclick="loadUsers()" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">Làm mới danh sách</button>
             </div>
             <table>
                 <thead>
@@ -42,7 +58,7 @@
                         <th>Họ tên & Bộ phận</th>
                         <th>Email</th>
                         <th style="width:100px">Quyền</th>
-                        <th style="width:120px">Thao tác</th>
+                        <th style="width:140px">Phân quyền</th>
                     </tr>
                 </thead>
                 <tbody id="user-body"></tbody>
@@ -55,7 +71,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -83,8 +99,7 @@
 
     async function loadUsers() {
         const body = document.getElementById('user-body');
-        body.innerHTML = '<tr><td colspan="4" style="text-align:center">Đang tải...</td></tr>';
-        
+        body.innerHTML = '<tr><td colspan="4" style="text-align:center">Đang nạp dữ liệu...</td></tr>';
         try {
             const snap = await getDocs(query(collection(db, "users"), orderBy("updatedAt", "desc")));
             body.innerHTML = '';
@@ -98,23 +113,25 @@
                     <td><span class="badge ${isAdmin ? 'admin' : 'user'}">${isAdmin ? 'ADMIN' : 'USER'}</span></td>
                     <td>
                         <button class="btn-toggle" style="background:${isAdmin ? '#666' : 'var(--accent)'}; color:white;" 
-                                onclick="toggleRole('${s.id}', '${d.role}')">
+                                onclick="toggleRole('${s.id}', '${d.role || 'user'}')">
                             ${isAdmin ? 'Hạ quyền' : 'Nâng Admin'}
                         </button>
                     </td>
                 `;
                 body.appendChild(row);
             });
-        } catch (e) { body.innerHTML = 'Lỗi: ' + e.message; }
+        } catch (e) { body.innerHTML = 'Lỗi nạp dữ liệu: ' + e.message; }
     }
 
     window.toggleRole = async (uid, currentRole) => {
         const newRole = currentRole === 'admin' ? 'user' : 'admin';
-        if (confirm(`Xác nhận đổi quyền thành ${newRole}?`)) {
+        if (confirm(`Xác nhận đổi quyền của người dùng này thành ${newRole}?`)) {
             await updateDoc(doc(db, "users", uid), { role: newRole });
             loadUsers();
         }
     }
+
+    document.getElementById('logoutBtn').onclick = () => { if(confirm("Bạn muốn đăng xuất?")) signOut(auth).then(() => location.href='index.html'); };
 </script>
 </body>
 </html>
