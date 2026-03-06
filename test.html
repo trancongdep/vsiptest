@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Làm bài Sát hạch An toàn điện - VSIP</title>
+    <style>
+        :root {
+            --primary: #004a99;
+            --secondary: #f37021;
+            --success: #28a745;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e9ecef;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-label {
+            font-size: 14px;
+            color: #555;
+            background: #eee;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-item {
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item:hover {
+            background-color: #f1f8ff;
+            border-color: var(--primary);
+        }
+
+        .option-item.selected {
+            background-color: #e7f1ff;
+            border-color: var(--primary);
+        }
+
+        .option-item.correct {
+            background-color: #d4edda;
+            border-color: var(--success);
+        }
+
+        .option-item.wrong {
+            background-color: #f8d7da;
+            border-color: var(--danger);
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-nav { background: #6c757d; color: white; }
+        .btn-check { background: var(--primary); color: white; }
+        .btn-support { background: var(--secondary); color: white; }
+
+        /* Panel Hỗ trợ */
+        .support-panel {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff3e0;
+            border-left: 5px solid var(--secondary);
+            border-radius: 5px;
+            display: none;
+        }
+
+        .support-panel h3 { margin-top: 0; color: #e65100; font-size: 1rem; }
+        .quote-box { font-style: italic; background: white; padding: 10px; border-radius: 4px; margin: 10px 0; font-size: 0.9rem; }
+
+        textarea {
+            width: 100%;
+            height: 60px;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .btn-submit-feedback {
+            background: #5d4037;
+            color: white;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        #loading { text-align: center; padding: 50px; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div id="loading">Đang tải câu hỏi từ hệ thống...</div>
+    
+    <div id="quiz-content" style="display:none;">
+        <div class="quiz-header">
+            <div>
+                <span id="levelBadge" class="info-label">Bậc: --</span>
+                <span id="topicBadge" class="info-label">Chuyên đề: --</span>
+            </div>
+            <div id="progressText" style="font-weight:bold;">Câu 1/--</div>
+        </div>
+
+        <div class="question-box">
+            <div id="questionText" class="question-text">Đang tải nội dung...</div>
+            <div class="options" id="optionsContainer">
+                </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn-nav" onclick="prevQuestion()">Câu Trước</button>
+            <div>
+                <button class="btn-check" onclick="checkAnswer()">Kiểm tra</button>
+                <button class="btn-support" onclick="toggleSupport()">Hỗ trợ</button>
+            </div>
+            <button class="btn-nav" onclick="nextQuestion()">Câu Tiếp</button>
+        </div>
+
+        <div id="supportPanel" class="support-panel">
+            <h3>Chi tiết hỗ trợ & Pháp lý</h3>
+            <p><strong>Đáp án đúng:</strong> <span id="correctLabel">--</span></p>
+            <p><strong>Căn cứ:</strong> <span id="basisLabel">--</span></p>
+            <div class="quote-box">
+                <strong>Trích dẫn:</strong> <br>
+                <span id="quoteLabel">--</span>
+            </div>
+            
+            <hr>
+            <label for="feedback"><strong>Ý kiến phản hồi câu hỏi:</strong></label>
+            <textarea id="feedbackText" placeholder="Ghi nhận xét của bạn để chúng tôi cải thiện câu hỏi này..."></textarea>
+            <button class="btn-submit-feedback" onclick="sendFeedback()">Gửi góp ý</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
+        authDomain: "tavietnam-78ae8.firebaseapp.com",
+        projectId: "tavietnam-78ae8",
+        storageBucket: "tavietnam-78ae8.firebasestorage.app",
+        messagingSenderId: "670121705534",
+        appId: "1:670121705534:web:1027ad98550573ad37116f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Lấy thông tin từ URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedLevel = urlParams.get('level');
+    const selectedTopic = urlParams.get('topic');
+
+    let questions = [];
+    let currentIndex = 0;
+    let selectedOption = null;
+
+    async function loadQuestions() {
+        document.getElementById('levelBadge').innerText = `Bậc: ${selectedLevel}`;
+        
+        try {
+            const qRef = collection(db, "questions");
+            let q;
+
+            // Xây dựng query dựa trên lựa chọn
+            if (selectedTopic && selectedTopic !== "0") {
+                const topicName = "Chuyên đề " + selectedTopic;
+                document.getElementById('topicBadge').innerText = topicName;
+                q = query(qRef, where("level", "==", selectedLevel), where("category", "==", topicName));
+            } else {
+                document.getElementById('topicBadge').innerText = "Kiến thức chung";
+                q = query(qRef, where("level", "==", selectedLevel));
+            }
+
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                questions.push({ id: doc.id, ...doc.data() });
+            });
+
+            if (questions.length === 0) {
+                document.getElementById('loading').innerHTML = "Không tìm thấy câu hỏi phù hợp. Vui lòng quay lại.";
+                return;
+            }
+
+            // Trộn câu hỏi ngẫu nhiên nếu muốn
+            questions.sort(() => Math.random() - 0.5);
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('quiz-content').style.display = 'block';
+            showQuestion();
+
+        } catch (error) {
+            console.error("Error loading questions:", error);
+            document.getElementById('loading').innerText = "Lỗi kết nối Firebase.";
+        }
+    }
+
+    function showQuestion() {
+        const q = questions[currentIndex];
+        selectedOption = null;
+        document.getElementById('supportPanel').style.display = 'none';
+        document.getElementById('progressText').innerText = `Câu ${currentIndex + 1}/${questions.length}`;
+        document.getElementById('questionText').innerText = q.content;
+        document.getElementById('feedbackText').value = "";
+
+        const optionsHtml = `
+            <div class="option-item" onclick="selectOpt(this, 'A')">A. ${q.optionA}</div>
+            <div class="option-item" onclick="selectOpt(this, 'B')">B. ${q.optionB}</div>
+            <div class="option-item" onclick="selectOpt(this, 'C')">C. ${q.optionC}</div>
+            <div class="option-item" onclick="selectOpt(this, 'D')">D. ${q.optionD}</div>
+        `;
+        document.getElementById('optionsContainer').innerHTML = optionsHtml;
+
+        // Điền data vào panel hỗ trợ
+        document.getElementById('correctLabel').innerText = q.correctAnswer;
+        document.getElementById('basisLabel').innerText = q.newBasis || "Chưa cập nhật";
+        document.getElementById('quoteLabel').innerText = q.quote || "Không có trích dẫn";
+    }
+
+    window.selectOpt = (el, val) => {
+        // Xóa class selected của các option khác
+        document.querySelectorAll('.option-item').forEach(opt => opt.classList.remove('selected', 'correct', 'wrong'));
+        el.classList.add('selected');
+        selectedOption = val;
+    };
+
+    window.checkAnswer = () => {
+        if (!selectedOption) {
+            alert("Vui lòng chọn một đáp án!");
+            return;
+        }
+        const q = questions[currentIndex];
+        const items = document.querySelectorAll('.option-item');
+        
+        items.forEach(item => {
+            const text = item.innerText;
+            if (text.startsWith(q.correctAnswer + ".")) {
+                item.classList.add('correct');
+            }
+            if (item.classList.contains('selected') && !text.startsWith(q.correctAnswer + ".")) {
+                item.classList.add('wrong');
+            }
+        });
+    };
+
+    window.toggleSupport = () => {
+        const panel = document.getElementById('supportPanel');
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    };
+
+    window.nextQuestion = () => {
+        if (currentIndex < questions.length - 1) {
+            currentIndex++;
+            showQuestion();
+        } else {
+            alert("Bạn đã hoàn thành bộ câu hỏi!");
+        }
+    };
+
+    window.prevQuestion = () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            showQuestion();
+        }
+    };
+
+    window.sendFeedback = async () => {
+        const fbText = document.getElementById('feedbackText').value;
+        if (!fbText.trim()) {
+            alert("Vui lòng nhập ý kiến!");
+            return;
+        }
+
+        try {
+            const q = questions[currentIndex];
+            await addDoc(collection(db, "feedback"), {
+                questionId: q.questionId,
+                content: q.content,
+                feedback: fbText,
+                timestamp: new Date().toISOString()
+            });
+            alert("Cảm ơn góp ý của bạn!");
+            document.getElementById('feedbackText').value = "";
+        } catch (e) {
+            alert("Lỗi khi gửi góp ý.");
+        }
+    };
+
+    // Khởi chạy
+    loadQuestions();
+</script>
+
+</body>
+</html>
