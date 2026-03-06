@@ -3,32 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch sử Góp ý - VSIP 2026 - v2.3</title>
+    <title>Lịch sử Góp ý - VSIP 2026 - v2.4</title>
     <style>
         :root { --primary: #004a99; --accent: #f37021; --bg: #f4f7f9; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
-        
         header { background: var(--primary); color: white; padding: 25px 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
         header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
-
         .container { flex: 1; max-width: 1000px; margin: 25px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        
         .role-badge { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; }
-        .admin-mode { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+        .master-mode { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+        .viewer-mode { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
         .user-mode { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
-
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { text-align: left; padding: 12px; background: #f8f9fa; color: var(--primary); border-bottom: 2px solid #eee; }
         td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: top; font-size: 0.9rem; }
-        
         .q-box { background: #f0f7ff; padding: 8px; border-radius: 4px; font-size: 0.8rem; color: #555; margin-top: 5px; border-left: 3px solid var(--primary); }
-        .btn-del { color: #dc3545; border: 1px solid #dc3545; background: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+        .btn-del { color: #dc3545; border: 1px solid #dc3545; background: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; }
         .btn-del:hover { background: #dc3545; color: white; }
-
-        #auth-section { text-align: center; padding: 100px 20px; }
-        .btn-google { background: white; border: 1px solid #ddd; padding: 12px 25px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-weight: bold; }
-
         footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary); line-height: 1.6; }
         .footer-line-2 { font-weight: 600; color: var(--primary); margin-top: 5px; }
     </style>
@@ -38,30 +30,23 @@
 <header><h1>BỘ ĐỀ TRẮC NGHIỆM AN TOÀN ĐIỆN VSIP 2026</h1></header>
 
 <div class="container">
-    <div id="auth-section" style="display:none">
-        <p>Vui lòng đăng nhập để xem lịch sử góp ý.</p>
-        <button class="btn-google" id="loginBtn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="20"> Đăng nhập với Google
-        </button>
-    </div>
-
-    <div id="main-content" style="display:none">
+    <div id="main-content">
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div id="role-display"></div>
                 <button onclick="location.href='index.html'" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight:bold; text-decoration: underline;">« Về trang chủ</button>
             </div>
             
-            <h2 id="title-text" style="color:var(--primary); margin-top:10px; font-size: 1.2rem;">Đang tải...</h2>
+            <h2 id="title-text" style="color:var(--primary); margin-top:10px; font-size: 1.2rem;">Đang tải dữ liệu...</h2>
             
             <div id="table-area" style="overflow-x:auto">
                 <table>
                     <thead>
                         <tr>
-                            <th id="col-sender" style="width:160px">Người gửi</th>
+                            <th id="col-sender" style="width:160px; display:none;">Người gửi</th>
                             <th>Nội dung góp ý</th>
                             <th style="width:150px">Thời gian</th>
-                            <th id="col-action" style="width:80px">Xử lý</th>
+                            <th id="col-action" style="width:80px; display:none;">Xử lý</th>
                         </tr>
                     </thead>
                     <tbody id="data-body"></tbody>
@@ -78,7 +63,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, query, where, getDocs, orderBy, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -93,45 +78,55 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-    const MASTER_ADMIN = "deptc.gvatvsld@gmail.com";
-
-    setPersistence(auth, browserLocalPersistence);
+    const MASTER_EMAIL = "deptc.gvatvsld@gmail.com";
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            document.getElementById('auth-section').style.display = 'none';
-            document.getElementById('main-content').style.display = 'block';
             await renderView(user);
         } else {
-            document.getElementById('auth-section').style.display = 'block';
-            document.getElementById('main-content').style.display = 'none';
+            window.location.href = 'index.html';
         }
     });
 
     async function renderView(user) {
         const body = document.getElementById('data-body');
         const titleText = document.getElementById('title-text');
+        const roleBadge = document.getElementById('role-display');
         
-        // KIỂM TRA ROLE TỪ DATABASE
-        let isAdmin = (user.email === MASTER_ADMIN);
+        let isMaster = (user.email === MASTER_EMAIL);
+        let isViewer = false;
+
         try {
             const userSnap = await getDoc(doc(db, "users", user.uid));
-            if (userSnap.exists() && userSnap.data().role === 'admin') isAdmin = true;
-        } catch (e) { console.log("Không thể đọc role người dùng"); }
+            if (userSnap.exists() && userSnap.data().role === 'admin') isViewer = true;
+        } catch (e) { console.error("Lỗi xác thực quyền."); }
 
-        document.getElementById('role-display').innerHTML = isAdmin ? '<span class="role-badge admin-mode">QUYỀN QUẢN TRỊ</span>' : '<span class="role-badge user-mode">DỮ LIỆU CÁ NHÂN</span>';
-        titleText.innerText = isAdmin ? "Tổng hợp tất cả góp ý" : "Lịch sử góp ý của tôi";
-        
-        document.getElementById('col-sender').style.display = isAdmin ? "table-cell" : "none";
-        document.getElementById('col-action').style.display = isAdmin ? "table-cell" : "none";
+        // Hiển thị giao diện theo quyền
+        if (isMaster) {
+            roleBadge.innerHTML = '<span class="role-badge master-mode">QUẢN TRỊ TỐI CAO</span>';
+            titleText.innerText = "Tổng hợp toàn bộ góp ý hệ thống";
+            document.getElementById('col-sender').style.display = "table-cell";
+            document.getElementById('col-action').style.display = "table-cell";
+        } else if (isViewer) {
+            roleBadge.innerHTML = '<span class="role-badge viewer-mode">QUYỀN XEM TỔNG HỢP</span>';
+            titleText.innerText = "Danh sách góp ý toàn hệ thống";
+            document.getElementById('col-sender').style.display = "table-cell";
+            document.getElementById('col-action').style.display = "none";
+        } else {
+            roleBadge.innerHTML = '<span class="role-badge user-mode">GÓP Ý CỦA TÔI</span>';
+            titleText.innerText = "Lịch sử đóng góp ý kiến cá nhân";
+            document.getElementById('col-sender').style.display = "none";
+            document.getElementById('col-action').style.display = "none";
+        }
 
         try {
             const ref = collection(db, "feedback");
-            const q = isAdmin ? query(ref, orderBy("time", "desc")) : query(ref, where("email", "==", user.email), orderBy("time", "desc"));
-            const snap = await getDocs(q);
+            // Master và Viewer dùng chung Query xem tất cả
+            const q = (isMaster || isViewer) ? query(ref, orderBy("time", "desc")) : query(ref, where("email", "==", user.email), orderBy("time", "desc"));
             
+            const snap = await getDocs(q);
             body.innerHTML = '';
+
             if (snap.empty) {
                 body.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 40px; color: #888;">Dữ liệu trống</td></tr>';
                 return;
@@ -141,23 +136,21 @@
                 const d = s.data();
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td style="display: ${isAdmin ? 'table-cell' : 'none'}">
-                        <strong>${d.user || ''}</strong><br><small>${d.dept || ''}</small>
+                    <td style="display: ${(isMaster || isViewer) ? 'table-cell' : 'none'}">
+                        <strong>${d.user || 'Học viên'}</strong><br><small>${d.dept || ''}</small>
                     </td>
                     <td>
                         <div style="font-weight:600">"${d.feedback || ''}"</div>
                         <div class="q-box"><strong>Câu hỏi (ID: ${d.qNum}):</strong> ${d.qContent || 'N/A'}</div>
                     </td>
                     <td><small>${d.time ? new Date(d.time).toLocaleString('vi-VN') : ''}</small></td>
-                    <td style="display: ${isAdmin ? 'table-cell' : 'none'}">
+                    <td style="display: ${isMaster ? 'table-cell' : 'none'}">
                         <button class="btn-del" onclick="deleteFeedback('${s.id}')">Xóa</button>
                     </td>
                 `;
                 body.appendChild(row);
             });
-        } catch (e) { 
-            body.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center; padding:20px;">Lỗi: ${e.message}</td></tr>`; 
-        }
+        } catch (e) { body.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Lỗi tải dữ liệu.</td></tr>`; }
     }
 
     window.deleteFeedback = async (id) => {
@@ -166,8 +159,6 @@
             location.reload();
         }
     }
-
-    document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
 </script>
 </body>
 </html>
