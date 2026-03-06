@@ -3,32 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sát hạch An toàn điện VSIP 2026 - v4.2</title>
+    <title>Sát hạch An toàn điện VSIP 2026 - v4.3</title>
     <style>
-        :root { --primary: #004a99; --accent: #f37021; --success: #28a745; --danger: #dc3545; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; -webkit-tap-highlight-color: transparent; }
-        header { background: var(--primary); color: white; padding: 20px 10px; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-        header h1 { margin: 0; font-size: 1.4rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
-        .container { flex: 1; max-width: 800px; margin: 0 auto; padding: 15px; width: 100%; box-sizing: border-box; }
-        .quiz-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .meta-info { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
-        .badge { background: #eef2f6; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; color: var(--primary); border: 1px solid #d1d9e6; }
-        .question-text { font-size: 1.15rem; font-weight: 700; margin-bottom: 20px; line-height: 1.5; color: #1a1a1a; text-align: justify; }
+        :root { --primary-blue: #004a99; --accent: #f37021; --success: #28a745; --danger: #dc3545; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
+        
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); -webkit-tap-highlight-color: transparent; }
+        
+        /* Header đồng bộ index.html */
+        header { background: var(--primary-blue); color: white; padding: 25px 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
+        header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+
+        .container { flex: 1; max-width: 800px; margin: 20px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
+        .quiz-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); position: relative; }
+        
+        .meta-info { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; align-items: center; }
+        .badge { background: #eef2f6; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--primary-blue); border: 1px solid #d1d9e6; }
+        .q-count-badge { margin-left: auto; background: var(--primary-blue); color: white; border: none; }
+
+        .question-text { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; line-height: 1.5; color: #1a1a1a; text-align: justify; }
         .q-num-label { color: var(--accent); margin-right: 5px; }
-        .opt { padding: 15px; border: 2px solid #e0e6ed; border-radius: 10px; cursor: pointer; margin-bottom: 10px; transition: 0.2s; font-size: 1rem; display: flex; align-items: center; }
-        .opt.selected { background: #e7f1ff; border-color: var(--primary); font-weight: 600; }
+        
+        .options-grid { display: flex; flex-direction: column; gap: 10px; }
+        .opt { padding: 16px; border: 2px solid #ddd; border-radius: 10px; cursor: pointer; transition: 0.2s; font-size: 1.05rem; background: #fff; line-height: 1.4; display: flex; align-items: flex-start; }
+        .opt:hover { background: #f0f7ff; border-color: var(--primary-blue); }
+        .opt.selected { background: #e7f1ff; border-color: var(--primary-blue); font-weight: 600; box-shadow: inset 0 0 0 1px var(--primary-blue); }
         .opt.correct { background: #e6ffed !important; border-color: var(--success) !important; color: #155724; font-weight: 700; }
         .opt.wrong { background: #fff5f5 !important; border-color: var(--danger) !important; color: #721c24; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; }
         .btn-group-main { grid-column: 1 / span 2; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        button { padding: 14px; border: none; border-radius: 8px; font-weight: bold; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-        .btn-blue { background: var(--primary); color: white; }
+        
+        button { padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 0.95rem; display: flex; justify-content: center; align-items: center; }
+        .btn-blue { background: var(--primary-blue); color: white; }
         .btn-orange { background: var(--accent); color: white; }
         .btn-gray { background: #6c757d; color: white; }
-        .support-panel { margin-top: 20px; background: #fff9f1; border-left: 5px solid var(--accent); padding: 15px; border-radius: 4px; display: none; }
-        .quote-box { background: white; padding: 12px; border-radius: 6px; border: 1px solid #ffe0b2; font-style: italic; font-size: 0.9rem; margin-top: 10px; }
-        footer { background: #eef2f6; padding: 20px 10px; text-align: center; font-size: 0.85rem; border-top: 3px solid var(--primary); }
-        @media (min-width: 768px) { header h1 { font-size: 1.6rem; } .controls { display: flex; justify-content: space-between; } .btn-group-main { display: flex; gap: 8px; } button { padding: 12px 20px; } }
+
+        .support-panel { margin-top: 20px; background: #fff9f1; border-left: 6px solid var(--accent); padding: 20px; border-radius: 4px; display: none; animation: fadeIn 0.3s; }
+        .quote-box { background: white; padding: 15px; border-radius: 6px; border: 1px solid #ffe0b2; font-style: italic; margin-top: 10px; color: #5d4037; font-size: 0.9rem; }
+        
+        textarea { width: 100%; height: 80px; margin-top: 15px; border-radius: 6px; padding: 12px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; font-size: 0.95rem; }
+
+        /* Footer đồng bộ index.html */
+        footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); line-height: 1.6; }
+        .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #loading { text-align: center; padding: 100px 20px; font-weight: bold; color: var(--primary-blue); }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
     </style>
 </head>
 <body>
@@ -38,22 +59,22 @@
 </header>
 
 <div class="container">
-    <div id="loading" style="text-align:center; padding:50px;">
-        <div style="border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
-        <p id="loading-msg">Đang xác thực quyền truy cập...</p>
+    <div id="loading">
+        <div class="spinner"></div>
+        <p id="loading-msg">Đang đồng bộ phiên đăng nhập...</p>
     </div>
-
+    
     <div id="quiz-area" style="display:none;">
         <div class="quiz-card">
             <div class="meta-info">
-                <span id="badge-name" class="badge">...</span>
+                <span id="badge-name" class="badge" style="background: #e1f5fe;">...</span>
                 <span id="badge-lvl" class="badge">Bậc: --</span>
-                <span id="q-count" class="badge" style="background:var(--primary); color:white; margin-left:auto;">1/--</span>
+                <span id="q-count" class="badge q-count-badge">1/--</span>
             </div>
 
             <div id="q-instruction" style="font-size:12px; font-weight:800; text-transform:uppercase; margin-bottom:10px; color:var(--accent)">...</div>
             <div id="q-text" class="question-text"></div>
-            <div id="options"></div>
+            <div id="options" class="options-grid"></div>
 
             <div class="controls">
                 <button class="btn-gray" onclick="window.location.href='index.html'" style="grid-column: 1 / span 2;">« Về trang chủ</button>
@@ -66,10 +87,10 @@
             </div>
 
             <div id="support-panel" class="support-panel">
-                <p><strong>Đáp án đúng:</strong> <span id="ans-label" style="color:var(--success); font-weight:800;"></span></p>
+                <p><strong>Đáp án đúng:</strong> <span id="ans-label" style="color: var(--success); font-weight: 800; font-size: 1.1rem;"></span></p>
                 <p><strong>Căn cứ:</strong> <span id="basis-label"></span></p>
                 <div class="quote-box" id="quote-label"></div>
-                <textarea id="feedback" style="width:100%; height:80px; margin-top:15px; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="Nhập góp ý cho câu này..."></textarea>
+                <textarea id="feedback" placeholder="Nhập góp ý cho câu này..."></textarea>
                 <button class="btn-blue" style="width:100%; margin-top:10px;" onclick="sendFeedback()">Gửi phản hồi</button>
             </div>
         </div>
@@ -78,7 +99,7 @@
 
 <footer>
     <div>Nhóm biên soạn bộ đề trắc nghiệm An toàn điện VDC @2026</div>
-    <div style="color:var(--primary); font-weight:600; margin-top:5px;">Trần Công Đẹp - Phone: 0963.292.882</div>
+    <div class="footer-line-2">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882 - email: deptc.gvatvsld@gmail.com</div>
 </footer>
 
 <script type="module">
@@ -99,7 +120,7 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // Cố định phiên đăng nhập trên trình duyệt
+    // Bắt buộc duy trì đăng nhập trên trình duyệt
     setPersistence(auth, browserLocalPersistence);
 
     const params = new URLSearchParams(window.location.search);
@@ -113,26 +134,29 @@
     let isMultipleChoice = false;
     let currentUser = null;
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            currentUser = user;
+    // Cơ chế đợi đăng nhập (Retry logic)
+    let checkCount = 0;
+    function checkAuth() {
+        if (auth.currentUser) {
+            currentUser = auth.currentUser;
             load();
+        } else if (checkCount < 5) {
+            checkCount++;
+            setTimeout(checkAuth, 500);
         } else {
-            // Chờ 2 giây để tránh lỗi nhảy trang do mạng chậm, nếu vẫn không thấy user mới báo lỗi
-            setTimeout(() => {
-                if (!auth.currentUser) {
-                    document.getElementById('loading-msg').innerHTML = "Phiên đăng nhập hết hạn!<br><br><button onclick=\"location.href='index.html'\" class='btn-blue' style='margin:10px auto'>Quay lại trang chủ để đăng nhập</button>";
-                } else {
-                    currentUser = auth.currentUser;
-                    load();
+            onAuthStateChanged(auth, (user) => {
+                if (user) { currentUser = user; load(); }
+                else {
+                    document.getElementById('loading-msg').innerHTML = "Phiên làm việc hết hạn!<br><br><button onclick=\"location.href='index.html'\" class='btn-blue' style='margin:10px auto'>Quay lại trang chủ để đăng nhập</button>";
                 }
-            }, 2000);
+            });
         }
-    });
+    }
+    checkAuth();
 
     async function load() {
         if (!levelParam) { 
-            document.getElementById('loading-msg').innerHTML = "<b style='color:red'>Lỗi: Chưa chọn Bậc AT!</b><br><br><button onclick=\"location.href='index.html'\" class='btn-gray' style='margin:10px auto'>Quay lại trang chủ</button>";
+            document.getElementById('loading-msg').innerHTML = "<b style='color:red'>Lỗi: Chưa chọn Bậc AT!</b>";
             return; 
         }
         try {
@@ -144,12 +168,17 @@
             const snap = await getDocs(q);
             let pool = [];
             snap.forEach(d => pool.push({questionId: d.id, ...d.data()}));
+            
             if (topicIdx !== "0") {
                 const searchStr = "Chuyên đề " + topicIdx;
                 questions = pool.filter(item => (item.category || "").toString().includes(searchStr));
                 if (questions.length === 0) questions = pool.filter(item => (item.category || "").toString().includes("Kiến thức chung"));
             } else { questions = pool; }
-            if (questions.length === 0) { document.getElementById('loading-msg').innerText = "Chưa có dữ liệu cho bậc " + levelStr; return; }
+            
+            if (questions.length === 0) { 
+                document.getElementById('loading-msg').innerText = "Chưa có dữ liệu cho bậc " + levelStr; 
+                return; 
+            }
             questions.sort(() => Math.random() - 0.5);
             document.getElementById('loading').style.display = 'none';
             document.getElementById('quiz-area').style.display = 'block';
@@ -209,9 +238,9 @@
                 feedback: msg,
                 time: new Date().toISOString()
             });
-            alert("Gửi thành công!");
+            alert("Gửi góp ý thành công!");
             document.getElementById('feedback').value = "";
-        } catch (e) { alert("Lỗi gửi góp ý: " + e.message); }
+        } catch (e) { alert("Lỗi gửi: " + e.message); }
     }
 </script>
 </body>
