@@ -3,79 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sát hạch An toàn điện VSIP - v2.1</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <title>Quản lý người dùng - VSIP 2026</title>
     <style>
-        :root { --primary: #0056b3; --success: #28a745; --danger: #dc3545; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .header { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 20px; }
-        .setup-box { background: #e9ecef; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-        select, button { padding: 12px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; margin: 5px 0; width: 100%; }
-        button { background: var(--primary); color: white; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; }
-        button:hover { opacity: 0.9; }
-        .question-card { display: none; margin-top: 20px; padding: 15px; border-left: 5px solid var(--primary); background: #fafafa; }
-        .options-list { list-style: none; padding: 0; }
-        .option-item { padding: 10px; border: 1px solid #ddd; margin: 5px 0; border-radius: 4px; cursor: pointer; }
-        .option-item:hover { background: #f1f1f1; }
-        .option-item.selected { background: #cce5ff; border-color: #b8daff; }
-        #result-box { display: none; text-align: center; padding: 20px; }
-        .score { font-size: 48px; font-weight: bold; color: var(--success); }
+        :root { --primary: #004a99; --accent: #f37021; --bg: #f4f7f9; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        header { background: var(--primary); color: white; padding: 20px; text-align: center; }
+        .container { flex: 1; max-width: 900px; margin: 20px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: left; padding: 12px; background: #f8f9fa; border-bottom: 2px solid #eee; color: var(--primary); }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .admin { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+        .user { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+        .btn-toggle { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        footer { background: #eef2f6; padding: 20px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary); }
     </style>
 </head>
 <body>
 
+<header><h1>QUẢN LÝ QUYỀN HỆ THỐNG</h1></header>
+
 <div class="container">
-    <div class="header">
-        <h2>HỆ THỐNG SÁT HẠCH AN TOÀN ĐIỆN 2026</h2>
-        <p>Đơn vị: VSIP - HUẤN LUYỆN VÀ CHIA SẺ</p>
+    <div id="admin-check" style="text-align:center; padding:50px; display:none;">
+        <h3>Bạn không có quyền truy cập trang này!</h3>
+        <button onclick="location.href='index.html'" style="padding:10px 20px; background:var(--primary); color:white; border:none; border-radius:5px;">Về trang chủ</button>
     </div>
 
-    <div id="setup" class="setup-box">
-        <label><b>1. Chọn Bậc an toàn của anh:</b></label>
-        <select id="level">
-            <option value="1">Bậc 1/5</option>
-            <option value="2">Bậc 2/5</option>
-            <option value="3">Bậc 3/5</option>
-            <option value="4">Bậc 4/5</option>
-            <option value="5">Bậc 5/5</option>
-        </select>
-
-        <label><b>2. Chọn Nhóm ngành công tác:</b></label>
-        <select id="sector">
-            <option value="110kV">Vận hành TBA 110kV</option>
-            <option value="22kV">Vận hành ĐZ & TBA 22kV</option>
-            <option value="Hate">Hạ thế Khách hàng</option>
-            <option value="Chieusang">Hệ thống chiếu sáng</option>
-            <option value="Vanphong">Hệ thống điện văn phòng</option>
-            <option value="Solar">Solar áp mái</option>
-            <option value="BESS">Lưu trữ năng lượng BESS</option>
-        </select>
-        
-        <button onclick="startExam()">BẮT ĐẦU LÀM BÀI (50 CÂU)</button>
-    </div>
-
-    <div id="quiz-area">
-        <div id="progress"></div>
-        <div id="question-container"></div>
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <button id="prevBtn" style="display:none;" onclick="changeQuestion(-1)">Câu trước</button>
-            <button id="nextBtn" style="display:none;" onclick="changeQuestion(1)">Câu tiếp theo</button>
-            <button id="submitBtn" style="display:none; background: var(--success);" onclick="showResult()">NỘP BÀI</button>
+    <div id="main-content" style="display:none">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="color:var(--primary); margin:0;">Danh sách nhân sự</h2>
+                <button onclick="loadUsers()" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">Làm mới</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Họ tên & Bộ phận</th>
+                        <th>Email</th>
+                        <th style="width:100px">Quyền</th>
+                        <th style="width:120px">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="user-body"></tbody>
+            </table>
         </div>
-    </div>
-
-    <div id="result-box">
-        <h3>KẾT QUẢ SÁT HẠCH</h3>
-        <div class="score" id="final-score">0/50</div>
-        <p id="evaluation"></p>
-        <button onclick="location.reload()">LÀM LẠI BÀI MỚI</button>
     </div>
 </div>
 
-<script>
-    // Firebase Config (Dữ liệu của anh Trần Công Đẹp)
+<footer>Nhóm biên soạn bộ đề An toàn điện VDC @2026</footer>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
     const firebaseConfig = {
         apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
         authDomain: "tavietnam-78ae8.firebaseapp.com",
@@ -84,94 +66,53 @@
         messagingSenderId: "670121705534",
         appId: "1:670121705534:web:1027ad98550573ad37116f"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
 
-    let allQuestions = [];
-    let currentIdx = 0;
-    let userAnswers = {};
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const MASTER_ADMIN = "deptc.gvatvsld@gmail.com";
 
-    async function startExam() {
-        const lvl = document.getElementById('level').value;
-        const sec = document.getElementById('sector').value;
-        
-        document.getElementById('setup').style.display = 'none';
-        document.getElementById('question-container').innerHTML = "Đang tải bộ đề...";
-
-        const snapshot = await db.ref('bank_questions/bac_' + lvl).once('value');
-        const data = snapshot.val();
-
-        if(!data) {
-            alert("Chưa có dữ liệu cho bậc này. Vui lòng nạp dữ liệu từ App Admin.");
-            location.reload();
-            return;
-        }
-
-        // Chuyển object thành array và lọc theo ngành (giả sử trong nội dung hoặc tag có chứa từ khóa ngành)
-        // Lưu ý: Logic này sẽ ưu tiên các câu có từ khóa liên quan đến ngành đã chọn
-        let pool = Object.values(data);
-        let filtered = pool.filter(q => 
-            q.content.toLowerCase().includes(sec.toLowerCase()) || 
-            (q.tags && q.tags.includes(sec))
-        );
-
-        // Nếu không đủ 50 câu ngành đó, lấy thêm các câu khác của cùng bậc cho đủ 50
-        if(filtered.length < 50) {
-            let remain = pool.filter(q => !filtered.includes(q));
-            filtered = filtered.concat(remain.sort(() => 0.5 - Math.random()).slice(0, 50 - filtered.length));
-        }
-
-        allQuestions = filtered.sort(() => 0.5 - Math.random()).slice(0, 50);
-        renderQuestion();
-    }
-
-    function renderQuestion() {
-        const q = allQuestions[currentIdx];
-        let html = `
-            <div class="question-card" style="display:block;">
-                <p><b>Câu ${currentIdx + 1}/50:</b> ${q.content}</p>
-                <div class="options-list">
-                    ${Object.entries(q.options).map(([key, val]) => `
-                        <div class="option-item ${userAnswers[currentIdx] === key ? 'selected' : ''}" 
-                             onclick="selectOption('${key}')">
-                            ${key}. ${val}
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-        document.getElementById('question-container').innerHTML = html;
-        document.getElementById('prevBtn').style.display = currentIdx > 0 ? 'block' : 'none';
-        document.getElementById('nextBtn').style.display = currentIdx < 49 ? 'block' : 'none';
-        document.getElementById('submitBtn').style.display = currentIdx === 49 ? 'block' : 'none';
-    }
-
-    function selectOption(key) {
-        userAnswers[currentIdx] = key;
-        renderQuestion();
-    }
-
-    function changeQuestion(step) {
-        currentIdx += step;
-        renderQuestion();
-    }
-
-    function showResult() {
-        let score = 0;
-        allQuestions.forEach((q, idx) => {
-            if(userAnswers[idx] === q.answer) score++;
-        });
-
-        document.getElementById('quiz-area').style.display = 'none';
-        document.getElementById('result-box').style.display = 'block';
-        document.getElementById('final-score').innerText = score + "/50";
-        
-        const percent = (score / 50) * 100;
-        const eval = document.getElementById('evaluation');
-        if(percent >= 80) {
-            eval.innerHTML = "<b style='color:green;'>ĐẠT.</b> Chúc mừng anh đã hoàn thành sát hạch.";
+    onAuthStateChanged(auth, (user) => {
+        if (user && user.email === MASTER_ADMIN) {
+            document.getElementById('main-content').style.display = 'block';
+            loadUsers();
         } else {
-            eval.innerHTML = "<b style='color:red;'>CHƯA ĐẠT.</b> Anh cần đạt tối thiểu 40/50 câu (80%).";
+            document.getElementById('admin-check').style.display = 'block';
+        }
+    });
+
+    async function loadUsers() {
+        const body = document.getElementById('user-body');
+        body.innerHTML = '<tr><td colspan="4" style="text-align:center">Đang tải...</td></tr>';
+        
+        try {
+            const snap = await getDocs(query(collection(db, "users"), orderBy("updatedAt", "desc")));
+            body.innerHTML = '';
+            snap.forEach(s => {
+                const d = s.data();
+                const isAdmin = d.role === 'admin';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${d.fullName}</strong><br><small>${d.department}</small></td>
+                    <td>${d.email}</td>
+                    <td><span class="badge ${isAdmin ? 'admin' : 'user'}">${isAdmin ? 'ADMIN' : 'USER'}</span></td>
+                    <td>
+                        <button class="btn-toggle" style="background:${isAdmin ? '#666' : 'var(--accent)'}; color:white;" 
+                                onclick="toggleRole('${s.id}', '${d.role}')">
+                            ${isAdmin ? 'Hạ quyền' : 'Nâng Admin'}
+                        </button>
+                    </td>
+                `;
+                body.appendChild(row);
+            });
+        } catch (e) { body.innerHTML = 'Lỗi: ' + e.message; }
+    }
+
+    window.toggleRole = async (uid, currentRole) => {
+        const newRole = currentRole === 'admin' ? 'user' : 'admin';
+        if (confirm(`Xác nhận đổi quyền thành ${newRole}?`)) {
+            await updateDoc(doc(db, "users", uid), { role: newRole });
+            loadUsers();
         }
     }
 </script>
