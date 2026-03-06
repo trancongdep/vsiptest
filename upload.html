@@ -3,152 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Bộ Đề An Toàn Điện - v1.0</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <title>Upload Bộ Đề VSIP 2026 - v2.5</title>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
-        body { font-family: sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: auto; background: #f4f7f6; }
-        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        .upload-section { margin: 20px 0; padding: 20px; border: 2px dashed #bdc3c7; border-radius: 5px; text-align: center; }
-        button { background: #27ae60; color: white; border: none; padding: 10px 25px; border-radius: 4px; cursor: pointer; font-size: 16px; transition: 0.3s; }
-        button:hover { background: #2ecc71; }
-        button:disabled { background: #bdc3c7; cursor: not-allowed; }
-        #status { margin-top: 20px; padding: 15px; border-radius: 4px; display: none; }
-        .progress { width: 100%; background-color: #f3f3f3; border-radius: 13px; margin-top: 10px; }
-        .progress-bar { width: 0%; height: 20px; background-color: #3498db; border-radius: 13px; text-align: center; color: white; line-height: 20px; font-size: 12px; }
-        .log { margin-top: 20px; font-size: 12px; max-height: 200px; overflow-y: auto; background: #eee; padding: 10px; border-radius: 4px; font-family: monospace; }
-        .version { float: right; font-size: 12px; color: #7f8c8d; }
+        :root { --primary: #004a99; --bg: #f4f7f9; --text: #1a1a1a; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        header { background: var(--primary); color: white; padding: 25px 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; font-weight: 700; }
+        .main { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .card { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+        .drop-zone { border: 2px dashed #ccc; padding: 40px; text-align: center; border-radius: 10px; cursor: pointer; transition: 0.3s; margin-bottom: 20px; }
+        .drop-zone:hover { border-color: var(--primary); background: #f0f7ff; }
+        .btn-upload { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-upload:disabled { background: #ccc; }
+        #log { margin-top: 20px; font-size: 12px; background: #222; color: #0f0; padding: 15px; border-radius: 6px; max-height: 200px; overflow-y: auto; font-family: monospace; }
+        footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary); line-height: 1.6; }
+        .footer-line-2 { font-weight: 600; color: var(--primary); margin-top: 5px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <span class="version">Phiên bản: 1.0</span>
-    <h2>Hệ thống Import Câu Hỏi - VSIP 2026</h2>
-    
-    <p>Chọn file CSV đã xuất từ bảng dữ liệu 500 câu hỏi để tải lên Firebase Firestore.</p>
+<header><h1>BỘ ĐỀ TRẮC NGHIỆM AN TOÀN ĐIỆN VSIP 2026</h1></header>
 
-    <div class="upload-section">
-        <input type="file" id="csvFile" accept=".csv">
-        <br><br>
-        <button id="uploadBtn">Bắt đầu tải lên</button>
-    </div>
-
-    <div id="progressContainer" style="display:none;">
-        <div class="progress">
-            <div id="progressBar" class="progress-bar">0%</div>
+<div class="main">
+    <div class="card">
+        <h3 style="margin-top:0; color:var(--primary)">Công cụ nạp dữ liệu Excel</h3>
+        <p style="font-size:13px; color:#666">Yêu cầu file .xlsx có các cột: câu số, Bậc AT, nội dung, a, b, c, d, đáp án đúng, Phân nhóm, căn cứ mới cập nhật, trích dẫn.</p>
+        
+        <div class="drop-zone" onclick="document.getElementById('fileInp').click()">
+            <p id="fileName">Nhấn để chọn hoặc kéo thả file Excel vào đây</p>
+            <input type="file" id="fileInp" accept=".xlsx, .xls" style="display:none">
         </div>
-        <p id="counterText">Đang xử lý: 0/500</p>
-    </div>
 
-    <div id="status"></div>
-    <div id="log" class="log" style="display:none;"></div>
+        <button class="btn-upload" id="startBtn">Bắt đầu tải lên Firebase</button>
+        <div id="log">Sẵn sàng nạp dữ liệu...</div>
+    </div>
 </div>
 
-<script type="module">
-    // Firebase App (v9.x SDK)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<footer>
+    <div>Nhóm biên soạn bộ đề trắc nghiệm An toàn điện VDC @2026</div>
+    <div class="footer-line-2">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882 - email: deptc.gvatvsld@gmail.com</div>
+</footer>
 
-    // Cấu hình Firebase của bạn
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, writeBatch, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
     const firebaseConfig = {
-        apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
-        authDomain: "tavietnam-78ae8.firebaseapp.com",
-        projectId: "tavietnam-78ae8",
-        storageBucket: "tavietnam-78ae8.firebasestorage.app",
-        messagingSenderId: "670121705534",
-        appId: "1:670121705534:web:1027ad98550573ad37116f"
+        apiKey: "AIzaSyBPNk4J9npcClKFD0daia4W8nPwwg3bX_A",
+        authDomain: "vsiptest-bdbc5.firebaseapp.com",
+        projectId: "vsiptest-bdbc5",
+        storageBucket: "vsiptest-bdbc5.firebasestorage.app",
+        messagingSenderId: "1056019256354",
+        appId: "1:1056019256354:web:8f864b8b2edc4c9b1ca67b"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const uploadBtn = document.getElementById('uploadBtn');
-    const fileInput = document.getElementById('csvFile');
-    const statusDiv = document.getElementById('status');
-    const progressBar = document.getElementById('progressBar');
-    const counterText = document.getElementById('counterText');
-    const logDiv = document.getElementById('log');
+    const fileInp = document.getElementById('fileInp');
+    const startBtn = document.getElementById('startBtn');
+    const logBox = document.getElementById('log');
 
-    uploadBtn.addEventListener('click', () => {
-        const file = fileInput.files[0];
-        if (!file) {
-            alert('Vui lòng chọn file CSV trước!');
-            return;
-        }
+    function addLog(msg) { logBox.innerHTML += `> ${msg}<br>`; logBox.scrollTop = logBox.scrollHeight; }
 
-        uploadBtn.disabled = true;
-        document.getElementById('progressContainer').style.display = 'block';
-        logDiv.style.display = 'block';
-        logDiv.innerHTML = "Đang đọc file...<br>";
+    fileInp.onchange = (e) => { if(e.target.files[0]) document.getElementById('fileName').innerText = e.target.files[0].name; };
 
-        Papa.parse(file, {
-            header: true,
-            skipEmptyLines: true,
-            complete: async function(results) {
-                const data = results.data;
-                const total = data.length;
-                logDiv.innerHTML += `Tìm thấy ${total} dòng dữ liệu.<br>`;
+    startBtn.onclick = async () => {
+        const file = fileInp.files[0];
+        if(!file) return alert("Vui lòng chọn file!");
 
-                try {
-                    // Firestore giới hạn batch 500 records, rất phù hợp với bộ đề của bạn
-                    const batch = writeBatch(db);
-                    
-                    data.forEach((row, index) => {
-                        // Khớp chính xác tiêu đề cột từ file CSV của bạn
-                        const questionId = row['câu số'] || (index + 1).toString();
-                        const docRef = doc(db, "questions", questionId.trim());
+        startBtn.disabled = true;
+        addLog("Đang đọc file Excel...");
 
-                        const questionData = {
-                            questionId: questionId.trim(),
-                            oldId: row['id cũ'] || "",
-                            level: row['Bậc AT'] || "",
-                            content: row['nội dung'] || "",
-                            optionA: row['a'] || "",
-                            optionB: row['b'] || "",
-                            optionC: row['c'] || "",
-                            optionD: row['d'] || "",
-                            correctAnswer: row['đáp án đúng'] || "",
-                            category: row['Phân nhóm'] || "",
-                            newBasis: row['căn cứ mới cập nhật'] || "",
-                            quote: row['trích dẫn'] || "",
-                            updatedAt: new Date().toISOString()
-                        };
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+            const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            
+            addLog(`Tìm thấy ${data.length} câu hỏi. Đang bắt đầu nạp...`);
+            
+            const batch = writeBatch(db);
+            data.forEach((row, i) => {
+                const id = (row['câu số'] || (i + 1)).toString().trim();
+                const docRef = doc(db, "questions", id);
+                batch.set(docRef, {
+                    questionId: id,
+                    level: (row['Bậc AT'] || "").toString().trim(),
+                    content: row['nội dung'] || "",
+                    optionA: row['a'] || "",
+                    optionB: row['b'] || "",
+                    optionC: row['c'] || "",
+                    optionD: row['d'] || "",
+                    correctAnswer: (row['đáp án đúng'] || "").toString().trim(),
+                    category: (row['Phân nhóm'] || "Kiến thức chung").toString().trim(),
+                    newBasis: row['căn cứ mới cập nhật'] || "",
+                    quote: row['trích dẫn'] || "",
+                    updatedAt: new Date().toISOString()
+                });
+                if(i % 50 === 0) addLog(`Đang xử lý câu: ${id}...`);
+            });
 
-                        batch.set(docRef, questionData);
-                        
-                        // Cập nhật giao diện log tạm thời
-                        if (index % 50 === 0) {
-                            logDiv.innerHTML += `Đang chuẩn bị câu ${index}...<br>`;
-                        }
-                    });
-
-                    logDiv.innerHTML += `Đang gửi dữ liệu lên Firebase...<br>`;
-                    await batch.commit();
-
-                    // Hoàn tất
-                    progressBar.style.width = '100%';
-                    progressBar.innerText = '100%';
-                    counterText.innerText = `Hoàn thành tải lên ${total} câu hỏi.`;
-                    statusDiv.style.display = 'block';
-                    statusDiv.style.backgroundColor = '#d4edda';
-                    statusDiv.style.color = '#155724';
-                    statusDiv.innerHTML = 'Thành công! Toàn bộ dữ liệu đã được lưu vào Firestore (Collection: questions).';
-                    logDiv.innerHTML += `<b>Giao dịch thành công!</b>`;
-
-                } catch (error) {
-                    console.error("Lỗi:", error);
-                    statusDiv.style.display = 'block';
-                    statusDiv.style.backgroundColor = '#f8d7da';
-                    statusDiv.style.color = '#721c24';
-                    statusDiv.innerHTML = 'Lỗi trong quá trình upload: ' + error.message;
-                } finally {
-                    uploadBtn.disabled = false;
-                }
+            try {
+                await batch.commit();
+                addLog("THÀNH CÔNG: Toàn bộ 500 câu đã được đẩy lên Firebase!");
+                alert("Hoàn tất nạp dữ liệu!");
+            } catch (err) {
+                addLog("LỖI: " + err.message);
+                console.error(err);
             }
-        });
-    });
+            startBtn.disabled = false;
+        };
+        reader.readAsArrayBuffer(file);
+    };
 </script>
-
 </body>
 </html>
