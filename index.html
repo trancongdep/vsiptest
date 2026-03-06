@@ -3,197 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Sát Hạch An Toàn Điện - VSIP</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>Sát hạch An toàn điện VSIP 2026</title>
     <style>
-        :root {
-            --vsip-blue: #004a99;
-            --vsip-orange: #f37021;
-            --bg-light: #f8f9fa;
-        }
+        :root { --primary-blue: #004a99; --text-color: #1a1a1a; --bg-color: #f4f7f9; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-color); }
+        
+        /* Header thống nhất */
+        header { background: var(--primary-blue); color: white; padding: 25px 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        header h1 { margin: 0; font-size: 1.8rem; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; }
 
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--bg-light);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+        .main-content { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 550px; }
 
-        .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 600px;
-            border-top: 6px solid var(--vsip-blue);
-        }
+        label { display: block; font-weight: 600; margin-bottom: 10px; font-size: 1.1rem; color: var(--primary-blue); }
+        select { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin-bottom: 25px; outline: none; transition: 0.3s; cursor: pointer; }
+        select:focus { border-color: var(--primary-blue); box-shadow: 0 0 8px rgba(0,74,153,0.2); }
 
-        .header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
+        .btn-start { width: 100%; background: var(--primary-blue); color: white; border: none; padding: 18px; border-radius: 8px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+        .btn-start:hover { background: #003366; transform: translateY(-2px); }
 
-        .header h1 {
-            color: var(--vsip-blue);
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-        }
+        /* Footer thống nhất */
+        footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.95rem; border-top: 3px solid var(--primary-blue); line-height: 1.6; }
+        .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
 
-        .header p {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: #333;
-        }
-
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 1rem;
-            background-color: white;
-            transition: border-color 0.3s;
-            cursor: pointer;
-        }
-
-        select:focus {
-            outline: none;
-            border-color: var(--vsip-blue);
-        }
-
-        #chuyenDeSection {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .btn-start {
-            width: 100%;
-            padding: 14px;
-            background-color: var(--vsip-blue);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-            margin-top: 1rem;
-        }
-
-        .btn-start:hover {
-            background-color: #003366;
-        }
-
-        .version {
-            text-align: right;
-            font-size: 11px;
-            color: #ccc;
-            margin-top: 1rem;
-        }
+        #topic-container { display: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h1>Sát hạch An toàn điện 2026</h1>
-        <p>Hệ thống ôn tập và kiểm tra trực tuyến</p>
-    </div>
+<header>
+    <h1>BỘ ĐỀ TRẮC NGHIỆM AN TOÀN ĐIỆN VSIP 2026</h1>
+</header>
 
-    <form id="selectionForm">
-        <div class="form-group">
-            <label for="bacAnToan">1. Chọn bậc an toàn điện:</label>
-            <select id="bacAnToan" required>
-                <option value="" disabled selected>-- Chọn bậc --</option>
+<div class="main-content">
+    <div class="card">
+        <form id="quizForm">
+            <label for="level">1. Chọn bậc an toàn điện:</label>
+            <select id="level" required>
+                <option value="" disabled selected>-- Vui lòng chọn bậc --</option>
                 <option value="1/5">Bậc 1/5</option>
                 <option value="2/5">Bậc 2/5</option>
                 <option value="3/5">Bậc 3/5</option>
                 <option value="4/5">Bậc 4/5</option>
                 <option value="5/5">Bậc 5/5</option>
             </select>
-        </div>
 
-        <div id="chuyenDeSection" class="form-group">
-            <label for="chuyenDe">2. Chọn chuyên đề đào tạo:</label>
-            <select id="chuyenDe">
-                <option value="0" selected>-- Tất cả chuyên đề --</option>
-                <option value="1">Chuyên đề 1: Trạm biến áp 110/22kV</option>
-                <option value="2">Chuyên đề 2: Đường dây dẫn điện 110kV/22kV/0.4kV</option>
-                <option value="3">Chuyên đề 3: Hệ thống điện mặt trời áp mái (Rooftop Solar)</option>
-                <option value="4">Chuyên đề 4: Hệ thống lưu trữ năng lượng pin (BESS)</option>
-                <option value="5">Chuyên đề 5: Thiết bị điện hạ thế văn phòng VSIP</option>
-                <option value="6">Chuyên đề 6: Hệ thống SCADA và OCC</option>
-                <option value="7">Chuyên đề 7: Nhà máy điện áp đến 22kV</option>
-                <option value="8">Chuyên đề 8: Nhà máy xử lý nước thải</option>
-                <option value="9">Chuyên đề 9: Nhà xưởng xây sẵn (Hạ tầng & PCCC)</option>
-                <option value="10">Chuyên đề 10: Thi công xây dựng & Nhà ở thấp tầng</option>
-            </select>
-        </div>
+            <div id="topic-container">
+                <label for="topic">2. Chọn chuyên đề:</label>
+                <select id="topic">
+                    <option value="0">-- Tất cả chuyên đề --</option>
+                    <option value="1">Chuyên đề 1: Trạm biến áp 110/22kV</option>
+                    <option value="2">Chuyên đề 2: Đường dây 110kV/22kV/0.4kV</option>
+                    <option value="3">Chuyên đề 3: Điện mặt trời áp mái</option>
+                    <option value="4">Chuyên đề 4: Hệ thống pin (BESS)</option>
+                    <option value="5">Chuyên đề 5: Hạ thế văn phòng VSIP</option>
+                    <option value="6">Chuyên đề 6: Hệ thống SCADA và OCC</option>
+                    <option value="7">Chuyên đề 7: Nhà máy điện đến 22kV</option>
+                    <option value="8">Chuyên đề 8: Nhà máy xử lý nước thải</option>
+                    <option value="9">Chuyên đề 9: Nhà xưởng xây sẵn (PCCC)</option>
+                    <option value="10">Chuyên đề 10: Thi công & Nhà thấp tầng</option>
+                </select>
+            </div>
 
-        <button type="submit" class="btn-start">BẮT ĐẦU LÀM BÀI</button>
-    </form>
-
-    <div class="version">Phiên bản 1.0 | 06/03/2026</div>
+            <button type="submit" class="btn-start">Bắt đầu ôn tập</button>
+        </form>
+    </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+<footer>
+    <div>Nhóm biên soạn bộ đề trắc nghiệm An toàn điện VDC @2026</div>
+    <div class="footer-line-2">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882 - email: deptc.gvatvsld@gmail.com</div>
+</footer>
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
-        authDomain: "tavietnam-78ae8.firebaseapp.com",
-        projectId: "tavietnam-78ae8",
-        storageBucket: "tavietnam-78ae8.firebasestorage.app",
-        messagingSenderId: "670121705534",
-        appId: "1:670121705534:web:1027ad98550573ad37116f"
-    };
+<script>
+    const levelSelect = document.getElementById('level');
+    const topicContainer = document.getElementById('topic-container');
 
-    const app = initializeApp(firebaseConfig);
-
-    const bacAnToanSelect = document.getElementById('bacAnToan');
-    const chuyenDeSection = document.getElementById('chuyenDeSection');
-    const form = document.getElementById('selectionForm');
-
-    // Logic ẩn hiện chuyên đề
-    bacAnToanSelect.addEventListener('change', function() {
-        const value = this.value;
-        if (value === '3/5' || value === '4/5' || value === '5/5') {
-            chuyenDeSection.style.display = 'block';
+    levelSelect.addEventListener('change', function() {
+        const val = this.value;
+        if (['3/5', '4/5', '5/5'].includes(val)) {
+            topicContainer.style.display = 'block';
         } else {
-            chuyenDeSection.style.display = 'none';
-            document.getElementById('chuyenDe').value = "0"; // Reset về mặc định
+            topicContainer.style.display = 'none';
+            document.getElementById('topic').value = "0";
         }
     });
 
-    // Xử lý gửi form
-    form.addEventListener('submit', function(e) {
+    document.getElementById('quizForm').addEventListener('submit', (e) => {
         e.preventDefault();
-        const bac = bacAnToanSelect.value;
-        const cd = document.getElementById('chuyenDe').value;
-        
-        // Chuyển hướng sang trang làm bài (ví dụ test.html)
-        // Truyền tham số qua URL
-        window.location.href = `test.html?level=${encodeURIComponent(bac)}&topic=${cd}`;
+        const level = levelSelect.value;
+        const topic = document.getElementById('topic').value;
+        window.location.href = `test.html?level=${level}&topic=${topic}`;
     });
 </script>
 
