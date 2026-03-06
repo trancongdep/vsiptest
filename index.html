@@ -3,35 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sát hạch An toàn điện VSIP 2026 - v2.15</title>
+    <title>Sát hạch An toàn điện VSIP 2026 - v2.16</title>
     <style>
         :root { --primary-blue: #004a99; --accent: #f37021; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); }
-        
         header { background: var(--primary-blue); color: white; padding: 25px 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
-
         .main-content { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .card { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; min-height: 250px; position: relative; }
-
         .user-welcome { margin-bottom: 20px; padding: 15px; background: #eef2f6; border-radius: 8px; border-left: 5px solid var(--primary-blue); }
-        .user-welcome p { margin: 0; font-weight: 600; color: var(--primary-blue); font-size: 1rem; }
-
         label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--primary-blue); }
         input[type="text"], select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; box-sizing: border-box; outline: none; }
-        
         .btn { padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-full { width: 100%; }
         .btn-primary { background: var(--primary-blue); color: white; }
         .btn-orange { background: var(--accent); color: white; text-decoration: none; }
         .btn-google { background: white; color: #444; border: 1px solid #ddd; width: 100%; }
-
         .button-group { display: flex; gap: 10px; margin-top: 10px; }
         .button-group button, .button-group a { flex: 1; }
-
-        footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); line-height: 1.6; }
-        .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
-        
+        footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); }
         #auth-section, #name-section, #selection-section, #loader { display: none; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -39,19 +29,17 @@
 </head>
 <body>
 
-<header>
-    <h1>BỘ ĐỀ TRẮC NGHIỆM AN TOÀN ĐIỆN VSIP 2026</h1>
-</header>
+<header><h1>BỘ ĐỀ TRẮC NGHIỆM AN TOÀN ĐIỆN VSIP 2026</h1></header>
 
 <div class="main-content">
     <div class="card">
         <div id="loader" style="display: block; text-align: center;">
             <div class="spinner"></div>
-            <p id="loader-text" style="color:#666">Đang xác thực tài khoản...</p>
+            <p style="color:#666">Đang tải dữ liệu hệ thống...</p>
         </div>
 
         <div id="auth-section" style="text-align: center;">
-            <h3 style="margin:0 0 20px 0">Yêu cầu đăng nhập</h3>
+            <h3 style="margin-bottom:20px">Yêu cầu đăng nhập</h3>
             <button class="btn btn-google" id="loginBtn">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="20">
                 Đăng nhập với Google
@@ -59,7 +47,7 @@
         </div>
 
         <div id="name-section">
-            <h3 style="margin:0 0 15px 0; color: var(--primary-blue);">Thông tin cá nhân</h3>
+            <h3 style="color: var(--primary-blue); margin-bottom:15px">Thông tin cá nhân</h3>
             <label>Họ và tên:</label>
             <input type="text" id="userName" placeholder="Nhập họ tên...">
             <label>Bộ phận công tác:</label>
@@ -69,8 +57,8 @@
 
         <div id="selection-section">
             <div class="user-welcome">
-                <p>Nhân viên: <span id="displayName" style="color: var(--accent);">...</span></p>
-                <p>Bộ phận: <span id="displayDept" style="color: var(--primary-blue);">...</span></p>
+                <p>Nhân viên: <span id="displayName" style="color: var(--accent); font-weight:bold">...</span></p>
+                <p>Bộ phận: <span id="displayDept" style="color: var(--primary-blue); font-weight:bold">...</span></p>
                 <button id="logoutBtn" style="background:none; border:none; color:red; cursor:pointer; font-size:11px; padding:0; text-decoration: underline; margin-top:5px;">Đăng xuất</button>
             </div>
 
@@ -112,7 +100,7 @@
 
 <footer>
     <div>Nhóm biên soạn bộ đề trắc nghiệm An toàn điện VDC @2026</div>
-    <div class="footer-line-2">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882 - email: deptc.gvatvsld@gmail.com</div>
+    <div style="font-weight:600; color:var(--primary-blue); margin-top:5px;">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882</div>
 </footer>
 
 <script type="module">
@@ -133,75 +121,45 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
-
     setPersistence(auth, browserLocalPersistence);
 
     const sections = { loader: 'loader', auth: 'auth-section', name: 'name-section', selection: 'selection-section' };
-    function show(id) { 
-        Object.values(sections).forEach(s => document.getElementById(s).style.display = 'none'); 
-        document.getElementById(id).style.display = 'block'; 
-    }
+    function show(id) { Object.values(sections).forEach(s => document.getElementById(s).style.display = 'none'); document.getElementById(id).style.display = 'block'; }
 
-    let isLoaded = false;
-    setTimeout(() => {
-        if (!isLoaded) {
-            if (auth.currentUser) checkUserData(auth.currentUser);
-            else show('auth');
-        }
-    }, 4000);
-
+    // Cơ chế khôi phục dữ liệu nếu treo
     onAuthStateChanged(auth, async (user) => {
-        if (!user) { show('auth'); isLoaded = true; return; }
-        await checkUserData(user);
-    });
-
-    async function checkUserData(user) {
+        if (!user) { show('auth'); return; }
+        show('loader');
         try {
             const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists()) {
+            if (userDoc.exists() && userDoc.data().fullName) {
                 const data = userDoc.data();
                 document.getElementById('displayName').innerText = data.fullName;
-                document.getElementById('displayDept').innerText = data.department;
+                document.getElementById('displayDept').innerText = data.department || "N/A";
                 show('selection');
-            } else {
-                show('name');
-            }
-            isLoaded = true;
+            } else { show('name'); }
         } catch (e) { show('auth'); }
-    }
+    });
 
     document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
-
     document.getElementById('saveNameBtn').onclick = async () => {
         const n = document.getElementById('userName').value.trim();
         const d = document.getElementById('userDept').value.trim();
         if (n.length < 3) return alert("Vui lòng nhập tên!");
         show('loader');
         try {
-            await setDoc(doc(db, "users", auth.currentUser.uid), { fullName: n, department: d, email: auth.currentUser.email, updatedAt: new Date().toISOString() });
-            document.getElementById('displayName').innerText = n;
-            document.getElementById('displayDept').innerText = d;
-            show('selection');
+            await setDoc(doc(db, "users", auth.currentUser.uid), { fullName: n, department: d, email: auth.currentUser.email, updatedAt: new Date().toISOString() }, { merge: true });
+            location.reload(); // Tải lại để nạp quyền admin nếu có
         } catch (e) { alert("Lỗi: " + e.message); show('name'); }
     };
 
-    document.getElementById('btnGoGopy').onclick = () => {
-        const name = document.getElementById('displayName').innerText;
-        window.location.href = `gopy.html?name=${encodeURIComponent(name)}`;
-    };
-
+    document.getElementById('btnGoGopy').onclick = () => { window.location.href = `gopy.html?name=${encodeURIComponent(document.getElementById('displayName').innerText)}`; };
     const levelSelect = document.getElementById('level');
-    levelSelect.onchange = () => {
-        document.getElementById('topic-container').style.display = (['3/5', '4/5', '5/5'].includes(levelSelect.value)) ? 'block' : 'none';
-    };
-
+    levelSelect.onchange = () => { document.getElementById('topic-container').style.display = (['3/5', '4/5', '5/5'].includes(levelSelect.value)) ? 'block' : 'none'; };
     document.getElementById('quizForm').onsubmit = (e) => {
         e.preventDefault();
-        const name = document.getElementById('displayName').innerText;
-        const dept = document.getElementById('displayDept').innerText;
-        window.location.href = `test.html?level=${levelSelect.value}&topic=${document.getElementById('topic').value}&name=${encodeURIComponent(name)}&dept=${encodeURIComponent(dept)}`;
+        window.location.href = `test.html?level=${levelSelect.value}&topic=${document.getElementById('topic').value}&name=${encodeURIComponent(document.getElementById('displayName').innerText)}&dept=${encodeURIComponent(document.getElementById('displayDept').innerText)}`;
     };
-
     document.getElementById('logoutBtn').onclick = () => { if(confirm("Đăng xuất?")) signOut(auth); };
 </script>
 </body>
