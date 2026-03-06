@@ -3,39 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sát hạch An toàn điện VSIP 2026 - v4.5</title>
+    <title>Sát hạch An toàn điện VSIP 2026 - v4.6</title>
     <style>
         :root { --primary-blue: #004a99; --accent: #f37021; --success: #28a745; --danger: #dc3545; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
+        
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); -webkit-tap-highlight-color: transparent; }
+        
+        /* Header đồng bộ index.html */
         header { background: var(--primary-blue); color: white; padding: 25px 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
         header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
-        .container { flex: 1; max-width: 800px; margin: 20px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
-        .quiz-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
-        .meta-info { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; align-items: center; }
-        .badge { background: #eef2f6; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--primary-blue); border: 1px solid #d1d9e6; }
-        .q-count-badge { margin-left: auto; background: var(--primary-blue); color: white; border: none; }
-        .question-text { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; line-height: 1.5; text-align: justify; }
+
+        .container { flex: 1; max-width: 1200px; margin: 20px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
+
+        /* Layout 2 cột cho Desktop */
+        .layout-wrapper { display: flex; flex-direction: column; gap: 20px; }
+        
+        .quiz-main { flex: 2; } /* Cột trái 2/3 */
+        .quiz-sidebar { flex: 1; } /* Cột phải 1/3 */
+
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        
+        /* Meta info badges */
+        .meta-info { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+        .badge { background: #eef2f6; padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--primary-blue); border: 1px solid #d1d9e6; width: 100%; box-sizing: border-box; }
+        .q-count-badge { background: var(--primary-blue); color: white; border: none; text-align: center; font-size: 1.1rem; }
+
+        .question-text { font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; line-height: 1.5; text-align: justify; }
         .q-num-label { color: var(--accent); margin-right: 5px; }
-        .opt { padding: 16px; border: 2px solid #ddd; border-radius: 10px; cursor: pointer; transition: 0.2s; font-size: 1.05rem; background: #fff; line-height: 1.4; display: flex; margin-bottom: 10px; }
+        
+        .opt { padding: 16px; border: 2px solid #ddd; border-radius: 10px; cursor: pointer; transition: 0.2s; font-size: 1.05rem; background: #fff; line-height: 1.4; display: flex; margin-bottom: 12px; }
         .opt.selected { background: #e7f1ff; border-color: var(--primary-blue); font-weight: 600; box-shadow: inset 0 0 0 1px var(--primary-blue); }
         .opt.correct { background: #e6ffed !important; border-color: var(--success) !important; color: #155724; font-weight: 700; }
         .opt.wrong { background: #fff5f5 !important; border-color: var(--danger) !important; color: #721c24; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; }
+
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 15px; border-top: 1px solid #eee; }
         .btn-group-main { grid-column: 1 / span 2; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        
         button { padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; display: flex; justify-content: center; align-items: center; }
         .btn-blue { background: var(--primary-blue); color: white; }
         .btn-orange { background: var(--accent); color: white; }
         .btn-gray { background: #6c757d; color: white; }
-        .support-panel { margin-top: 20px; background: #fff9f1; border-left: 6px solid var(--accent); padding: 20px; border-radius: 4px; display: none; }
-        .quote-box { background: white; padding: 15px; border-radius: 6px; border: 1px solid #ffe0b2; font-style: italic; margin-top: 10px; color: #5d4037; font-size: 0.9rem; }
+
+        /* Panel hỗ trợ cố định bên phải trên Desktop */
+        .support-panel { background: #fff9f1; border-left: 6px solid var(--accent); padding: 20px; border-radius: 8px; }
+        .quote-box { background: white; padding: 15px; border-radius: 6px; border: 1px solid #ffe0b2; font-style: italic; margin-top: 10px; color: #5d4037; font-size: 0.95rem; }
+        
         .feedback-area { position: relative; margin-top: 15px; }
-        textarea { width: 100%; height: 100px; border-radius: 8px; padding: 12px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; font-size: 1rem; resize: none; transition: 0.3s; }
-        textarea:focus { border-color: var(--accent); outline: none; background: #fff; }
+        textarea { width: 100%; height: 120px; border-radius: 8px; padding: 12px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; font-size: 1rem; resize: none; transition: 0.3s; }
         #save-status { position: absolute; bottom: 8px; right: 12px; font-size: 11px; color: #888; font-style: italic; }
+
+        /* Mobile specific Toggle */
+        #mobile-toggle-btn { display: none; margin-bottom: 10px; width: 100%; }
+
         footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); line-height: 1.6; margin-top: auto; }
         .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Spinner nạp dữ liệu */
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* MEDIA QUERIES - Xử lý 2 cột */
+        @media (min-width: 992px) {
+            .layout-wrapper { flex-direction: row; align-items: flex-start; }
+            .quiz-sidebar { position: sticky; top: 120px; }
+            #mobile-toggle-btn { display: none !important; }
+            #support-container { display: block !important; } /* Desktop luôn hiện sidebar */
+        }
+
+        @media (max-width: 991px) {
+            header h1 { font-size: 1.2rem; }
+            .card { padding: 15px; }
+            #mobile-toggle-btn { display: flex; }
+            #support-container { display: none; } /* Mobile dùng toggle như cũ */
+        }
     </style>
 </head>
 <body>
@@ -47,42 +87,54 @@
 <div class="container">
     <div id="loading" style="text-align:center; padding:100px 20px;">
         <div class="spinner"></div>
-        <p id="loading-msg">Đang đồng bộ dữ liệu...</p>
+        <p id="loading-msg">Đang đồng bộ dữ liệu hệ thống...</p>
     </div>
     
     <div id="quiz-area" style="display:none;">
-        <div class="quiz-card">
-            <div class="meta-info">
-                <span id="badge-name" class="badge" style="background: #e1f5fe;">...</span>
-                <span id="badge-lvl" class="badge">Bậc: --</span>
-                <span id="q-count" class="badge q-count-badge">1/--</span>
-            </div>
+        <div class="layout-wrapper">
+            
+            <div class="quiz-main">
+                <div class="card">
+                    <div id="q-instruction" style="font-size:12px; font-weight:800; text-transform:uppercase; margin-bottom:10px; color:var(--accent)">...</div>
+                    <div id="q-text" class="question-text"></div>
+                    <div id="options"></div>
 
-            <div id="q-instruction" style="font-size:12px; font-weight:800; text-transform:uppercase; margin-bottom:10px; color:var(--accent)">...</div>
-            <div id="q-text" class="question-text"></div>
-            <div id="options"></div>
-
-            <div class="controls">
-                <button class="btn-gray" onclick="window.location.href='index.html'" style="grid-column: 1 / span 2;">« Về trang chủ</button>
-                <div class="btn-group-main">
-                    <button class="btn-gray" onclick="move(-1)">Trước</button>
-                    <button class="btn-blue" onclick="checkAnswer()">Kiểm tra</button>
-                    <button class="btn-gray" onclick="move(1)">Tiếp »</button>
-                </div>
-                <button class="btn-orange" onclick="toggleSupport()" style="grid-column: 1 / span 2;">Xem Căn cứ & Góp ý</button>
-            </div>
-
-            <div id="support-panel" class="support-panel">
-                <p><strong>Đáp án đúng:</strong> <span id="ans-label" style="color: var(--success); font-weight: 800; font-size: 1.1rem;"></span></p>
-                <p><strong>Căn cứ:</strong> <span id="basis-label"></span></p>
-                <div class="quote-box" id="quote-label"></div>
-                
-                <div class="feedback-area">
-                    <p style="font-weight:600; margin-bottom:8px; font-size:0.9rem;">Góp ý cải tiến câu hỏi (Tự động lưu):</p>
-                    <textarea id="feedback" placeholder="Nhập ý kiến của anh/chị tại đây..."></textarea>
-                    <div id="save-status"></div>
+                    <div class="controls">
+                        <button class="btn-gray" onclick="window.location.href='index.html'" style="grid-column: 1 / span 2;">« Về trang chủ</button>
+                        <div class="btn-group-main">
+                            <button class="btn-gray" onclick="move(-1)">Trước</button>
+                            <button class="btn-blue" onclick="checkAnswer()">Kiểm tra</button>
+                            <button class="btn-gray" onclick="move(1)">Tiếp »</button>
+                        </div>
+                        <button id="mobile-toggle-btn" class="btn-orange" onclick="toggleSupport()">Xem Giải thích & Góp ý</button>
+                    </div>
                 </div>
             </div>
+
+            <div class="quiz-sidebar">
+                <div class="card">
+                    <div class="meta-info">
+                        <div id="q-count" class="badge q-count-badge">Câu 1/--</div>
+                        <div class="badge">Học viên: <span id="badge-name">...</span></div>
+                        <div id="badge-lvl" class="badge">Bậc: --</div>
+                    </div>
+
+                    <div id="support-container">
+                        <div class="support-panel">
+                            <p><strong>Đáp án đúng:</strong> <span id="ans-label" style="color: var(--success); font-weight: 800; font-size: 1.1rem;"></span></p>
+                            <p><strong>Căn cứ:</strong> <span id="basis-label"></span></p>
+                            <div class="quote-box" id="quote-label"></div>
+                            
+                            <div class="feedback-area">
+                                <p style="font-weight:600; margin-bottom:8px; font-size:0.9rem; color:var(--primary-blue)">Góp ý cải tiến câu này:</p>
+                                <textarea id="feedback" placeholder="Hệ thống tự động lưu khi anh/chị nhập..."></textarea>
+                                <div id="save-status"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -122,7 +174,7 @@
     let isMultipleChoice = false;
     let currentUser = null;
     let saveTimeout = null;
-    let isSupportPanelOpen = false; // Biến trạng thái bảng hỗ trợ
+    let isSupportPanelOpen = false; 
 
     onAuthStateChanged(auth, (user) => {
         if (user) { currentUser = user; load(); }
@@ -132,7 +184,6 @@
     async function load() {
         if (!levelParam) return document.getElementById('loading-msg').innerText = "Thiếu thông tin bậc!";
         try {
-            document.getElementById('badge-name').innerText = userName;
             const levelStr = String(levelParam);
             const qRef = collection(db, "questions");
             const q = query(qRef, where("level", "in", [levelStr, "Bậc " + levelStr, levelStr.replace("Bậc ", "")]));
@@ -143,12 +194,12 @@
             if (topicIdx !== "0") {
                 const searchStr = "Chuyên đề " + topicIdx;
                 questions = pool.filter(item => (item.category || "").toString().includes(searchStr));
-                if (questions.length === 0) questions = pool.filter(item => (item.category || "").toString().includes("Kiến thức chung"));
             } else { questions = pool; }
             
             questions.sort(() => Math.random() - 0.5);
             document.getElementById('loading').style.display = 'none';
             document.getElementById('quiz-area').style.display = 'block';
+            document.getElementById('badge-name').innerText = userName;
             document.getElementById('badge-lvl').innerText = "Bậc: " + levelStr;
             render();
         } catch (e) { document.getElementById('loading-msg').innerText = "Lỗi: " + e.message; }
@@ -160,11 +211,7 @@
         isMultipleChoice = correctStr.length > 1;
 
         document.getElementById('q-instruction').innerText = isMultipleChoice ? "Chọn nhiều đáp án đúng" : "Hãy chọn đáp án đúng nhất";
-        
-        // CẬP NHẬT: Không còn mặc định display = 'none'. Trạng thái dựa trên biến isSupportPanelOpen
-        document.getElementById('support-panel').style.display = isSupportPanelOpen ? 'block' : 'none';
-        
-        document.getElementById('q-count').innerText = `${curIdx + 1}/${questions.length}`;
+        document.getElementById('q-count').innerText = `Câu ${curIdx + 1}/${questions.length}`;
         document.getElementById('q-text').innerHTML = `<span class="q-num-label">(Câu ${q.questionId})</span> ${q.content}`;
         document.getElementById('feedback').value = q.tempFeedback || "";
         document.getElementById('save-status').innerText = "";
@@ -178,9 +225,13 @@
         document.getElementById('ans-label').innerText = q.correctAnswer;
         document.getElementById('basis-label').innerText = q.newBasis || "Quy chuẩn ATĐ.";
         document.getElementById('quote-label').innerText = q.quote || "...";
+        
+        // Reset trạng thái hiển thị trên mobile
+        if (window.innerWidth < 992 && !isSupportPanelOpen) {
+            document.getElementById('support-container').style.display = 'none';
+        }
     }
 
-    // Logic Tự động lưu góp ý
     document.getElementById('feedback').oninput = function() {
         const val = this.value;
         questions[curIdx].tempFeedback = val;
@@ -221,11 +272,9 @@
 
     window.move = (d) => { if (curIdx + d >= 0 && curIdx + d < questions.length) { curIdx += d; render(); window.scrollTo(0, 0); } }
     
-    // CẬP NHẬT: Hàm toggleSupport giờ đây lưu trạng thái vào biến toàn cục
     window.toggleSupport = () => { 
         isSupportPanelOpen = !isSupportPanelOpen;
-        const p = document.getElementById('support-panel');
-        p.style.display = isSupportPanelOpen ? 'block' : 'none'; 
+        document.getElementById('support-container').style.display = isSupportPanelOpen ? 'block' : 'none'; 
     }
 </script>
 </body>
