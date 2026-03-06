@@ -5,108 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sát hạch An toàn điện VSIP 2026</title>
     <style>
-        :root { --primary-blue: #004a99; --accent-orange: #f37021; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); }
-        
+        :root { --primary-blue: #004a99; --accent: #f37021; --bg: #f4f7f9; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
         header { background: var(--primary-blue); color: white; padding: 25px 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
-
+        header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; font-weight: 700; }
         .main-content { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .card { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; min-height: 200px; }
-
-        .user-welcome { margin-bottom: 20px; padding: 15px; background: #eef6ff; border-radius: 8px; border-left: 5px solid var(--primary-blue); }
-        .user-welcome p { margin: 0; font-weight: 600; color: var(--primary-blue); font-size: 1rem; line-height: 1.5; }
-
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--primary-blue); font-size: 0.95rem; }
-        input[type="text"], select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; box-sizing: border-box; outline: none; transition: 0.3s; }
-        input[type="text"]:focus, select:focus { border-color: var(--primary-blue); background: #fff; }
-
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+        .card { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--primary-blue); }
+        input[type="text"], select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin-bottom: 20px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-google { background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-primary { background: var(--primary-blue); color: white; margin-top: 10px; }
-        .btn-primary:hover { background: #003366; }
-
+        .btn-primary { background: var(--primary-blue); color: white; }
         footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); line-height: 1.6; }
         .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
-
-        #auth-section, #name-section, #selection-section { display: none; }
-        #topic-container { display: none; }
-        
-        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+        #auth-section, #name-section, #selection-section, #loader { display: none; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>BỘ ĐỀ TRẮC NGHIỆM AN TOÀN ĐIỆN VSIP 2026</h1>
-</header>
+<header><h1>BỘ ĐỀ TRẮC NGHIỆM AN TOÀN ĐIỆN VSIP 2026</h1></header>
 
 <div class="main-content">
     <div class="card">
-        <div id="loader" style="text-align: center;">
-            <div class="loading-spinner"></div>
-            <p style="color:#666">Đang kiểm tra thông tin...</p>
-        </div>
+        <div id="loader" style="text-align: center;"><div class="spinner"></div><p>Đang tải dữ liệu...</p></div>
 
         <div id="auth-section" style="text-align: center;">
-            <h3 style="margin-top:0">Đăng nhập hệ thống</h3>
-            <p style="color:#666; font-size: 0.95rem; margin-bottom: 25px;">Vui lòng sử dụng Gmail để bắt đầu làm bài</p>
+            <h3>Yêu cầu đăng nhập</h3>
             <button class="btn btn-google" id="loginBtn">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="20">
-                Đăng nhập với Google
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="20"> Đăng nhập với Google
             </button>
         </div>
 
         <div id="name-section">
-            <h3 style="margin-top:0; color: var(--primary-blue);">Thông tin cá nhân</h3>
-            <p style="font-size: 0.9rem; color: #666;">Cung cấp thông tin để lưu kết quả kiểm tra.</p>
-            
-            <label for="userName">Họ và tên đầy đủ:</label>
-            <input type="text" id="userName" placeholder="VD: Trần Công Đẹp">
-            
-            <label for="userDept">Bộ phận công tác:</label>
-            <input type="text" id="userDept" placeholder="VD: Phòng Kỹ thuật - VDC">
-            
-            <button class="btn btn-primary" id="saveNameBtn">Xác nhận & Tiếp tục</button>
+            <h3 style="color:var(--primary-blue)">Thông tin người kiểm tra</h3>
+            <label>Họ và tên đầy đủ:</label>
+            <input type="text" id="userName" placeholder="VD: Nguyễn Văn A">
+            <label>Bộ phận công tác:</label>
+            <input type="text" id="userDept" placeholder="VD: Phòng Kỹ thuật">
+            <button class="btn btn-primary" id="saveNameBtn">Xác nhận</button>
         </div>
 
         <div id="selection-section">
-            <div class="user-welcome">
-                <p>Nhân viên: <span id="displayName" style="color: var(--accent-orange);">...</span></p>
-                <p>Bộ phận: <span id="displayDept" style="color: var(--primary-blue);">...</span></p>
-                <button id="logoutBtn" style="background:none; border:none; color:red; cursor:pointer; font-size:11px; padding:0; text-decoration: underline; margin-top:5px;">Đăng xuất</button>
-            </div>
-
+            <p style="font-weight:bold">Nhân viên: <span id="displayName" style="color:var(--accent)"></span></p>
+            <p style="font-weight:bold">Bộ phận: <span id="displayDept" style="color:var(--primary-blue)"></span></p>
             <form id="quizForm">
-                <label for="level">Chọn bậc an toàn điện:</label>
+                <label>Bậc an toàn điện:</label>
                 <select id="level" required>
                     <option value="" disabled selected>-- Chọn bậc --</option>
-                    <option value="1/5">Bậc 1/5</option>
-                    <option value="2/5">Bậc 2/5</option>
-                    <option value="3/5">Bậc 3/5</option>
-                    <option value="4/5">Bậc 4/5</option>
-                    <option value="5/5">Bậc 5/5</option>
+                    <option value="1/5">Bậc 1/5</option><option value="2/5">Bậc 2/5</option>
+                    <option value="3/5">Bậc 3/5</option><option value="4/5">Bậc 4/5</option><option value="5/5">Bậc 5/5</option>
                 </select>
-
-                <div id="topic-container">
-                    <label for="topic">Chọn chuyên đề đào tạo:</label>
+                <div id="topic-container" style="display:none">
+                    <label>Chuyên đề:</label>
                     <select id="topic">
                         <option value="0">-- Tất cả chuyên đề --</option>
-                        <option value="1">Chuyên đề 1: Trạm biến áp 110/22kV</option>
+                        <option value="1">Chuyên đề 1: TBA 110/22kV</option>
                         <option value="2">Chuyên đề 2: Đường dây dẫn điện</option>
                         <option value="3">Chuyên đề 3: Điện mặt trời áp mái</option>
                         <option value="4">Chuyên đề 4: Hệ thống pin (BESS)</option>
                         <option value="5">Chuyên đề 5: Hạ thế văn phòng VSIP</option>
-                        <option value="6">Chuyên đề 6: Hệ thống SCADA và OCC</option>
+                        <option value="6">Chuyên đề 6: SCADA và OCC</option>
                         <option value="7">Chuyên đề 7: Nhà máy điện đến 22kV</option>
-                        <option value="8">Chuyên đề 8: Nhà máy xử lý nước thải</option>
-                        <option value="9">Chuyên đề 9: Nhà xưởng xây sẵn (PCCC)</option>
-                        <option value="10">Chuyên đề 10: Thi công & Nhà ở thấp tầng</option>
+                        <option value="8">Chuyên đề 8: Xử lý nước thải</option>
+                        <option value="9">Chuyên đề 9: Nhà xưởng & PCCC</option>
+                        <option value="10">Chuyên đề 10: Thi công & Nhà ở</option>
                     </select>
                 </div>
-
-                <button type="submit" class="btn btn-primary">Bắt đầu ôn tập</button>
+                <button type="submit" class="btn btn-primary">Bắt đầu làm bài</button>
+                <button type="button" id="logoutBtn" style="background:none; border:none; color:red; cursor:pointer; font-size:12px; margin-top:15px; text-decoration:underline">Đăng xuất</button>
             </form>
         </div>
     </div>
@@ -123,12 +91,12 @@
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
-        authDomain: "tavietnam-78ae8.firebaseapp.com",
-        projectId: "tavietnam-78ae8",
-        storageBucket: "tavietnam-78ae8.firebasestorage.app",
-        messagingSenderId: "670121705534",
-        appId: "1:670121705534:web:1027ad98550573ad37116f"
+        apiKey: "AIzaSyBPNk4J9npcClKFD0daia4W8nPwwg3bX_A",
+        authDomain: "vsiptest-bdbc5.firebaseapp.com",
+        projectId: "vsiptest-bdbc5",
+        storageBucket: "vsiptest-bdbc5.firebasestorage.app",
+        messagingSenderId: "1056019256354",
+        appId: "1:1056019256354:web:8f864b8b2edc4c9b1ca67b"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -136,86 +104,31 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    const sections = {
-        loader: document.getElementById('loader'),
-        auth: document.getElementById('auth-section'),
-        name: document.getElementById('name-section'),
-        selection: document.getElementById('selection-section')
-    };
-
-    function showSection(name) {
-        Object.values(sections).forEach(s => s.style.display = 'none');
-        sections[name].style.display = 'block';
-    }
+    const sections = { loader: document.getElementById('loader'), auth: document.getElementById('auth-section'), name: document.getElementById('name-section'), selection: document.getElementById('selection-section') };
+    function show(s) { Object.values(sections).forEach(x => x.style.display = 'none'); sections[s].style.display = 'block'; }
 
     onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            try {
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                const data = userDoc.data();
-                if (userDoc.exists() && data.fullName && data.department) {
-                    document.getElementById('displayName').innerText = data.fullName;
-                    document.getElementById('displayDept').innerText = data.department;
-                    showSection('selection');
-                } else {
-                    showSection('name');
-                }
-            } catch (error) {
-                alert("Lỗi kết nối Firebase.");
-                showSection('auth');
-            }
-        } else {
-            showSection('auth');
-        }
+        if (!user) return show('auth');
+        show('loader');
+        const d = await getDoc(doc(db, "users", user.uid));
+        if (d.exists() && d.data().fullName && d.data().department) {
+            document.getElementById('displayName').innerText = d.data().fullName;
+            document.getElementById('displayDept').innerText = d.data().department;
+            show('selection');
+        } else show('name');
     });
 
-    document.getElementById('loginBtn').onclick = () => {
-        signInWithPopup(auth, provider).catch(e => alert("Lỗi: " + e.message));
-    };
-
+    document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
     document.getElementById('saveNameBtn').onclick = async () => {
-        const name = document.getElementById('userName').value.trim();
-        const dept = document.getElementById('userDept').value.trim();
-        
-        if (name.length < 3 || dept.length < 2) {
-            return alert("Vui lòng nhập đầy đủ Họ tên và Bộ phận!");
-        }
-
-        sections.loader.style.display = 'block';
-        sections.name.style.display = 'none';
-
-        try {
-            await setDoc(doc(db, "users", auth.currentUser.uid), {
-                fullName: name,
-                department: dept,
-                email: auth.currentUser.email,
-                updateAt: new Date().toISOString()
-            });
-            // onAuthStateChanged sẽ tự động bắt lấy thông tin mới
-        } catch (e) {
-            alert("Lỗi khi lưu dữ liệu.");
-            showSection('name');
-        }
+        const n = document.getElementById('userName').value.trim();
+        const dp = document.getElementById('userDept').value.trim();
+        if (n && dp) await setDoc(doc(db, "users", auth.currentUser.uid), { fullName: n, department: dp, email: auth.currentUser.email });
+        else alert("Vui lòng nhập đủ thông tin!");
     };
 
-    const levelSelect = document.getElementById('level');
-    const topicContainer = document.getElementById('topic-container');
-    levelSelect.onchange = () => {
-        topicContainer.style.display = ['3/5', '4/5', '5/5'].includes(levelSelect.value) ? 'block' : 'none';
-    };
-
-    document.getElementById('quizForm').onsubmit = (e) => {
-        e.preventDefault();
-        const level = levelSelect.value;
-        const topic = document.getElementById('topic').value;
-        const name = document.getElementById('displayName').innerText;
-        const dept = document.getElementById('displayDept').innerText;
-        window.location.href = `test.html?level=${level}&topic=${topic}&name=${encodeURIComponent(name)}&dept=${encodeURIComponent(dept)}`;
-    };
-
-    document.getElementById('logoutBtn').onclick = () => {
-        if(confirm("Bạn muốn đăng xuất?")) signOut(auth);
-    };
+    document.getElementById('level').onchange = (e) => { document.getElementById('topic-container').style.display = ['3/5','4/5','5/5'].includes(e.target.value) ? 'block' : 'none'; };
+    document.getElementById('quizForm').onsubmit = (e) => { e.preventDefault(); window.location.href = `test.html?level=${document.getElementById('level').value}&topic=${document.getElementById('topic').value}&name=${encodeURIComponent(document.getElementById('displayName').innerText)}&dept=${encodeURIComponent(document.getElementById('displayDept').innerText)}`; };
+    document.getElementById('logoutBtn').onclick = () => signOut(auth);
 </script>
 </body>
 </html>
