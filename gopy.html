@@ -3,59 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch sử Góp ý - VSIP 2026</title>
+    <title>Sát hạch An toàn điện VSIP 2026 - v3.2</title>
     <style>
-        :root { --primary: #004a99; --accent: #f37021; --bg: #f4f7f9; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
-        header { background: var(--primary); color: white; padding: 20px; text-align: center; }
-        .container { flex: 1; max-width: 1000px; margin: 25px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        .role-badge { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; }
-        .admin-mode { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
-        .user-mode { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+        :root { 
+            --primary-blue: #004a99; 
+            --accent-orange: #f37021; 
+            --success: #28a745; 
+            --danger: #dc3545; 
+            --bg-color: #f4f7f9; 
+            --text-main: #1a1a1a;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+            color: var(--text-main);
+        }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; padding: 12px; background: #f8f9fa; color: var(--primary); border-bottom: 2px solid #eee; }
-        td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: top; font-size: 0.9rem; }
-        .q-box { background: #f0f7ff; padding: 8px; border-radius: 4px; font-size: 0.8rem; color: #555; margin-top: 5px; border-left: 3px solid var(--primary); }
+        header { background: var(--primary-blue); color: white; padding: 20px 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 1.4rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+
+        .container { flex: 1; max-width: 900px; margin: 20px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
+        .quiz-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); position: relative; }
         
-        #auth-section { text-align: center; padding: 100px 20px; }
-        .btn-google { background: white; border: 1px solid #ddd; padding: 12px 25px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-weight: bold; }
-        footer { background: #eef2f6; padding: 20px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary); margin-top: auto; }
+        .meta-info { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; align-items: center; }
+        .badge { background: #eef2f6; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--primary-blue); border: 1px solid #d1d9e6; }
+        .q-progress { margin-left: auto; background: var(--primary-blue); color: white; border: none; }
+
+        #q-instruction {
+            display: inline-block;
+            margin-bottom: 15px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            padding: 5px 12px;
+            border-radius: 4px;
+        }
+
+        .question-text { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; line-height: 1.5; color: #1a1a1a; text-align: justify; }
+        
+        .options-grid { display: flex; flex-direction: column; gap: 10px; }
+        .opt { 
+            padding: 16px; 
+            border: 2px solid #e0e6ed; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            font-size: 1.05rem; 
+            background: #fff; 
+            line-height: 1.4;
+            display: flex;
+            align-items: flex-start;
+        }
+        .opt:hover { background: #f0f7ff; border-color: var(--primary-blue); }
+        .opt.selected { background: #e7f1ff; border-color: var(--primary-blue); font-weight: 600; box-shadow: inset 0 0 0 1px var(--primary-blue); }
+        .opt.correct { background: #e6ffed !important; border-color: var(--success) !important; color: #155724; font-weight: 700; }
+        .opt.wrong { background: #fff5f5 !important; border-color: var(--danger) !important; color: #721c24; }
+
+        .controls { display: flex; flex-wrap: wrap; justify-content: space-between; margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; gap: 8px; }
+        button { padding: 12px 18px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
+        
+        .btn-gray { background: #6c757d; color: white; }
+        .btn-blue { background: var(--primary-blue); color: white; }
+        .btn-orange { background: var(--accent-orange); color: white; }
+        .btn-back { background: #444; color: white; }
+
+        .support-panel { margin-top: 20px; background: #fff9f1; border-left: 6px solid var(--accent-orange); padding: 20px; border-radius: 4px; display: none; animation: fadeIn 0.3s; }
+        .quote-box { background: white; padding: 15px; border-radius: 6px; border: 1px solid #ffe0b2; font-style: italic; margin-top: 10px; color: #5d4037; font-size: 0.9rem; }
+        
+        textarea { width: 100%; height: 80px; margin-top: 15px; border-radius: 6px; padding: 12px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; font-size: 0.95rem; }
+
+        footer { background: #eef2f6; color: #444; padding: 20px 10px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); line-height: 1.6; }
+        .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        #loading { text-align: center; padding: 80px 20px; font-weight: bold; color: var(--primary-blue); }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<header><h1>LỊCH SỬ GÓP Ý CẢI TIẾN</h1></header>
+<header>
+    <h1>BỘ ĐỀ TRẮC NGHIỆM AN TOÀN ĐIỆN VSIP 2026</h1>
+</header>
 
 <div class="container">
-    <div id="auth-section">
-        <p>Vui lòng đăng nhập để xem lịch sử góp ý của anh/chị.</p>
-        <button class="btn-google" id="loginBtn">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="20"> Đăng nhập với Google
-        </button>
+    <div id="loading">
+        <div class="spinner"></div>
+        <p id="status-text">Đang tải câu hỏi...</p>
     </div>
-
-    <div id="main-content" style="display:none">
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div id="role-display"></div>
-                <button onclick="location.href='index.html'" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight:bold;">« Về trang chủ</button>
+    
+    <div id="quiz-area" style="display:none;">
+        <div class="quiz-card">
+            <div class="meta-info">
+                <span id="badge-name" class="badge" style="background: #e1f5fe;">...</span>
+                <span id="badge-lvl" class="badge">Bậc: --</span>
+                <span id="badge-topic" class="badge">Chuyên đề: --</span>
+                <span id="q-count" class="badge q-progress">Câu 1/--</span>
             </div>
-            
-            <h2 id="title-text" style="color:var(--primary); margin-top:10px;">Đang tải dữ liệu...</h2>
-            
-            <div id="table-area" style="overflow-x:auto">
-                <table>
-                    <thead>
-                        <tr>
-                            <th id="col-sender" style="width:150px">Người gửi</th>
-                            <th>Nội dung góp ý</th>
-                            <th style="width:150px">Thời gian</th>
-                        </tr>
-                    </thead>
-                    <tbody id="data-body"></tbody>
-                </table>
+
+            <div id="q-instruction">Đang kiểm tra...</div>
+
+            <div id="q-text" class="question-text"></div>
+            <div id="options" class="options-grid"></div>
+
+            <div class="controls">
+                <button class="btn-back" onclick="goToIndex()">« Thay đổi đề</button>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn-gray" onclick="move(-1)">Trước</button>
+                    <button class="btn-blue" onclick="checkAnswer()">Kiểm tra</button>
+                    <button class="btn-orange" onclick="toggleSupport()">Hỗ trợ</button>
+                    <button class="btn-gray" onclick="move(1)">Tiếp »</button>
+                </div>
+            </div>
+
+            <div id="support-panel" class="support-panel">
+                <h3 style="margin-top:0; color:#af4c00; font-size:1rem; text-transform:uppercase;">Giải thích & Căn cứ</h3>
+                <p><strong>Đáp án đúng:</strong> <span id="ans-label" style="color: var(--success); font-weight: 800; font-size: 1.1rem;"></span></p>
+                <p><strong>Căn cứ:</strong> <span id="basis-label"></span></p>
+                <div class="quote-box">
+                    <strong>Trích dẫn văn bản:</strong> <br>
+                    <span id="quote-label"></span>
+                </div>
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ffd180;">
+                <p style="font-weight:600; font-size:0.85rem; margin-bottom:5px;">Ý kiến phản hồi cải tiến câu hỏi:</p>
+                <textarea id="feedback" placeholder="VD: Đáp án chưa chuẩn, lỗi font chữ..."></textarea>
+                <button class="btn-blue" style="margin-top:10px; font-size: 12px; padding: 8px 15px;" onclick="sendFeedback()">Gửi góp ý</button>
+                <button class="btn-gray" style="margin-top:10px; font-size: 12px; padding: 8px 15px; background:#6c757d" onclick="location.href='gopy.html'">Xem lịch sử góp ý</button>
             </div>
         </div>
     </div>
@@ -63,13 +142,13 @@
 
 <footer>
     <div>Nhóm biên soạn bộ đề trắc nghiệm An toàn điện VDC @2026</div>
-    <div style="font-weight:600; color:var(--primary); margin-top:5px;">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882</div>
+    <div class="footer-line-2">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882 - email: deptc.gvatvsld@gmail.com</div>
 </footer>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBPNk4J9npcClKFD0daia4W8nPwwg3bX_A",
@@ -83,74 +162,137 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
 
-    const ADMIN_EMAIL = "deptc.gvatvsld@gmail.com"; // Email quản trị của anh
+    const params = new URLSearchParams(window.location.search);
+    const level = params.get('level');
+    const topicIdx = params.get('topic');
+    const userName = decodeURIComponent(params.get('name') || "Thành viên");
+    const userDept = decodeURIComponent(params.get('dept') || "N/A");
+
+    let questions = [];
+    let curIdx = 0;
+    let isMultipleChoice = false;
+    let currentUser = null;
 
     onAuthStateChanged(auth, (user) => {
-        if (user) {
-            document.getElementById('auth-section').style.display = 'none';
-            document.getElementById('main-content').style.display = 'block';
-            renderView(user);
-        } else {
-            document.getElementById('auth-section').style.display = 'block';
-            document.getElementById('main-content').style.display = 'none';
-        }
+        currentUser = user;
+        if (user) load();
+        else document.getElementById('status-text').innerText = "Vui lòng đăng nhập từ trang chủ.";
     });
 
-    async function renderView(user) {
-        const isAdmin = (user.email === ADMIN_EMAIL);
-        const badge = document.getElementById('role-display');
-        const title = document.getElementById('title-text');
-        const colSender = document.getElementById('col-sender');
-        const body = document.getElementById('data-body');
-
-        badge.innerHTML = isAdmin ? '<span class="role-badge admin-mode">QUYỀN QUẢN TRỊ</span>' : '<span class="role-badge user-mode">DỮ LIỆU CÁ NHÂN</span>';
-        title.innerText = isAdmin ? "Tổng hợp tất cả góp ý hệ thống" : "Lịch sử góp ý của anh/chị";
-        colSender.style.display = isAdmin ? "table-cell" : "none";
-        body.innerHTML = '<tr><td colspan="3">Đang truy vấn dữ liệu...</td></tr>';
-
+    async function load() {
         try {
-            let q;
-            const ref = collection(db, "feedback");
-            
-            if (isAdmin) {
-                // Admin xem tất cả, sắp xếp mới nhất lên đầu
-                q = query(ref, orderBy("time", "desc"));
+            document.getElementById('badge-name').innerText = `${userName} (${userDept})`;
+            const qRef = collection(db, "questions");
+            const q = query(qRef, where("level", "in", [level, "Bậc " + level, level.replace("Bậc ", "")]));
+            const snap = await getDocs(q);
+            let pool = [];
+            snap.forEach(d => pool.push({id: d.id, ...d.data()}));
+
+            if (topicIdx && topicIdx !== "0") {
+                const searchStr = "Chuyên đề " + topicIdx;
+                questions = pool.filter(item => (item.category || "").toString().trim().includes(searchStr));
+                if (questions.length === 0) questions = pool.filter(item => (item.category || "").toString().includes("Kiến thức chung"));
             } else {
-                // Nhân viên chỉ xem của mình
-                q = query(ref, where("email", "==", user.email), orderBy("time", "desc"));
+                questions = pool;
             }
 
-            const snap = await getDocs(q);
-            body.innerHTML = '';
-
-            if (snap.empty) {
-                body.innerHTML = '<tr><td colspan="3" style="text-align:center">Chưa có dữ liệu góp ý nào.</td></tr>';
+            if (questions.length === 0) {
+                document.getElementById('status-text').innerHTML = "<span style='color:red'>Dữ liệu bậc này chưa có!</span>";
                 return;
             }
 
-            snap.forEach(doc => {
-                const d = doc.data();
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td style="display: ${isAdmin ? 'table-cell' : 'none'}">
-                        <strong>${d.user}</strong><br><small>${d.dept}</small>
-                    </td>
-                    <td>
-                        <div style="font-weight:600">"${d.feedback}"</div>
-                        <div class="q-box"><strong>Câu hỏi:</strong> ${d.qContent || 'N/A'}</div>
-                    </td>
-                    <td><small>${new Date(d.time).toLocaleString('vi-VN')}</small></td>
-                `;
-                body.appendChild(row);
-            });
+            questions.sort(() => Math.random() - 0.5);
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('quiz-area').style.display = 'block';
+            document.getElementById('badge-lvl').innerText = "Bậc: " + level;
+            document.getElementById('badge-topic').innerText = (topicIdx === "0") ? "Kiến thức chung" : ("Chuyên đề " + topicIdx);
+            render();
         } catch (e) {
-            body.innerHTML = `<tr><td colspan="3" style="color:red">Lỗi: ${e.message}. <br>Lưu ý: Anh cần tạo Index cho trường 'email' trong Firebase Indexes nếu lọc cá nhân bị lỗi.</td></tr>`;
+            document.getElementById('status-text').innerText = "Lỗi: " + e.message;
         }
     }
 
-    document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
+    function render() {
+        const q = questions[curIdx];
+        const cleanAns = (q.correctAnswer || "").toString().replace(/[\s,]/g, "");
+        isMultipleChoice = cleanAns.length > 1;
+
+        const ins = document.getElementById('q-instruction');
+        ins.innerText = isMultipleChoice ? "Chọn nhiều đáp án đúng" : "Hãy chọn đáp án đúng nhất";
+        ins.style.color = isMultipleChoice ? "var(--accent-orange)" : "var(--primary-blue)";
+        ins.style.background = isMultipleChoice ? "#fff3e0" : "#eef6ff";
+
+        document.getElementById('support-panel').style.display = 'none';
+        document.getElementById('feedback').value = "";
+        document.getElementById('q-count').innerText = `Câu ${curIdx + 1}/${questions.length}`;
+        document.getElementById('q-text').innerText = q.content;
+        
+        const html = `
+            <div class="opt" data-val="A" onclick="handleSelect(this)">A. ${q.optionA}</div>
+            <div class="opt" data-val="B" onclick="handleSelect(this)">B. ${q.optionB}</div>
+            <div class="opt" data-val="C" onclick="handleSelect(this)">C. ${q.optionC}</div>
+            <div class="opt" data-val="D" onclick="handleSelect(this)">D. ${q.optionD}</div>
+        `;
+        document.getElementById('options').innerHTML = html;
+        document.getElementById('ans-label').innerText = q.correctAnswer;
+        document.getElementById('basis-label').innerText = q.newBasis || "Theo quy chuẩn ATĐ.";
+        document.getElementById('quote-label').innerText = q.quote || "Đang cập nhật...";
+    }
+
+    window.handleSelect = (el) => {
+        if (isMultipleChoice) el.classList.toggle('selected');
+        else {
+            document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected', 'correct', 'wrong'));
+            el.classList.add('selected');
+        }
+    }
+
+    window.checkAnswer = () => {
+        if (document.querySelectorAll('.opt.selected').length === 0) return alert("Vui lòng chọn đáp án!");
+        const correct = (questions[curIdx].correctAnswer || "").toString().replace(/[\s,]/g, "");
+        document.querySelectorAll('.opt').forEach(opt => {
+            const val = opt.getAttribute('data-val');
+            if (correct.includes(val)) opt.classList.add('correct');
+            else if (opt.classList.contains('selected')) opt.classList.add('wrong');
+        });
+    }
+
+    window.move = (dir) => {
+        if (curIdx + dir >= 0 && curIdx + dir < questions.length) {
+            curIdx += dir;
+            render();
+            window.scrollTo(0, 0);
+        }
+    }
+
+    window.toggleSupport = () => {
+        const p = document.getElementById('support-panel');
+        p.style.display = (p.style.display === 'block' ? 'none' : 'block');
+    }
+
+    window.goToIndex = () => { if(confirm("Quay lại trang chủ?")) window.location.href = 'index.html'; }
+
+    window.sendFeedback = async () => {
+        const msg = document.getElementById('feedback').value;
+        if (!msg.trim()) return alert("Vui lòng nhập nội dung!");
+        if (!currentUser) return alert("Vui lòng đăng nhập lại!");
+
+        try {
+            await addDoc(collection(db, "feedback"), {
+                qId: questions[curIdx].questionId || questions[curIdx].id || "N/A",
+                qContent: questions[curIdx].content || "",
+                user: userName,
+                dept: userDept,
+                email: currentUser.email,
+                feedback: msg,
+                time: new Date().toISOString()
+            });
+            alert("Đã ghi nhận góp ý. Cảm ơn anh!");
+            document.getElementById('feedback').value = "";
+            document.getElementById('support-panel').style.display = 'none';
+        } catch (e) { alert("Lỗi gửi: " + e.message); }
+    }
 </script>
 </body>
 </html>
