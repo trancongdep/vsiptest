@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sát hạch An toàn điện VSIP 2026 - v4.1</title>
+    <title>Sát hạch An toàn điện VSIP 2026 - v4.2</title>
     <style>
         :root { --primary: #004a99; --accent: #f37021; --success: #28a745; --danger: #dc3545; --bg: #f0f2f5; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; -webkit-tap-highlight-color: transparent; }
-        header { background: var(--primary); color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-        header h1 { margin: 0; font-size: 1.1rem; text-transform: uppercase; font-weight: 700; }
+        header { background: var(--primary); color: white; padding: 20px 10px; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        header h1 { margin: 0; font-size: 1.4rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
         .container { flex: 1; max-width: 800px; margin: 0 auto; padding: 15px; width: 100%; box-sizing: border-box; }
         .quiz-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .meta-info { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
@@ -28,17 +28,19 @@
         .support-panel { margin-top: 20px; background: #fff9f1; border-left: 5px solid var(--accent); padding: 15px; border-radius: 4px; display: none; }
         .quote-box { background: white; padding: 12px; border-radius: 6px; border: 1px solid #ffe0b2; font-style: italic; font-size: 0.9rem; margin-top: 10px; }
         footer { background: #eef2f6; padding: 20px 10px; text-align: center; font-size: 0.85rem; border-top: 3px solid var(--primary); }
-        @media (min-width: 768px) { header h1 { font-size: 1.5rem; } .controls { display: flex; justify-content: space-between; } .btn-group-main { display: flex; gap: 8px; } button { padding: 12px 20px; } }
+        @media (min-width: 768px) { header h1 { font-size: 1.6rem; } .controls { display: flex; justify-content: space-between; } .btn-group-main { display: flex; gap: 8px; } button { padding: 12px 20px; } }
     </style>
 </head>
 <body>
 
-<header><h1>SÁT HẠCH AN TOÀN ĐIỆN 2026</h1></header>
+<header>
+    <h1>BỘ ĐỀ TRẮC NGHIỆM AN TOÀN ĐIỆN VSIP 2026</h1>
+</header>
 
 <div class="container">
     <div id="loading" style="text-align:center; padding:50px;">
         <div style="border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
-        <p id="loading-msg">Đang chuẩn bị dữ liệu...</p>
+        <p id="loading-msg">Đang xác thực quyền truy cập...</p>
     </div>
 
     <div id="quiz-area" style="display:none;">
@@ -75,16 +77,15 @@
 </div>
 
 <footer>
-    <div>VDC Occupational Safety Training @2026</div>
-    <div style="color:var(--primary); font-weight:600; margin-top:5px;">Trần Công Đẹp - 0963.292.882</div>
+    <div>Nhóm biên soạn bộ đề trắc nghiệm An toàn điện VDC @2026</div>
+    <div style="color:var(--primary); font-weight:600; margin-top:5px;">Trần Công Đẹp - Phone: 0963.292.882</div>
 </footer>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Cấu hình Firebase chuẩn của anh
     const firebaseConfig = {
         apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
         authDomain: "tavietnam-78ae8.firebaseapp.com",
@@ -98,6 +99,9 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    // Cố định phiên đăng nhập trên trình duyệt
+    setPersistence(auth, browserLocalPersistence);
+
     const params = new URLSearchParams(window.location.search);
     const levelParam = params.get('level');
     const topicIdx = params.get('topic') || "0";
@@ -109,54 +113,49 @@
     let isMultipleChoice = false;
     let currentUser = null;
 
-    // Kiểm tra trạng thái đăng nhập
     onAuthStateChanged(auth, (user) => {
         if (user) {
             currentUser = user;
             load();
         } else {
-            document.getElementById('loading-msg').innerHTML = "Vui lòng đăng nhập để làm bài!<br><br><button onclick=\"location.href='index.html'\" class='btn-blue' style='margin:10px auto'>Quay lại trang chủ</button>";
+            // Chờ 2 giây để tránh lỗi nhảy trang do mạng chậm, nếu vẫn không thấy user mới báo lỗi
+            setTimeout(() => {
+                if (!auth.currentUser) {
+                    document.getElementById('loading-msg').innerHTML = "Phiên đăng nhập hết hạn!<br><br><button onclick=\"location.href='index.html'\" class='btn-blue' style='margin:10px auto'>Quay lại trang chủ để đăng nhập</button>";
+                } else {
+                    currentUser = auth.currentUser;
+                    load();
+                }
+            }, 2000);
         }
     });
 
     async function load() {
         if (!levelParam) { 
-            document.getElementById('loading-msg').innerHTML = "<b style='color:red'>Lỗi: Thiếu thông tin chọn Bậc!</b><br><br><button onclick=\"location.href='index.html'\" class='btn-gray' style='margin:10px auto'>Quay lại trang chủ</button>";
+            document.getElementById('loading-msg').innerHTML = "<b style='color:red'>Lỗi: Chưa chọn Bậc AT!</b><br><br><button onclick=\"location.href='index.html'\" class='btn-gray' style='margin:10px auto'>Quay lại trang chủ</button>";
             return; 
         }
         try {
             document.getElementById('badge-name').innerText = userName;
             const levelStr = String(levelParam);
             const levelClean = levelStr.replace("Bậc ", "");
-            
             const qRef = collection(db, "questions");
             const q = query(qRef, where("level", "in", [levelStr, "Bậc " + levelStr, levelClean]));
-            
             const snap = await getDocs(q);
             let pool = [];
-            snap.forEach(d => pool.push({dbId: d.id, ...d.data()}));
-            
+            snap.forEach(d => pool.push({questionId: d.id, ...d.data()}));
             if (topicIdx !== "0") {
                 const searchStr = "Chuyên đề " + topicIdx;
                 questions = pool.filter(item => (item.category || "").toString().includes(searchStr));
                 if (questions.length === 0) questions = pool.filter(item => (item.category || "").toString().includes("Kiến thức chung"));
-            } else { 
-                questions = pool; 
-            }
-
-            if (questions.length === 0) { 
-                document.getElementById('loading-msg').innerText = "Chưa có dữ liệu cho bậc này."; 
-                return; 
-            }
-
+            } else { questions = pool; }
+            if (questions.length === 0) { document.getElementById('loading-msg').innerText = "Chưa có dữ liệu cho bậc " + levelStr; return; }
             questions.sort(() => Math.random() - 0.5);
             document.getElementById('loading').style.display = 'none';
             document.getElementById('quiz-area').style.display = 'block';
             document.getElementById('badge-lvl').innerText = "Bậc: " + levelStr;
             render();
-        } catch (e) { 
-            document.getElementById('loading-msg').innerText = "Lỗi tải đề: " + e.message; 
-        }
+        } catch (e) { document.getElementById('loading-msg').innerText = "Lỗi hệ thống: " + e.message; }
     }
 
     function render() {
@@ -167,9 +166,7 @@
         document.getElementById('support-panel').style.display = 'none';
         document.getElementById('feedback').value = "";
         document.getElementById('q-count').innerText = `${curIdx + 1}/${questions.length}`;
-        
         document.getElementById('q-text').innerHTML = `<span class="q-num-label">(Câu ${q.questionId})</span> ${q.content}`;
-        
         document.getElementById('options').innerHTML = `
             <div class="opt" data-val="A" onclick="handleSelect(this)">A. ${q.optionA}</div>
             <div class="opt" data-val="B" onclick="handleSelect(this)">B. ${q.optionB}</div>
@@ -183,10 +180,7 @@
 
     window.handleSelect = (el) => {
         if (isMultipleChoice) el.classList.toggle('selected');
-        else { 
-            document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected', 'correct', 'wrong')); 
-            el.classList.add('selected'); 
-        }
+        else { document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected', 'correct', 'wrong')); el.classList.add('selected'); }
     }
 
     window.checkAnswer = () => {
@@ -200,7 +194,6 @@
     }
 
     window.move = (d) => { if (curIdx + d >= 0 && curIdx + d < questions.length) { curIdx += d; render(); window.scrollTo(0, 0); } }
-
     window.toggleSupport = () => { const p = document.getElementById('support-panel'); p.style.display = (p.style.display === 'block' ? 'none' : 'block'); }
 
     window.sendFeedback = async () => {
@@ -216,7 +209,7 @@
                 feedback: msg,
                 time: new Date().toISOString()
             });
-            alert("Gửi góp ý thành công!");
+            alert("Gửi thành công!");
             document.getElementById('feedback').value = "";
         } catch (e) { alert("Lỗi gửi góp ý: " + e.message); }
     }
