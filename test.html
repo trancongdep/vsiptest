@@ -3,57 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sát hạch VSIP 2026</title>
+    <title>Sát hạch An toàn điện VSIP 2026</title>
     <style>
-        :root { --primary: #004a99; --accent: #f37021; --success: #28a745; --danger: #dc3545; --bg: #f4f7f9; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
-        header { background: var(--primary); color: white; padding: 20px; text-align: center; }
-        .container { flex: 1; max-width: 900px; margin: 20px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
-        .quiz-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
-        .badge { background: #eef2f6; padding: 6px 12px; border-radius: 20px; font-size: 13px; color: var(--primary); border: 1px solid #d1d9e6; margin-right: 5px; }
-        .question-text { font-size: 1.3rem; font-weight: 700; margin: 20px 0; line-height: 1.5; }
-        .opt { padding: 15px; border: 2px solid #e0e6ed; border-radius: 10px; cursor: pointer; margin-bottom: 10px; }
-        .opt.selected { background: #e7f1ff; border-color: var(--primary); }
-        .opt.correct { background: #e6ffed !important; border-color: var(--success) !important; color: #155724; }
+        :root { 
+            --primary-blue: #004a99; 
+            --accent-orange: #f37021; 
+            --success: #28a745; 
+            --danger: #dc3545; 
+            --bg-color: #f4f7f9; 
+            --text-main: #1a1a1a;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+            color: var(--text-main);
+        }
+        
+        /* Header thống nhất */
+        header { background: var(--primary-blue); color: white; padding: 20px 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 1.5rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+
+        .container { flex: 1; max-width: 900px; margin: 25px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
+        
+        .quiz-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); position: relative; }
+        
+        .meta-info { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; align-items: center; }
+        .badge { background: #eef2f6; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--primary-blue); border: 1px solid #d1d9e6; }
+        .q-progress { margin-left: auto; background: var(--primary-blue); color: white; border: none; }
+
+        .question-text { font-size: 1.3rem; font-weight: 700; margin-bottom: 25px; line-height: 1.6; color: #1a1a1a; text-align: justify; }
+        
+        .options-grid { display: flex; flex-direction: column; gap: 12px; }
+        .opt { padding: 18px; border: 2px solid #e0e6ed; border-radius: 10px; cursor: pointer; transition: 0.2s; font-size: 1.1rem; background: #fff; line-height: 1.4; }
+        .opt:hover { background: #f0f7ff; border-color: var(--primary-blue); }
+        .opt.selected { background: #e7f1ff; border-color: var(--primary-blue); font-weight: 600; }
+        .opt.correct { background: #e6ffed !important; border-color: var(--success) !important; color: #155724; font-weight: 700; }
         .opt.wrong { background: #fff5f5 !important; border-color: var(--danger) !important; color: #721c24; }
-        .controls { display: flex; justify-content: space-between; margin-top: 25px; gap: 10px; }
-        button { padding: 12px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        /* Nút điều hướng */
+        .controls { display: flex; flex-wrap: wrap; justify-content: space-between; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; gap: 10px; }
+        button { padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        
         .btn-gray { background: #6c757d; color: white; }
-        .btn-blue { background: var(--primary); color: white; }
-        .btn-orange { background: var(--accent); color: white; }
-        .support-panel { margin-top: 20px; background: #fff9f1; border-left: 6px solid var(--accent); padding: 20px; display: none; }
-        footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary); }
+        .btn-blue { background: var(--primary-blue); color: white; }
+        .btn-orange { background: var(--accent-orange); color: white; }
+        .btn-back { background: #444; color: white; }
+
+        /* Panel Hỗ trợ */
+        .support-panel { margin-top: 20px; background: #fff9f1; border-left: 6px solid var(--accent-orange); padding: 20px; border-radius: 4px; display: none; animation: fadeIn 0.3s; }
+        .support-panel h3 { margin-top: 0; color: #af4c00; font-size: 1.1rem; text-transform: uppercase; border-bottom: 1px solid #ffe0b2; padding-bottom: 10px; }
+        .quote-box { background: white; padding: 15px; border-radius: 6px; border: 1px solid #ffe0b2; font-style: italic; margin-top: 10px; color: #5d4037; line-height: 1.5; font-size: 0.95rem; }
+        
+        textarea { width: 100%; height: 80px; margin-top: 15px; border-radius: 6px; padding: 12px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; }
+
+        /* Footer thống nhất */
+        footer { background: #eef2f6; color: #444; padding: 25px 15px; text-align: center; font-size: 0.95rem; border-top: 3px solid var(--primary-blue); line-height: 1.7; }
+        .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        #loading { text-align: center; padding: 100px; font-weight: bold; color: var(--primary-blue); font-size: 1.2rem; }
     </style>
 </head>
 <body>
 
-<header><h1>BỘ ĐỀ TRẮC NGHIỆM AN TOÀN ĐIỆN VSIP 2026</h1></header>
+<header>
+    <h1>BỘ ĐỀ TRẮC NGHIỆM AN TOÀN ĐIỆN VSIP 2026</h1>
+</header>
 
 <div class="container">
-    <div id="loading" style="text-align:center; padding:50px">Đang tải câu hỏi...</div>
-    <div id="quiz-area" style="display:none">
+    <div id="loading">
+        <div style="border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
+        Đang tải câu hỏi từ hệ thống...
+    </div>
+    
+    <div id="quiz-area" style="display:none;">
         <div class="quiz-card">
-            <div style="margin-bottom:15px">
-                <span id="u-info" class="badge"></span>
-                <span id="lvl-info" class="badge"></span>
-                <span id="tp-info" class="badge"></span>
-                <span id="q-count" class="badge" style="background:var(--primary); color:white; float:right"></span>
+            <div class="meta-info">
+                <span id="badge-name" class="badge" style="background: #e1f5fe;">Nhân viên: ...</span>
+                <span id="badge-lvl" class="badge">Bậc: --</span>
+                <span id="badge-topic" class="badge">Chuyên đề: --</span>
+                <span id="q-count" class="badge q-progress">Câu 1/--</span>
             </div>
+
             <div id="q-text" class="question-text"></div>
-            <div id="options"></div>
+            
+            <div id="options" class="options-grid"></div>
+
             <div class="controls">
-                <button class="btn-gray" onclick="window.location.href='index.html'">« Thay đổi đề</button>
-                <div style="display:flex; gap:8px">
+                <button class="btn-back" onclick="goToIndex()">« Thay đổi đề</button>
+                <div style="display:flex; gap:8px;">
                     <button class="btn-gray" onclick="move(-1)">Trước</button>
                     <button class="btn-blue" onclick="check()">Kiểm tra</button>
-                    <button class="btn-orange" onclick="toggle()">Hỗ trợ</button>
+                    <button class="btn-orange" onclick="toggleSupport()">Hỗ trợ</button>
                     <button class="btn-gray" onclick="move(1)">Tiếp »</button>
                 </div>
             </div>
-            <div id="support" class="support-panel">
-                <p><strong>Đáp án đúng:</strong> <span id="ans" style="color:var(--success); font-weight:bold"></span></p>
-                <p><strong>Căn cứ:</strong> <span id="basis"></span></p>
-                <div style="background:white; padding:10px; border:1px solid #ffe0b2; font-style:italic" id="quote"></div>
+
+            <div id="support-panel" class="support-panel">
+                <h3>Giải thích & Căn cứ pháp lý</h3>
+                <p><strong>Đáp án đúng:</strong> <span id="ans-label" style="color: var(--success); font-weight: 800; font-size: 1.2rem;"></span></p>
+                <p><strong>Căn cứ:</strong> <span id="basis-label"></span></p>
+                <div class="quote-box">
+                    <strong>Trích dẫn văn bản:</strong> <br>
+                    <span id="quote-label"></span>
+                </div>
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ffd180;">
+                <p style="font-weight: 600; font-size: 0.9rem;">Ý kiến phản hồi cải tiến câu hỏi:</p>
+                <textarea id="feedback" placeholder="Ghi nhận xét của bạn để chúng tôi cải thiện câu hỏi này..."></textarea>
+                <button class="btn-blue" style="margin-top:10px; font-size: 13px; padding: 8px 15px;" onclick="sendFeedback()">Gửi góp ý</button>
             </div>
         </div>
     </div>
@@ -61,12 +123,12 @@
 
 <footer>
     <div>Nhóm biên soạn bộ đề trắc nghiệm An toàn điện VDC @2026</div>
-    <div style="font-weight:600; color:var(--primary)">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882 - email: deptc.gvatvsld@gmail.com</div>
+    <div class="footer-line-2">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882 - email: deptc.gvatvsld@gmail.com</div>
 </footer>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBPNk4J9npcClKFD0daia4W8nPwwg3bX_A",
@@ -79,41 +141,141 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const params = new URLSearchParams(window.location.search);
-    const level = params.get('level'), topic = params.get('topic'), name = params.get('name'), dept = params.get('dept');
 
-    let questions = [], cur = 0, picked = null;
+    const params = new URLSearchParams(window.location.search);
+    const level = params.get('level');
+    const topicIdx = params.get('topic');
+    const userName = params.get('name') || "Thành viên";
+    const userDept = params.get('dept') || "N/A";
+
+    let questions = [];
+    let curIdx = 0;
+    let picked = null;
 
     async function load() {
-        const snap = await getDocs(query(collection(db, "questions"), where("level", "==", level)));
-        let pool = []; snap.forEach(d => pool.push(d.data()));
-        questions = (topic && topic !== "0") ? pool.filter(q => q.category === "Chuyên đề " + topic) : pool;
-        if (questions.length === 0) return document.getElementById('loading').innerText = "Không tìm thấy câu hỏi!";
-        questions.sort(() => Math.random() - 0.5);
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('quiz-area').style.display = 'block';
-        document.getElementById('u-info').innerText = `${name} - ${dept}`;
-        document.getElementById('lvl-info').innerText = "Bậc: " + level;
-        render();
+        try {
+            document.getElementById('badge-name').innerText = `${userName} (${userDept})`;
+            
+            // 1. Tải câu hỏi linh hoạt theo Bậc (tìm cả "1/5" và "Bậc 1/5")
+            const qRef = collection(db, "questions");
+            const q = query(qRef, where("level", "in", [level, "Bậc " + level, level.replace("Bậc ", "")]));
+            
+            const snap = await getDocs(q);
+            let pool = [];
+            snap.forEach(d => pool.push({id: d.id, ...d.data()}));
+
+            // 2. Lọc Chuyên đề tại máy khách (Client-side filtering) để đảm bảo độ chính xác
+            if (topicIdx && topicIdx !== "0") {
+                const targetTopic = "Chuyên đề " + topicIdx;
+                questions = pool.filter(item => {
+                    const cat = (item.category || "").toString().trim();
+                    return cat === targetTopic || cat === targetTopic.replace("Chuyên đề ", "Chuyên đề 0");
+                });
+                document.getElementById('badge-topic').innerText = "Chuyên đề " + topicIdx;
+            } else {
+                questions = pool;
+                document.getElementById('badge-topic').innerText = "Tất cả chuyên đề";
+            }
+
+            if (questions.length === 0) {
+                document.getElementById('loading').innerHTML = `
+                    <p style='color:red; font-weight:bold;'>KHÔNG TÌM THẤY CÂU HỎI PHÙ HỢP!</p>
+                    <p style='font-size:14px;'>Bậc: ${level} | Chuyên đề Index: ${topicIdx}</p>
+                    <button onclick='goToIndex()' class='btn-blue'>Quay lại trang chủ</button>
+                `;
+                return;
+            }
+
+            questions.sort(() => Math.random() - 0.5);
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('quiz-area').style.display = 'block';
+            document.getElementById('badge-lvl').innerText = "Bậc: " + level;
+            render();
+        } catch (e) {
+            console.error(e);
+            document.getElementById('loading').innerText = "Lỗi kết nối Firebase: " + e.message;
+        }
     }
 
     function render() {
-        const q = questions[cur]; picked = null;
-        document.getElementById('support').style.display = 'none';
-        document.getElementById('q-count').innerText = `Câu ${cur+1}/${questions.length}`;
+        const q = questions[curIdx];
+        picked = null;
+        document.getElementById('support-panel').style.display = 'none';
+        document.getElementById('feedback').value = "";
+        document.getElementById('q-count').innerText = `Câu ${curIdx + 1}/${questions.length}`;
         document.getElementById('q-text').innerText = q.content;
-        document.getElementById('options').innerHTML = ['A','B','C','D'].map(v => `<div class="opt" onclick="sel(this, '${v}')">${v}. ${q['option'+v]}</div>`).join('');
-        document.getElementById('ans').innerText = q.correctAnswer;
-        document.getElementById('basis').innerText = q.newBasis;
-        document.getElementById('quote').innerText = q.quote;
+        
+        const html = `
+            <div class="opt" onclick="sel(this, 'A')">A. ${q.optionA}</div>
+            <div class="opt" onclick="sel(this, 'B')">B. ${q.optionB}</div>
+            <div class="opt" onclick="sel(this, 'C')">C. ${q.optionC}</div>
+            <div class="opt" onclick="sel(this, 'D')">D. ${q.optionD}</div>
+        `;
+        document.getElementById('options').innerHTML = html;
+        document.getElementById('ans-label').innerText = q.correctAnswer;
+        document.getElementById('basis-label').innerText = q.newBasis || "Theo quy chuẩn an toàn điện.";
+        document.getElementById('quote-label').innerText = q.quote || "Nội dung trích dẫn đang được cập nhật...";
     }
 
-    window.sel = (el, v) => { document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected','correct','wrong')); el.classList.add('selected'); picked = v; };
-    window.check = () => { if(!picked) return; const q = questions[cur]; document.querySelectorAll('.opt').forEach(o => { if(o.innerText.startsWith(q.correctAnswer+".")) o.classList.add('correct'); if(o.classList.contains('selected') && !o.innerText.startsWith(q.correctAnswer+".")) o.classList.add('wrong'); }); };
-    window.move = (d) => { if(cur+d >= 0 && cur+d < questions.length) { cur += d; render(); } };
-    window.toggle = () => { const s = document.getElementById('support'); s.style.display = s.style.display === 'block' ? 'none' : 'block'; };
+    window.sel = (el, val) => {
+        document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected', 'correct', 'wrong'));
+        el.classList.add('selected');
+        picked = val;
+    }
+
+    window.check = () => {
+        if (!picked) return alert("Bạn chưa chọn phương án nào!");
+        const q = questions[curIdx];
+        const correct = q.correctAnswer.toString().trim();
+        
+        document.querySelectorAll('.opt').forEach(o => {
+            const txt = o.innerText.trim();
+            if (txt.startsWith(correct + ".")) o.classList.add('correct');
+            if (o.classList.contains('selected') && !txt.startsWith(correct + ".")) o.classList.add('wrong');
+        });
+    }
+
+    window.move = (dir) => {
+        if (curIdx + dir >= 0 && curIdx + dir < questions.length) {
+            curIdx += dir;
+            render();
+            window.scrollTo(0, 0);
+        } else if (curIdx + dir >= questions.length) {
+            alert("Chúc mừng! Bạn đã hoàn thành bộ đề này.");
+        }
+    }
+
+    window.toggleSupport = () => {
+        const p = document.getElementById('support-panel');
+        p.style.display = (p.style.display === 'block' ? 'none' : 'block');
+    }
+
+    window.goToIndex = () => {
+        if(confirm("Bạn muốn quay lại trang chủ để chọn đề khác?")) window.location.href = 'index.html';
+    }
+
+    window.sendFeedback = async () => {
+        const msg = document.getElementById('feedback').value;
+        if (!msg.trim()) return alert("Vui lòng nhập nội dung góp ý!");
+        try {
+            await addDoc(collection(db, "feedback"), {
+                qId: questions[curIdx].questionId || "N/A",
+                user: userName,
+                dept: userDept,
+                feedback: msg,
+                time: new Date().toISOString()
+            });
+            alert("Trân trọng cảm ơn góp ý của bạn!");
+            document.getElementById('feedback').value = "";
+        } catch (e) { alert("Lỗi gửi feedback."); }
+    }
 
     load();
 </script>
+
+<style>
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+
 </body>
 </html>
