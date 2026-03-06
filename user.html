@@ -3,75 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý người dùng - v1.1</title>
+    <title>Quản trị Nhân sự - VSIP 2026 - v1.2</title>
     <style>
-        :root { --primary: #004a99; --accent: #f37021; --bg: #f4f7f9; --danger: #dc3545; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
-        header { background: var(--primary); color: white; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        header h1 { margin: 0; font-size: 1.5rem; text-transform: uppercase; }
-        .container { flex: 1; max-width: 1000px; margin: 20px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        :root { --primary-blue: #004a99; --accent: #f37021; --bg-color: #f4f7f9; --text-main: #1a1a1a; --danger: #dc3545; }
         
-        /* Toolbar buttons */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); }
+        
+        /* Header đồng bộ chuẩn index.html */
+        header { background: var(--primary-blue); color: white; padding: 25px 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+
+        .container { flex: 1; max-width: 1000px; margin: 25px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); }
+
+        /* Toolbar điều hướng nội bộ */
         .toolbar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .btn-tool { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: 0.3s; color: white; }
-        .btn-home { background: #6c757d; }
+        .btn-tool { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; color: white; transition: 0.3s; }
         .btn-feedback { background: var(--accent); }
         .btn-logout { background: var(--danger); }
         .btn-tool:hover { opacity: 0.8; transform: translateY(-1px); }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { text-align: left; padding: 12px; background: #f8f9fa; border-bottom: 2px solid #eee; color: var(--primary); }
-        td { padding: 12px; border-bottom: 1px solid #eee; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .admin { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
-        .user { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
-        .btn-toggle { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
-        footer { background: #eef2f6; padding: 20px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary); margin-top: auto; }
+        /* Table Style */
+        .table-wrapper { overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px; background: #f8f9fa; border-bottom: 2px solid #eee; color: var(--primary-blue); font-size: 0.9rem; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        
+        .badge { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .badge-admin { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+        .badge-user { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+
+        .btn-role { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; color: white; }
+
+        /* Các phân vùng hiển thị */
+        #auth-section, #admin-check, #main-content, #loader { display: none; }
+        
+        /* Màn hình login tại chỗ */
+        .login-box { text-align: center; padding: 50px 20px; }
+        .btn-google { background: white; color: #444; border: 1px solid #ddd; padding: 15px 30px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); line-height: 1.6; margin-top: auto; }
+        .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
+
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<header><h1>HỆ THỐNG QUẢN TRỊ NHÂN SỰ</h1></header>
+<header>
+    <h1>HỆ THỐNG QUẢN TRỊ NHÂN SỰ</h1>
+</header>
 
 <div class="container">
-    <div id="admin-check" style="text-align:center; padding:50px; display:none;">
-        <h3>Bạn không có quyền truy cập trang này!</h3>
-        <button onclick="location.href='index.html'" style="padding:10px 20px; background:var(--primary); color:white; border:none; border-radius:5px;">Về trang chủ</button>
+    <div id="loader" style="display: block; text-align: center; padding: 100px 0;">
+        <div class="spinner"></div>
+        <p>Đang kiểm tra quyền truy cập...</p>
     </div>
 
-    <div id="main-content" style="display:none">
+    <div id="auth-section" class="card login-box">
+        <h2 style="color: var(--primary-blue);">Yêu cầu quyền Admin</h2>
+        <p style="color: #666; margin-bottom: 30px;">Vui lòng đăng nhập tài khoản Quản trị để tiếp tục.</p>
+        <button class="btn-google" id="loginBtn">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="22">
+            Đăng nhập với Google
+        </button>
+    </div>
+
+    <div id="admin-check" class="card login-box">
+        <h2 style="color: var(--danger);">TRUY CẬP BỊ CHẶN</h2>
+        <p>Tài khoản của bạn không có quyền quản trị hệ thống này.</p>
+        <button class="btn-tool btn-logout" id="reAuthBtn" style="margin-top:20px">Đăng nhập tài khoản khác</button>
+    </div>
+
+    <div id="main-content">
         <div class="toolbar">
-            <button class="btn-tool btn-home" onclick="location.href='index.html'">« Về trang chủ</button>
-            <button class="btn-tool btn-feedback" onclick="location.href='gopy.html'">Xem tất cả góp ý</button>
-            <button class="btn-tool btn-logout" id="logoutBtn">Đăng xuất</button>
+            <button class="btn-tool btn-feedback" onclick="location.href='gopy.html'">Quản lý Góp ý</button>
+            <button class="btn-tool btn-logout" id="logoutBtn">Đăng xuất hệ thống</button>
         </div>
 
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2 style="color:var(--primary); margin:0;">Danh sách thành viên</h2>
-                <button onclick="loadUsers()" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">Làm mới danh sách</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                <h2 style="color:var(--primary-blue); margin:0; font-size: 1.3rem;">Danh sách Nhân sự & Quyền hạn</h2>
+                <button onclick="loadUsers()" style="background:var(--primary-blue); color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight: bold;">Làm mới dữ liệu</button>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Họ tên & Bộ phận</th>
-                        <th>Email</th>
-                        <th style="width:100px">Quyền</th>
-                        <th style="width:140px">Phân quyền</th>
-                    </tr>
-                </thead>
-                <tbody id="user-body"></tbody>
-            </table>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Học viên & Bộ phận</th>
+                            <th>Email liên kết</th>
+                            <th style="width:100px">Trạng thái</th>
+                            <th style="width:150px">Phân quyền xem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
-<footer>Nhóm biên soạn bộ đề An toàn điện VDC @2026</footer>
+<footer>
+    <div>Nhóm biên soạn bộ đề trắc nghiệm An toàn điện VDC @2026</div>
+    <div class="footer-line-2">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882 - email: deptc.gvatvsld@gmail.com</div>
+</footer>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -86,20 +127,37 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
     const MASTER_ADMIN = "deptc.gvatvsld@gmail.com";
 
+    setPersistence(auth, browserLocalPersistence);
+
+    const ui = {
+        loader: document.getElementById('loader'),
+        auth: document.getElementById('auth-section'),
+        check: document.getElementById('admin-check'),
+        main: document.getElementById('main-content')
+    };
+
+    function show(section) {
+        Object.values(ui).forEach(s => s.style.display = 'none');
+        ui[section].style.display = 'block';
+    }
+
     onAuthStateChanged(auth, (user) => {
-        if (user && user.email === MASTER_ADMIN) {
-            document.getElementById('main-content').style.display = 'block';
-            loadUsers();
+        if (!user) {
+            show('auth');
+        } else if (user.email !== MASTER_ADMIN) {
+            show('check');
         } else {
-            document.getElementById('admin-check').style.display = 'block';
+            show('main');
+            loadUsers();
         }
     });
 
     async function loadUsers() {
         const body = document.getElementById('user-body');
-        body.innerHTML = '<tr><td colspan="4" style="text-align:center">Đang nạp dữ liệu...</td></tr>';
+        body.innerHTML = '<tr><td colspan="4" style="text-align:center">Đang tải danh sách...</td></tr>';
         try {
             const snap = await getDocs(query(collection(db, "users"), orderBy("updatedAt", "desc")));
             body.innerHTML = '';
@@ -108,30 +166,33 @@
                 const isAdmin = d.role === 'admin';
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><strong>${d.fullName}</strong><br><small>${d.department}</small></td>
+                    <td><strong>${d.fullName || 'N/A'}</strong><br><small>${d.department || 'N/A'}</small></td>
                     <td>${d.email}</td>
-                    <td><span class="badge ${isAdmin ? 'admin' : 'user'}">${isAdmin ? 'ADMIN' : 'USER'}</span></td>
+                    <td><span class="badge ${isAdmin ? 'badge-admin' : 'badge-user'}">${isAdmin ? 'VIEW ALL' : 'USER'}</span></td>
                     <td>
-                        <button class="btn-toggle" style="background:${isAdmin ? '#666' : 'var(--accent)'}; color:white;" 
+                        <button class="btn-role" style="background:${isAdmin ? '#6c757d' : 'var(--accent)'};" 
                                 onclick="toggleRole('${s.id}', '${d.role || 'user'}')">
-                            ${isAdmin ? 'Hạ quyền' : 'Nâng Admin'}
+                            ${isAdmin ? 'Hạ quyền xem' : 'Cho xem tất cả'}
                         </button>
                     </td>
                 `;
                 body.appendChild(row);
             });
-        } catch (e) { body.innerHTML = 'Lỗi nạp dữ liệu: ' + e.message; }
+        } catch (e) { body.innerHTML = '<tr><td colspan="4">Lỗi nạp dữ liệu: ' + e.message + '</td></tr>'; }
     }
 
     window.toggleRole = async (uid, currentRole) => {
         const newRole = currentRole === 'admin' ? 'user' : 'admin';
-        if (confirm(`Xác nhận đổi quyền của người dùng này thành ${newRole}?`)) {
+        if (confirm(`Xác nhận thay đổi quyền hạn?`)) {
             await updateDoc(doc(db, "users", uid), { role: newRole });
             loadUsers();
         }
-    }
+    };
 
-    document.getElementById('logoutBtn').onclick = () => { if(confirm("Bạn muốn đăng xuất?")) signOut(auth).then(() => location.href='index.html'); };
+    document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
+    document.getElementById('reAuthBtn').onclick = () => signOut(auth);
+    document.getElementById('logoutBtn').onclick = () => { if(confirm("Đăng xuất hệ thống quản trị?")) signOut(auth); };
+
 </script>
 </body>
 </html>
