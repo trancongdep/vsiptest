@@ -3,125 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor - Hiệu chỉnh Ngân hàng câu hỏi VSIP</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <title>Hiệu chỉnh Câu hỏi - VSIP 2026 - v1.0</title>
     <style>
-        :root { --primary: #007bff; --dark: #343a40; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8f9fa; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: auto; }
-        .header { background: var(--dark); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .filter-bar { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; gap: 15px; }
-        select { padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
-        .q-list { display: grid; gap: 10px; }
-        .q-item { background: white; padding: 15px; border-radius: 6px; border-left: 5px solid #ccc; cursor: pointer; transition: 0.2s; }
-        .q-item:hover { border-left-color: var(--primary); background: #f1f8ff; }
-        .q-item h4 { margin: 0 0 10px 0; color: #333; }
-        .badge { font-size: 12px; padding: 3px 8px; border-radius: 10px; background: #eee; margin-right: 5px; }
+        :root { --primary-blue: #004a99; --accent: #f37021; --success: #28a745; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
+        
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); }
+        
+        header { 
+            background: var(--primary-blue); color: white; padding: 25px 15px; 
+            text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+            position: sticky; top: 0; z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+        }
+        header h1 { margin: 0; font-size: 1.5rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; flex: 1; }
+        
+        .btn-nav {
+            position: absolute; left: 15px; background: rgba(255,255,255,0.15);
+            color: white; border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 15px; border-radius: 6px; font-size: 0.9rem;
+            cursor: pointer; transition: 0.3s; text-decoration: none; font-weight: 600;
+        }
+        .btn-nav:hover { background: rgba(255,255,255,0.3); }
 
-        /* Modal Sửa */
-        #editModal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 1000; }
-        .modal-content { background: white; width: 90%; max-width: 700px; margin: 50px auto; padding: 25px; border-radius: 8px; max-height: 80vh; overflow-y: auto; }
+        .container { flex: 1; max-width: 1200px; margin: 20px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
+        
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); margin-bottom: 20px; }
+
+        /* Search & Filter Area */
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-bar input, .filter-bar select { padding: 12px; border: 2px solid #ddd; border-radius: 8px; flex: 1; min-width: 200px; }
+
+        /* Table Area */
+        .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: #f8f9fa; color: var(--primary-blue); text-align: left; padding: 15px; border-bottom: 2px solid #eee; font-size: 0.9rem; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 0.9rem; vertical-align: top; }
+        
+        .btn-edit-small { background: var(--primary-blue); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        
+        /* Modal Style */
+        #edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: white; width: 100%; max-width: 800px; border-radius: 12px; padding: 30px; max-height: 90vh; overflow-y: auto; position: relative; }
+        
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
-        input[type="text"], textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
-        .btn-group { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; color: white; }
-        .btn-save { background: #28a745; }
-        .btn-close { background: #6c757d; }
+        .form-group label { display: block; font-weight: 700; margin-bottom: 5px; color: var(--primary-blue); font-size: 0.9rem; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+        
+        .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
+
+        button { font-weight: bold; cursor: pointer; border: none; border-radius: 6px; transition: 0.3s; }
+        .btn-save { background: var(--success); color: white; padding: 12px 25px; }
+        .btn-cancel { background: #6c757d; color: white; padding: 12px 25px; }
+
+        footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); line-height: 1.6; margin-top: auto; }
+        .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
+
+        #auth-check { text-align: center; padding: 100px 20px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
+<header>
+    <a href="user.html" class="btn-nav">« Quản trị</a>
+    <h1>HIỆU CHỈNH CÂU HỎI</h1>
+</header>
+
 <div class="container">
-    <div class="header">
-        <div>
-            <h2 style="margin:0">TRÌNH HIỆU CHỈNH CÂU HỎI</h2>
-            <small>Hệ thống dữ liệu VSIP v2.2</small>
-        </div>
-        <button onclick="loadData()" style="padding: 8px 15px; cursor:pointer">Làm mới danh sách</button>
+    <div id="loader" style="text-align: center; padding: 100px 0;">
+        <div class="spinner"></div>
+        <p>Đang xác thực quyền Admin...</p>
     </div>
 
-    <div class="filter-bar">
-        <div>
-            <label>Bậc:</label>
-            <select id="f-level" onchange="loadData()">
-                <option value="1">Bậc 1/5</option>
-                <option value="2">Bậc 2/5</option>
-                <option value="3">Bậc 3/5</option>
-                <option value="4">Bậc 4/5</option>
-                <option value="5">Bậc 5/5</option>
-            </select>
-        </div>
-        <div>
-            <label>Ngành nghề:</label>
-            <select id="f-sector" onchange="filterLocal()">
-                <option value="all">-- Tất cả ngành --</option>
-                <option value="110kV">Vận hành TBA 110kV</option>
-                <option value="22kV">Vận hành ĐZ & TBA 22kV</option>
-                <option value="Hate">Hạ thế Khách hàng</option>
-                <option value="Chieusang">Hệ thống chiếu sáng</option>
-                <option value="Vanphong">Hệ thống điện văn phòng</option>
-                <option value="Solar">Solar áp mái</option>
-                <option value="BESS">Lưu trữ năng lượng BESS</option>
-            </select>
-        </div>
-        <div style="flex-grow: 1">
-            <input type="text" id="f-search" placeholder="Tìm từ khóa nội dung..." onkeyup="filterLocal()">
-        </div>
+    <div id="auth-check" style="display:none">
+        <h2 style="color:red">TRUY CẬP BỊ TỪ CHỐI</h2>
+        <p>Bạn không có quyền chỉnh sửa bộ đề.</p>
+        <button onclick="location.href='index.html'" style="padding:10px 20px; background:var(--primary-blue); color:white; border-radius:5px;">Về trang chủ</button>
     </div>
 
-    <div id="status"></div>
-    <div id="questionList" class="q-list"></div>
+    <div id="main-content" style="display:none">
+        <div class="card">
+            <div class="filter-bar">
+                <input type="text" id="search-input" placeholder="Tìm theo ID câu hỏi hoặc nội dung..." oninput="filterQuestions()">
+                <select id="level-filter" onchange="filterQuestions()">
+                    <option value="">-- Tất cả Bậc --</option>
+                    <option value="1/5">Bậc 1/5</option>
+                    <option value="2/5">Bậc 2/5</option>
+                    <option value="3/5">Bậc 3/5</option>
+                    <option value="4/5">Bậc 4/5</option>
+                    <option value="5/5">Bậc 5/5</option>
+                </select>
+                <button onclick="loadQuestions()" style="background:var(--primary-blue); color:white; padding:0 20px; border-radius:8px;">Làm mới</button>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:80px">ID</th>
+                            <th style="width:100px">Bậc</th>
+                            <th>Nội dung câu hỏi</th>
+                            <th style="width:80px">Đ/A</th>
+                            <th style="width:100px">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="question-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div id="editModal">
+<div id="edit-modal">
     <div class="modal-content">
-        <h3>Hiệu chỉnh câu hỏi</h3>
-        <input type="hidden" id="edit-id">
+        <h2 style="color:var(--primary-blue); margin-top:0">Chỉnh sửa Câu hỏi ID: <span id="m-id"></span></h2>
+        
         <div class="form-group">
             <label>Nội dung câu hỏi:</label>
-            <textarea id="edit-content" rows="3"></textarea>
+            <textarea id="m-content" rows="3"></textarea>
         </div>
-        <div class="form-group">
-            <label>Lựa chọn A:</label><input type="text" id="edit-A">
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
+            <div class="form-group"><label>Lựa chọn A:</label><input type="text" id="m-optA"></div>
+            <div class="form-group"><label>Lựa chọn B:</label><input type="text" id="m-optB"></div>
+            <div class="form-group"><label>Lựa chọn C:</label><input type="text" id="m-optC"></div>
+            <div class="form-group"><label>Lựa chọn D:</label><input type="text" id="m-optD"></div>
         </div>
-        <div class="form-group">
-            <label>Lựa chọn B:</label><input type="text" id="edit-B">
-        </div>
-        <div class="form-group">
-            <label>Lựa chọn C:</label><input type="text" id="edit-C">
-        </div>
-        <div class="form-group">
-            <label>Lựa chọn D:</label><input type="text" id="edit-D">
-        </div>
-        <div style="display: flex; gap: 20px;">
-            <div class="form-group" style="flex:1">
-                <label>Đáp án đúng (A,B,C,D):</label>
-                <input type="text" id="edit-ans">
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
+            <div class="form-group">
+                <label>Đáp án đúng (VD: A hoặc AB):</label>
+                <input type="text" id="m-correct">
             </div>
-            <div class="form-group" style="flex:1">
-                <label>Ngành nghề (Tag):</label>
-                <input type="text" id="edit-tag" placeholder="Ví dụ: 110kV">
+            <div class="form-group">
+                <label>Bậc an toàn:</label>
+                <select id="m-level">
+                    <option value="1/5">Bậc 1/5</option>
+                    <option value="2/5">Bậc 2/5</option>
+                    <option value="3/5">Bậc 3/5</option>
+                    <option value="4/5">Bậc 4/5</option>
+                    <option value="5/5">Bậc 5/5</option>
+                </select>
             </div>
         </div>
+
         <div class="form-group">
-            <label>Giải thích:</label>
-            <textarea id="edit-explain" rows="2"></textarea>
+            <label>Căn cứ pháp lý:</label>
+            <input type="text" id="m-basis">
         </div>
+
         <div class="form-group">
-            <label>Căn cứ:</label>
-            <input type="text" id="edit-source">
+            <label>Trích dẫn (Quote):</label>
+            <textarea id="m-quote" rows="3"></textarea>
         </div>
-        <div class="btn-group">
-            <button class="btn btn-close" onclick="closeModal()">Hủy</button>
-            <button class="btn btn-save" onclick="saveChange()">LƯU THAY ĐỔI</button>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal()">Hủy bỏ</button>
+            <button class="btn-save" id="btn-save-update">Lưu thay đổi</button>
         </div>
     </div>
 </div>
 
-<script>
-    // Cấu hình Firebase của anh Trần Công Đẹp
+<footer>
+    <div>Nhóm biên soạn bộ đề trắc nghiệm An toàn điện VDC @2026</div>
+    <div class="footer-line-2">Admin: Trần Công Đẹp - Phone: 0963.292.882 - email: deptc.gvatvsld@gmail.com</div>
+</footer>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
     const firebaseConfig = {
         apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
         authDomain: "tavietnam-78ae8.firebaseapp.com",
@@ -130,112 +183,119 @@
         messagingSenderId: "670121705534",
         appId: "1:670121705534:web:1027ad98550573ad37116f"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
 
-    let currentData = [];
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const MASTER_ADMIN = "deptc.gvatvsld@gmail.com";
 
-    // Tải dữ liệu từ Firebase
-    async function loadData() {
-        const lvl = document.getElementById('f-level').value;
-        const listDiv = document.getElementById('questionList');
-        listDiv.innerHTML = "Đang tải dữ liệu...";
-        
-        const snapshot = await db.ref('bank_questions/bac_' + lvl).once('value');
-        const data = snapshot.val();
-        
-        if(!data) {
-            listDiv.innerHTML = "Không có dữ liệu cho bậc này.";
-            currentData = [];
-            return;
+    let allQuestions = [];
+    let currentEditDocId = null;
+
+    onAuthStateChanged(auth, (user) => {
+        document.getElementById('loader').style.display = 'none';
+        if (user && user.email === MASTER_ADMIN) {
+            document.getElementById('main-content').style.display = 'block';
+            loadQuestions();
+        } else {
+            document.getElementById('auth-check').style.display = 'block';
         }
+    });
 
-        currentData = Object.values(data);
-        renderList(currentData);
+    async function loadQuestions() {
+        const listBody = document.getElementById('question-list');
+        listBody.innerHTML = '<tr><td colspan="5" style="text-align:center">Đang nạp dữ liệu câu hỏi...</td></tr>';
+        
+        try {
+            const snap = await getDocs(query(collection(db, "questions"), orderBy("questionId")));
+            allQuestions = [];
+            snap.forEach(d => allQuestions.push({ docId: d.id, ...d.data() }));
+            renderQuestions(allQuestions);
+        } catch (e) {
+            listBody.innerHTML = '<tr><td colspan="5" style="color:red">Lỗi: ' + e.message + '</td></tr>';
+        }
     }
 
-    // Hiển thị danh sách
-    function renderList(dataArr) {
-        const listDiv = document.getElementById('questionList');
-        listDiv.innerHTML = "";
-        
-        dataArr.forEach((q, index) => {
-            const item = document.createElement('div');
-            item.className = 'q-item';
-            item.onclick = () => openEdit(q, index);
-            item.innerHTML = `
-                <h4>Câu ${index + 1}: ${q.content}</h4>
-                <div>
-                    <span class="badge">ĐA: ${q.answer}</span>
-                    <span class="badge" style="background:#e3f2fd">Ngành: ${q.tag || 'Chưa phân loại'}</span>
-                </div>
+    function renderQuestions(data) {
+        const listBody = document.getElementById('question-list');
+        listBody.innerHTML = '';
+        data.forEach(q => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${q.questionId}</strong></td>
+                <td><small>${q.level || 'N/A'}</small></td>
+                <td>${q.content}</td>
+                <td><span style="color:var(--accent); font-weight:bold">${q.correctAnswer}</span></td>
+                <td><button class="btn-edit-small" onclick="openEdit('${q.docId}')">Sửa</button></td>
             `;
-            listDiv.appendChild(item);
+            listBody.appendChild(row);
         });
     }
 
-    // Lọc dữ liệu tại chỗ (Local Filter)
-    function filterLocal() {
-        const sector = document.getElementById('f-sector').value;
-        const search = document.getElementById('f-search').value.toLowerCase();
+    window.filterQuestions = () => {
+        const keyword = document.getElementById('search-input').value.toLowerCase();
+        const level = document.getElementById('level-filter').value;
         
-        let filtered = currentData.filter(q => {
-            const matchSector = (sector === 'all' || (q.tag && q.tag.includes(sector)) || q.content.includes(sector));
-            const matchSearch = q.content.toLowerCase().includes(search);
-            return matchSector && matchSearch;
+        const filtered = allQuestions.filter(q => {
+            const matchKey = q.content.toLowerCase().includes(keyword) || q.questionId.toString().includes(keyword);
+            const matchLvl = level === "" || q.level === level || q.level === "Bậc " + level;
+            return matchKey && matchLvl;
         });
-        
-        renderList(filtered);
+        renderQuestions(filtered);
     }
 
-    // Mở Modal sửa
-    function openEdit(q, index) {
-        document.getElementById('edit-id').value = index;
-        document.getElementById('edit-content').value = q.content;
-        document.getElementById('edit-A').value = q.options.A;
-        document.getElementById('edit-B').value = q.options.B;
-        document.getElementById('edit-C').value = q.options.C;
-        document.getElementById('edit-D').value = q.options.D;
-        document.getElementById('edit-ans').value = q.answer;
-        document.getElementById('edit-tag').value = q.tag || "";
-        document.getElementById('edit-explain').value = q.explain || "";
-        document.getElementById('edit-source').value = q.source || "";
+    window.openEdit = (docId) => {
+        const q = allQuestions.find(item => item.docId === docId);
+        if (!q) return;
         
-        document.getElementById('editModal').style.display = 'block';
+        currentEditDocId = docId;
+        document.getElementById('m-id').innerText = q.questionId;
+        document.getElementById('m-content').value = q.content;
+        document.getElementById('m-optA').value = q.optionA;
+        document.getElementById('m-optB').value = q.optionB;
+        document.getElementById('m-optC').value = q.optionC;
+        document.getElementById('m-optD').value = q.optionD;
+        document.getElementById('m-correct').value = q.correctAnswer;
+        document.getElementById('m-level').value = q.level.replace("Bậc ", "");
+        document.getElementById('m-basis').value = q.newBasis || "";
+        document.getElementById('m-quote').value = q.quote || "";
+        
+        document.getElementById('edit-modal').style.display = 'flex';
     }
 
-    function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+    window.closeModal = () => { document.getElementById('edit-modal').style.display = 'none'; }
 
-    // Lưu thay đổi lên Firebase
-    function saveChange() {
-        const lvl = document.getElementById('f-level').value;
-        const id = document.getElementById('edit-id').value;
-        
-        const updatedQ = {
-            content: document.getElementById('edit-content').value,
-            options: {
-                A: document.getElementById('edit-A').value,
-                B: document.getElementById('edit-B').value,
-                C: document.getElementById('edit-C').value,
-                D: document.getElementById('edit-D').value
-            },
-            answer: document.getElementById('edit-ans').value.toUpperCase(),
-            tag: document.getElementById('edit-tag').value,
-            explain: document.getElementById('edit-explain').value,
-            source: document.getElementById('edit-source').value
-        };
+    document.getElementById('btn-save-update').onclick = async () => {
+        if (!currentEditDocId) return;
+        const btn = document.getElementById('btn-save-update');
+        btn.innerText = "Đang lưu...";
+        btn.disabled = true;
 
-        db.ref('bank_questions/bac_' + lvl + '/' + id).update(updatedQ)
-        .then(() => {
-            alert("Đã lưu thay đổi thành công!");
+        try {
+            const updatedData = {
+                content: document.getElementById('m-content').value,
+                optionA: document.getElementById('m-optA').value,
+                optionB: document.getElementById('m-optB').value,
+                optionC: document.getElementById('m-optC').value,
+                optionD: document.getElementById('m-optD').value,
+                correctAnswer: document.getElementById('m-correct').value.toUpperCase(),
+                level: document.getElementById('m-level').value,
+                newBasis: document.getElementById('m-basis').value,
+                quote: document.getElementById('m-quote').value,
+                updatedAt: new Date().toISOString()
+            };
+
+            await updateDoc(doc(db, "questions", currentEditDocId), updatedData);
+            alert("Cập nhật thành công!");
             closeModal();
-            loadData();
-        })
-        .catch(err => alert("Lỗi: " + err.message));
-    }
-
-    // Load dữ liệu lần đầu
-    window.onload = loadData;
+            loadQuestions(); // Nạp lại danh sách
+        } catch (e) {
+            alert("Lỗi khi lưu: " + e.message);
+        } finally {
+            btn.innerText = "Lưu thay đổi";
+            btn.disabled = false;
+        }
+    };
 </script>
 </body>
 </html>
