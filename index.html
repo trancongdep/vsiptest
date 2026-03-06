@@ -15,11 +15,11 @@
         .card { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; min-height: 200px; }
 
         .user-welcome { margin-bottom: 20px; padding: 15px; background: #eef6ff; border-radius: 8px; border-left: 5px solid var(--primary-blue); }
-        .user-welcome p { margin: 0; font-weight: 600; color: var(--primary-blue); font-size: 1.1rem; }
+        .user-welcome p { margin: 0; font-weight: 600; color: var(--primary-blue); font-size: 1rem; line-height: 1.5; }
 
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--primary-blue); font-size: 1rem; }
-        input[type="text"], select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin-bottom: 20px; box-sizing: border-box; outline: none; }
-        input[type="text"]:focus, select:focus { border-color: var(--primary-blue); }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--primary-blue); font-size: 0.95rem; }
+        input[type="text"], select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input[type="text"]:focus, select:focus { border-color: var(--primary-blue); background: #fff; }
 
         .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         .btn-google { background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -29,7 +29,6 @@
         footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); line-height: 1.6; }
         .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
 
-        /* Các vùng hiển thị */
         #auth-section, #name-section, #selection-section { display: none; }
         #topic-container { display: none; }
         
@@ -47,11 +46,11 @@
     <div class="card">
         <div id="loader" style="text-align: center;">
             <div class="loading-spinner"></div>
-            <p style="color:#666">Đang xác thực hệ thống...</p>
+            <p style="color:#666">Đang kiểm tra thông tin...</p>
         </div>
 
         <div id="auth-section" style="text-align: center;">
-            <h3 style="margin-top:0">Yêu cầu đăng nhập</h3>
+            <h3 style="margin-top:0">Đăng nhập hệ thống</h3>
             <p style="color:#666; font-size: 0.95rem; margin-bottom: 25px;">Vui lòng sử dụng Gmail để bắt đầu làm bài</p>
             <button class="btn btn-google" id="loginBtn">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="20">
@@ -60,17 +59,23 @@
         </div>
 
         <div id="name-section">
-            <h3 style="margin-top:0; color: var(--primary-blue);">Thông tin người kiểm tra</h3>
-            <p style="font-size: 0.9rem; color: #666;">Đây là lần đầu bạn sử dụng hệ thống, vui lòng nhập họ tên để lưu kết quả.</p>
+            <h3 style="margin-top:0; color: var(--primary-blue);">Thông tin cá nhân</h3>
+            <p style="font-size: 0.9rem; color: #666;">Cung cấp thông tin để lưu kết quả kiểm tra.</p>
+            
             <label for="userName">Họ và tên đầy đủ:</label>
-            <input type="text" id="userName" placeholder="VD: Nguyễn Văn A">
-            <button class="btn btn-primary" id="saveNameBtn">Lưu thông tin & Tiếp tục</button>
+            <input type="text" id="userName" placeholder="VD: Trần Công Đẹp">
+            
+            <label for="userDept">Bộ phận công tác:</label>
+            <input type="text" id="userDept" placeholder="VD: Phòng Kỹ thuật - VDC">
+            
+            <button class="btn btn-primary" id="saveNameBtn">Xác nhận & Tiếp tục</button>
         </div>
 
         <div id="selection-section">
             <div class="user-welcome">
-                <p>Chào bạn: <span id="displayName" style="color: var(--accent-orange);">...</span></p>
-                <button id="logoutBtn" style="background:none; border:none; color:red; cursor:pointer; font-size:12px; padding:0; text-decoration: underline;">Đăng xuất tài khoản</button>
+                <p>Nhân viên: <span id="displayName" style="color: var(--accent-orange);">...</span></p>
+                <p>Bộ phận: <span id="displayDept" style="color: var(--primary-blue);">...</span></p>
+                <button id="logoutBtn" style="background:none; border:none; color:red; cursor:pointer; font-size:11px; padding:0; text-decoration: underline; margin-top:5px;">Đăng xuất</button>
             </div>
 
             <form id="quizForm">
@@ -143,78 +148,74 @@
         sections[name].style.display = 'block';
     }
 
-    // Xử lý trạng thái người dùng
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            // Đã đăng nhập Gmail -> Kiểm tra tên trong Firestore
             try {
                 const userDoc = await getDoc(doc(db, "users", user.uid));
-                if (userDoc.exists() && userDoc.data().fullName) {
-                    // Đã có tên hợp lệ
-                    document.getElementById('displayName').innerText = userDoc.data().fullName;
+                const data = userDoc.data();
+                if (userDoc.exists() && data.fullName && data.department) {
+                    document.getElementById('displayName').innerText = data.fullName;
+                    document.getElementById('displayDept').innerText = data.department;
                     showSection('selection');
                 } else {
-                    // Chưa có tên trong Database
                     showSection('name');
                 }
             } catch (error) {
-                console.error("Lỗi truy vấn Firestore:", error);
-                alert("Lỗi kết nối dữ liệu người dùng.");
+                alert("Lỗi kết nối Firebase.");
+                showSection('auth');
             }
         } else {
-            // Chưa đăng nhập
             showSection('auth');
         }
     });
 
-    // Sự kiện nút đăng nhập
     document.getElementById('loginBtn').onclick = () => {
         signInWithPopup(auth, provider).catch(e => alert("Lỗi: " + e.message));
     };
 
-    // Sự kiện lưu tên
     document.getElementById('saveNameBtn').onclick = async () => {
-        const nameInput = document.getElementById('userName').value.trim();
-        if (nameInput.length < 3) return alert("Vui lòng nhập họ tên đầy đủ!");
+        const name = document.getElementById('userName').value.trim();
+        const dept = document.getElementById('userDept').value.trim();
+        
+        if (name.length < 3 || dept.length < 2) {
+            return alert("Vui lòng nhập đầy đủ Họ tên và Bộ phận!");
+        }
 
         sections.loader.style.display = 'block';
         sections.name.style.display = 'none';
 
         try {
             await setDoc(doc(db, "users", auth.currentUser.uid), {
-                fullName: nameInput,
+                fullName: name,
+                department: dept,
                 email: auth.currentUser.email,
                 updateAt: new Date().toISOString()
             });
-            // Tự động load lại qua onAuthStateChanged
+            // onAuthStateChanged sẽ tự động bắt lấy thông tin mới
         } catch (e) {
-            alert("Lỗi khi lưu tên: " + e.message);
+            alert("Lỗi khi lưu dữ liệu.");
             showSection('name');
         }
     };
 
-    // Ẩn hiện chuyên đề
     const levelSelect = document.getElementById('level');
     const topicContainer = document.getElementById('topic-container');
     levelSelect.onchange = () => {
-        const val = levelSelect.value;
-        topicContainer.style.display = ['3/5', '4/5', '5/5'].includes(val) ? 'block' : 'none';
+        topicContainer.style.display = ['3/5', '4/5', '5/5'].includes(levelSelect.value) ? 'block' : 'none';
     };
 
-    // Chuyển sang trang test
     document.getElementById('quizForm').onsubmit = (e) => {
         e.preventDefault();
         const level = levelSelect.value;
         const topic = document.getElementById('topic').value;
         const name = document.getElementById('displayName').innerText;
-        window.location.href = `test.html?level=${level}&topic=${topic}&name=${encodeURIComponent(name)}`;
+        const dept = document.getElementById('displayDept').innerText;
+        window.location.href = `test.html?level=${level}&topic=${topic}&name=${encodeURIComponent(name)}&dept=${encodeURIComponent(dept)}`;
     };
 
-    // Đăng xuất
     document.getElementById('logoutBtn').onclick = () => {
         if(confirm("Bạn muốn đăng xuất?")) signOut(auth);
     };
-
 </script>
 </body>
 </html>
