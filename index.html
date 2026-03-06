@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sát hạch An toàn điện VSIP 2026 - v2.8</title>
+    <title>Sát hạch An toàn điện VSIP 2026 - v2.9</title>
     <style>
         :root { --primary-blue: #004a99; --accent: #f37021; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); }
@@ -29,7 +29,6 @@
         .btn-orange { background: var(--accent); color: white; }
         .btn-orange:hover { background: #d45d1a; transform: translateY(-1px); }
 
-        /* Nhóm nút điều hướng */
         .button-group { display: flex; gap: 10px; margin-top: 10px; }
         .button-group button, .button-group a { flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; }
 
@@ -85,8 +84,7 @@
             <form id="quizForm">
                 <label for="level">Chọn bậc an toàn điện:</label>
                 <select id="level" required>
-                    <option value="" disabled selected>-- Chọn bậc --</option>
-                    <option value="1/5">Bậc 1/5</option>
+                    <option value="1/5" selected>Bậc 1/5</option>
                     <option value="2/5">Bậc 2/5</option>
                     <option value="3/5">Bậc 3/5</option>
                     <option value="4/5">Bậc 4/5</option>
