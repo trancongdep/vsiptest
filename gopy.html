@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch sử Góp ý - VSIP 2026 - v2.1</title>
+    <title>Lịch sử Góp ý - VSIP 2026 - v2.2</title>
     <style>
         :root { --primary: #004a99; --accent: #f37021; --bg: #f4f7f9; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
-        header { background: var(--primary); color: white; padding: 20px; text-align: center; }
+        header { background: var(--primary); color: white; padding: 25px 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
         .container { flex: 1; max-width: 1000px; margin: 25px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .role-badge { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; }
@@ -19,15 +20,16 @@
         .q-box { background: #f0f7ff; padding: 8px; border-radius: 4px; font-size: 0.8rem; color: #555; margin-top: 5px; border-left: 3px solid var(--primary); }
         #auth-section { text-align: center; padding: 100px 20px; }
         .btn-google { background: white; border: 1px solid #ddd; padding: 12px 25px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-weight: bold; }
-        footer { background: #eef2f6; padding: 20px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary); margin-top: auto; }
+        footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary); line-height: 1.6; }
+        .footer-line-2 { font-weight: 600; color: var(--primary); margin-top: 5px; }
     </style>
 </head>
 <body>
 
-<header><h1>LỊCH SỬ GÓP Ý CẢI TIẾN</h1></header>
+<header><h1>BỘ ĐỀ TRẮC NGHIỆM AN TOÀN ĐIỆN VSIP 2026</h1></header>
 
 <div class="container">
-    <div id="auth-section">
+    <div id="auth-section" style="display:none">
         <p>Vui lòng đăng nhập để xem lịch sử góp ý.</p>
         <button class="btn-google" id="loginBtn">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="20"> Đăng nhập với Google
@@ -40,7 +42,7 @@
                 <div id="role-display"></div>
                 <button onclick="location.href='index.html'" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight:bold;">« Về trang chủ</button>
             </div>
-            <h2 id="title-text" style="color:var(--primary); margin-top:10px;">Đang tải dữ liệu...</h2>
+            <h2 id="title-text" style="color:var(--primary); margin-top:10px; font-size: 1.2rem;">Đang tải dữ liệu...</h2>
             <div id="table-area" style="overflow-x:auto">
                 <table>
                     <thead>
@@ -59,21 +61,21 @@
 
 <footer>
     <div>Nhóm biên soạn bộ đề trắc nghiệm An toàn điện VDC @2026</div>
-    <div style="font-weight:600; color:var(--primary); margin-top:5px;">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882</div>
+    <div class="footer-line-2">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882 - email: deptc.gvatvsld@gmail.com</div>
 </footer>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyBPNk4J9npcClKFD0daia4W8nPwwg3bX_A",
-        authDomain: "vsiptest-bdbc5.firebaseapp.com",
-        projectId: "vsiptest-bdbc5",
-        storageBucket: "vsiptest-bdbc5.firebasestorage.app",
-        messagingSenderId: "1056019256354",
-        appId: "1:1056019256354:web:8f864b8b2edc4c9b1ca67b"
+        apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
+        authDomain: "tavietnam-78ae8.firebaseapp.com",
+        projectId: "tavietnam-78ae8",
+        storageBucket: "tavietnam-78ae8.firebasestorage.app",
+        messagingSenderId: "670121705534",
+        appId: "1:670121705534:web:1027ad98550573ad37116f"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -82,38 +84,63 @@
     const provider = new GoogleAuthProvider();
     const ADMIN_EMAIL = "deptc.gvatvsld@gmail.com";
 
+    setPersistence(auth, browserLocalPersistence);
+
+    const params = new URLSearchParams(window.location.search);
+    const urlName = decodeURIComponent(params.get('name') || "");
+
     onAuthStateChanged(auth, (user) => {
         if (user) {
             document.getElementById('auth-section').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
             renderView(user);
         } else {
-            document.getElementById('auth-section').style.display = 'block';
-            document.getElementById('main-content').style.display = 'none';
+            // Nếu không có user nhưng có tham số URL, đợi 1 chút để Firebase sync
+            setTimeout(() => {
+                if(!auth.currentUser) {
+                    document.getElementById('auth-section').style.display = 'block';
+                    document.getElementById('main-content').style.display = 'none';
+                }
+            }, 1500);
         }
     });
 
     async function renderView(user) {
         const isAdmin = (user.email === ADMIN_EMAIL);
         const body = document.getElementById('data-body');
-        document.getElementById('role-display').innerHTML = isAdmin ? '<span class="role-badge admin-mode">QUYỀN QUẢT TRỊ</span>' : '<span class="role-badge user-mode">DỮ LIỆU CÁ NHÂN</span>';
-        document.getElementById('title-text').innerText = isAdmin ? "Tất cả góp ý hệ thống" : "Góp ý của tôi";
+        const titleText = document.getElementById('title-text');
+        
+        document.getElementById('role-display').innerHTML = isAdmin ? '<span class="role-badge admin-mode">QUYỀN QUẢN TRỊ</span>' : '<span class="role-badge user-mode">DỮ LIỆU CÁ NHÂN</span>';
+        titleText.innerText = isAdmin ? "Tất cả góp ý hệ thống" : `Góp ý của: ${urlName || user.displayName || 'Hội viên'}`;
         document.getElementById('col-sender').style.display = isAdmin ? "table-cell" : "none";
 
         try {
             const ref = collection(db, "feedback");
             const q = isAdmin ? query(ref, orderBy("time", "desc")) : query(ref, where("email", "==", user.email), orderBy("time", "desc"));
             const snap = await getDocs(q);
-            body.innerHTML = snap.empty ? '<tr><td colspan="3" style="text-align:center">Chưa có dữ liệu.</td></tr>' : '';
+            
+            body.innerHTML = '';
+            if (snap.empty) {
+                titleText.innerText = isAdmin ? "Hệ thống chưa có góp ý nào." : "Anh/chị chưa có lịch sử góp ý riêng.";
+                body.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 40px; color: #888;">Dữ liệu trống</td></tr>';
+                return;
+            }
+
             snap.forEach(doc => {
                 const d = doc.data();
                 const row = document.createElement('tr');
                 row.innerHTML = `<td style="display: ${isAdmin ? 'table-cell' : 'none'}"><strong>${d.user || ''}</strong><br><small>${d.dept || ''}</small></td>
-                                 <td><div style="font-weight:600">"${d.feedback || ''}"</div><div class="q-box"><strong>Câu hỏi:</strong> ${d.qContent || 'N/A'}</div></td>
+                                 <td><div style="font-weight:600">"${d.feedback || ''}"</div><div class="q-box"><strong>Câu hỏi (ID: ${d.qNum}):</strong> ${d.qContent || 'N/A'}</div></td>
                                  <td><small>${d.time ? new Date(d.time).toLocaleString('vi-VN') : ''}</small></td>`;
                 body.appendChild(row);
             });
-        } catch (e) { body.innerHTML = `<tr><td colspan="3" style="color:red">Lỗi tải dữ liệu.</td></tr>`; }
+        } catch (e) { 
+            console.error(e);
+            // Nếu lỗi do thiếu Index (thường gặp khi orderBy lần đầu), hiện hướng dẫn thay vì báo lỗi chung chung
+            body.innerHTML = `<tr><td colspan="3" style="color:red; text-align:center; padding:20px;">
+                Lỗi truy xuất dữ liệu. <br><small>Hệ thống có thể đang khởi tạo chỉ mục (Index), vui lòng thử lại sau 2 phút.</small>
+            </td></tr>`; 
+        }
     }
     document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
 </script>
