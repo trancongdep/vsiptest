@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sát hạch An toàn điện VSIP 2026 - v2.13</title>
+    <title>Sát hạch An toàn điện VSIP 2026 - v2.14</title>
     <style>
         :root { --primary-blue: #004a99; --accent: #f37021; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); }
@@ -12,32 +12,26 @@
         header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
 
         .main-content { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .card { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; min-height: 250px; }
+        .card { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; min-height: 250px; position: relative; }
 
-        .user-welcome { margin-bottom: 20px; padding: 15px; background: #eef6ff; border-radius: 8px; border-left: 5px solid var(--primary-blue); }
-        .user-welcome p { margin: 0; font-weight: 600; color: var(--primary-blue); font-size: 1rem; line-height: 1.5; }
+        .user-welcome { margin-bottom: 20px; padding: 15px; background: #eef2f6; border-radius: 8px; border-left: 5px solid var(--primary-blue); }
+        .user-welcome p { margin: 0; font-weight: 600; color: var(--primary-blue); font-size: 1rem; }
 
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--primary-blue); font-size: 0.95rem; }
-        input[type="text"], select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; box-sizing: border-box; outline: none; transition: 0.3s; }
-        input[type="text"]:focus, select:focus { border-color: var(--primary-blue); background: #fff; }
-
-        .btn { padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--primary-blue); }
+        input[type="text"], select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; box-sizing: border-box; outline: none; }
+        
+        .btn { padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-full { width: 100%; }
-        .btn-google { background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; }
         .btn-primary { background: var(--primary-blue); color: white; }
-        .btn-primary:hover { background: #003366; transform: translateY(-1px); }
-        .btn-orange { background: var(--accent); color: white; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+        .btn-orange { background: var(--accent); color: white; text-decoration: none; }
+        .btn-google { background: white; color: #444; border: 1px solid #ddd; width: 100%; }
 
         .button-group { display: flex; gap: 10px; margin-top: 10px; }
-        .button-group button, .button-group a { flex: 1; text-align: center; }
+        .button-group button, .button-group a { flex: 1; }
 
-        footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); line-height: 1.6; }
-        .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
-
-        /* Các vùng ẩn/hiện */
-        #auth-section, #name-section, #selection-section, #loader { display: none; }
-        #topic-container { display: none; }
+        footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); }
         
+        #auth-section, #name-section, #selection-section, #loader { display: none; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -52,12 +46,11 @@
     <div class="card">
         <div id="loader" style="display: block; text-align: center;">
             <div class="spinner"></div>
-            <p style="color:#666">Đang kiểm tra phiên làm việc...</p>
+            <p id="loader-text" style="color:#666">Đang xác thực tài khoản...</p>
         </div>
 
         <div id="auth-section" style="text-align: center;">
-            <h3 style="margin-top:0">Yêu cầu đăng nhập</h3>
-            <p style="color:#666; font-size: 0.95rem; margin-bottom: 25px;">Vui lòng đăng nhập Gmail để tiếp tục</p>
+            <h3 style="margin:0 0 20px 0">Yêu cầu đăng nhập</h3>
             <button class="btn btn-google" id="loginBtn">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="20">
                 Đăng nhập với Google
@@ -65,11 +58,11 @@
         </div>
 
         <div id="name-section">
-            <h3 style="margin-top:0; color: var(--primary-blue);">Thông tin cá nhân</h3>
-            <label for="userName">Họ và tên người kiểm tra:</label>
-            <input type="text" id="userName" placeholder="Nhập đầy đủ họ tên...">
-            <label for="userDept">Bộ phận công tác:</label>
-            <input type="text" id="userDept" placeholder="VD: Phòng Kỹ thuật - VDC">
+            <h3 style="margin:0 0 15px 0; color: var(--primary-blue);">Thông tin cá nhân</h3>
+            <label>Họ và tên:</label>
+            <input type="text" id="userName" placeholder="Nhập họ tên...">
+            <label>Bộ phận công tác:</label>
+            <input type="text" id="userDept" placeholder="VD: Phòng Kỹ thuật">
             <button class="btn btn-primary btn-full" id="saveNameBtn">Xác nhận & Tiếp tục</button>
         </div>
 
@@ -81,7 +74,7 @@
             </div>
 
             <form id="quizForm">
-                <label for="level">Chọn bậc an toàn điện:</label>
+                <label>Bậc an toàn điện:</label>
                 <select id="level" required>
                     <option value="1/5" selected>Bậc 1/5</option>
                     <option value="2/5">Bậc 2/5</option>
@@ -90,8 +83,8 @@
                     <option value="5/5">Bậc 5/5</option>
                 </select>
 
-                <div id="topic-container">
-                    <label for="topic">Chọn chuyên đề đào tạo:</label>
+                <div id="topic-container" style="display:none">
+                    <label>Chuyên đề đào tạo:</label>
                     <select id="topic">
                         <option value="0">-- Tất cả chuyên đề --</option>
                         <option value="1">Chuyên đề 1: Trạm biến áp 110/22kV</option>
@@ -108,8 +101,8 @@
                 </div>
 
                 <div class="button-group">
-                    <button type="submit" class="btn btn-primary">Bắt đầu làm bài</button>
-                    <button type="button" class="btn btn-orange" id="btnGoGopy">Xem góp ý</button>
+                    <button type="submit" class="btn btn-primary">Làm bài</button>
+                    <button type="button" class="btn btn-orange" id="btnGoGopy">Góp ý</button>
                 </div>
             </form>
         </div>
@@ -118,7 +111,7 @@
 
 <footer>
     <div>Nhóm biên soạn bộ đề trắc nghiệm An toàn điện VDC @2026</div>
-    <div class="footer-line-2">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882 - email: deptc.gvatvsld@gmail.com</div>
+    <div style="font-weight:600; color:var(--primary-blue); margin-top:5px;">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882</div>
 </footer>
 
 <script type="module">
@@ -140,87 +133,78 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // Duy trì phiên đăng nhập cục bộ
     setPersistence(auth, browserLocalPersistence);
 
-    const sections = { 
-        loader: document.getElementById('loader'), 
-        auth: document.getElementById('auth-section'), 
-        name: document.getElementById('name-section'), 
-        selection: document.getElementById('selection-section') 
-    };
-
-    function show(s) { 
-        Object.values(sections).forEach(x => x.style.display = 'none'); 
-        if(sections[s]) sections[s].style.display = 'block'; 
+    const sections = { loader: 'loader', auth: 'auth-section', name: 'name-section', selection: 'selection-section' };
+    function show(id) { 
+        Object.values(sections).forEach(s => document.getElementById(s).style.display = 'none'); 
+        document.getElementById(id).style.display = 'block'; 
     }
 
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) {
+    // Cơ chế Timeout phòng ngừa treo máy
+    let isLoaded = false;
+    setTimeout(() => {
+        if (!isLoaded && auth.currentUser) {
+            console.log("Hệ thống phản hồi chậm, đang ép tải lại dữ liệu...");
+            checkUserData(auth.currentUser);
+        } else if (!isLoaded && !auth.currentUser) {
             show('auth');
-            return;
         }
-        show('loader');
+    }, 4000);
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { show('auth'); isLoaded = true; return; }
+        await checkUserData(user);
+    });
+
+    async function checkUserData(user) {
         try {
             const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists() && userDoc.data().fullName && userDoc.data().department) {
-                document.getElementById('displayName').innerText = userDoc.data().fullName;
-                document.getElementById('displayDept').innerText = userDoc.data().department;
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                document.getElementById('displayName').innerText = data.fullName;
+                document.getElementById('displayDept').innerText = data.department;
                 show('selection');
             } else {
                 show('name');
             }
+            isLoaded = true;
         } catch (e) {
-            console.error("Lỗi Firestore:", e);
+            console.error(e);
             show('auth');
         }
-    });
+    }
 
     document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
 
     document.getElementById('saveNameBtn').onclick = async () => {
         const n = document.getElementById('userName').value.trim();
         const d = document.getElementById('userDept').value.trim();
-        if (n.length < 3 || d.length < 2) return alert("Vui lòng nhập đầy đủ thông tin!");
-        
+        if (n.length < 3) return alert("Vui lòng nhập tên!");
         show('loader');
         try {
-            await setDoc(doc(db, "users", auth.currentUser.uid), {
-                fullName: n,
-                department: d,
-                email: auth.currentUser.email,
-                updatedAt: new Date().toISOString()
-            });
+            await setDoc(doc(db, "users", auth.currentUser.uid), { fullName: n, department: d, email: auth.currentUser.email, updatedAt: new Date().toISOString() });
             document.getElementById('displayName').innerText = n;
             document.getElementById('displayDept').innerText = d;
             show('selection');
-        } catch (e) {
-            alert("Lỗi khi lưu dữ liệu: " + e.message);
-            show('name');
-        }
+        } catch (e) { alert("Lỗi: " + e.message); show('name'); }
     };
 
-    // Chuyển sang gopy.html kèm thông tin
     document.getElementById('btnGoGopy').onclick = () => {
         const name = document.getElementById('displayName').innerText;
-        const dept = document.getElementById('displayDept').innerText;
-        window.location.href = `gopy.html?name=${encodeURIComponent(name)}&dept=${encodeURIComponent(dept)}`;
+        window.location.href = `gopy.html?name=${encodeURIComponent(name)}`;
     };
 
     const levelSelect = document.getElementById('level');
-    const topicContainer = document.getElementById('topic-container');
     levelSelect.onchange = () => {
-        topicContainer.style.display = (['3/5', '4/5', '5/5'].includes(levelSelect.value)) ? 'block' : 'none';
-        if (topicContainer.style.display === 'none') document.getElementById('topic').value = "0";
+        document.getElementById('topic-container').style.display = (['3/5', '4/5', '5/5'].includes(levelSelect.value)) ? 'block' : 'none';
     };
 
     document.getElementById('quizForm').onsubmit = (e) => {
         e.preventDefault();
-        const lvl = levelSelect.value;
-        const tp = document.getElementById('topic').value;
         const name = document.getElementById('displayName').innerText;
         const dept = document.getElementById('displayDept').innerText;
-        window.location.href = `test.html?level=${lvl}&topic=${tp}&name=${encodeURIComponent(name)}&dept=${encodeURIComponent(dept)}`;
+        window.location.href = `test.html?level=${levelSelect.value}&topic=${document.getElementById('topic').value}&name=${encodeURIComponent(name)}&dept=${encodeURIComponent(dept)}`;
     };
 
     document.getElementById('logoutBtn').onclick = () => { if(confirm("Đăng xuất?")) signOut(auth); };
