@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hiệu chỉnh Câu hỏi - VSIP 2026 - v1.1</title>
+    <title>Hiệu chỉnh Bộ đề - VSIP 2026 - v1.2</title>
     <style>
         :root { --primary-blue: #004a99; --accent: #f37021; --success: #28a745; --danger: #dc3545; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); }
@@ -15,7 +15,7 @@
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .filter-bar input, .filter-bar select { padding: 12px; border: 2px solid #ddd; border-radius: 8px; flex: 1; min-width: 200px; outline: none; }
-        .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid #eee; }
+        .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid #eee; min-height: 300px; }
         table { width: 100%; border-collapse: collapse; background: white; }
         th { background: #f8f9fa; color: var(--primary-blue); text-align: left; padding: 15px; border-bottom: 2px solid #eee; font-size: 0.9rem; }
         td { padding: 15px; border-bottom: 1px solid #eee; font-size: 0.9rem; vertical-align: top; }
@@ -46,22 +46,21 @@
 <div class="container">
     <div id="loader" style="text-align: center; padding: 100px 0;">
         <div class="spinner"></div>
-        <p>Đang nạp dữ liệu câu hỏi...</p>
+        <p id="loader-msg">Đang nạp dữ liệu câu hỏi...</p>
     </div>
 
     <div id="main-content" style="display:none">
         <div class="card">
             <div class="filter-bar">
-                <input type="text" id="search-input" placeholder="Tìm ID hoặc nội dung câu hỏi..." oninput="filterQuestions()">
-                <select id="level-filter" onchange="filterQuestions()">
-                    <option value="">-- Tất cả Bậc --</option>
-                    <option value="1/5">Bậc 1/5</option>
+                <select id="level-filter" onchange="loadQuestions()">
+                    <option value="1/5" selected>Bậc 1/5</option>
                     <option value="2/5">Bậc 2/5</option>
                     <option value="3/5">Bậc 3/5</option>
                     <option value="4/5">Bậc 4/5</option>
                     <option value="5/5">Bậc 5/5</option>
                 </select>
-                <button onclick="loadQuestions()" style="background:var(--primary-blue); color:white; padding:0 20px; border-radius:8px; cursor:pointer;">Làm mới</button>
+                <input type="text" id="search-input" placeholder="Tìm ID hoặc nội dung trong Bậc này..." oninput="filterQuestions()">
+                <button onclick="loadQuestions()" style="background:var(--primary-blue); color:white; padding:0 20px; border-radius:8px; cursor:pointer;">Tải lại</button>
             </div>
 
             <div class="table-wrapper">
@@ -70,7 +69,7 @@
                         <tr>
                             <th style="width:70px">ID</th>
                             <th style="width:100px">Bậc</th>
-                            <th>Nội dung</th>
+                            <th>Nội dung câu hỏi</th>
                             <th style="width:60px">Đ/A</th>
                             <th style="width:140px">Thao tác</th>
                         </tr>
@@ -115,7 +114,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBPNk4J9npcClKFD0daia4W8nPwwg3bX_A",
@@ -131,31 +130,53 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
     const MASTER_ADMIN = "deptc.gvatvsld@gmail.com";
-    let allQuestions = [];
+    let currentQuestions = [];
     let currentEditDocId = null;
 
     onAuthStateChanged(auth, (user) => {
         if (user && user.email === MASTER_ADMIN) {
-            document.getElementById('loader').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
-            loadQuestions();
+            loadQuestions(); // Tải mặc định Bậc 1/5
         } else { window.location.href = 'index.html'; }
     });
 
+    // Cập nhật hàm tải dữ liệu: Chỉ tải theo Bậc đã chọn
     async function loadQuestions() {
         const listBody = document.getElementById('question-list');
-        listBody.innerHTML = '<tr><td colspan="5" style="text-align:center">Đang nạp dữ liệu...</td></tr>';
+        const selectedLevel = document.getElementById('level-filter').value;
+        
+        // Hiển thị trạng thái tải
+        listBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 50px;">
+            <div class="spinner"></div><br>Đang tải dữ liệu Bậc ${selectedLevel}...</td></tr>`;
+        
         try {
-            const snap = await getDocs(query(collection(db, "questions"), orderBy("questionId")));
-            allQuestions = [];
-            snap.forEach(d => allQuestions.push({ docId: d.id, ...d.data() }));
-            renderQuestions(allQuestions);
-        } catch (e) { listBody.innerHTML = '<tr><td colspan="5">Lỗi: ' + e.message + '</td></tr>'; }
+            const qRef = collection(db, "questions");
+            // Truy vấn lọc theo Bậc và sắp xếp theo ID
+            const q = query(
+                qRef, 
+                where("level", "in", [selectedLevel, "Bậc " + selectedLevel]),
+                orderBy("questionId")
+            );
+            
+            const snap = await getDocs(q);
+            currentQuestions = [];
+            snap.forEach(d => currentQuestions.push({ docId: d.id, ...d.data() }));
+            
+            renderQuestions(currentQuestions);
+            document.getElementById('loader').style.display = 'none';
+        } catch (e) { 
+            console.error(e);
+            listBody.innerHTML = '<tr><td colspan="5" style="color:red; text-align:center;">Lỗi: ' + e.message + '</td></tr>'; 
+        }
     }
 
     function renderQuestions(data) {
         const listBody = document.getElementById('question-list');
         listBody.innerHTML = '';
+        if(data.length === 0) {
+            listBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">Không có dữ liệu cho Bậc này.</td></tr>';
+            return;
+        }
         data.forEach(q => {
             const row = document.createElement('tr');
             row.innerHTML = `<td><strong>${q.questionId}</strong></td><td><small>${q.level || ''}</small></td><td>${q.content}</td><td><b style="color:var(--accent)">${q.correctAnswer}</b></td><td class="action-btns"><button class="btn-edit-small" onclick="openEdit('${q.docId}')">Sửa</button><button class="btn-del-small" onclick="deleteQuestion('${q.docId}', '${q.questionId}')">Xóa</button></td>`;
@@ -163,19 +184,17 @@
         });
     }
 
+    // Lọc dữ liệu cục bộ (đã tải về máy)
     window.filterQuestions = () => {
         const keyword = document.getElementById('search-input').value.toLowerCase();
-        const level = document.getElementById('level-filter').value;
-        const filtered = allQuestions.filter(q => {
-            const matchKey = q.content.toLowerCase().includes(keyword) || q.questionId.toString().includes(keyword);
-            const matchLvl = level === "" || q.level.includes(level);
-            return matchKey && matchLvl;
+        const filtered = currentQuestions.filter(q => {
+            return q.content.toLowerCase().includes(keyword) || q.questionId.toString().includes(keyword);
         });
         renderQuestions(filtered);
     }
 
     window.openEdit = (docId) => {
-        const q = allQuestions.find(item => item.docId === docId);
+        const q = currentQuestions.find(item => item.docId === docId);
         if (!q) return;
         currentEditDocId = docId;
         document.getElementById('m-id').innerText = q.questionId;
@@ -185,7 +204,7 @@
         document.getElementById('m-optC').value = q.optionC;
         document.getElementById('m-optD').value = q.optionD;
         document.getElementById('m-correct').value = q.correctAnswer;
-        document.getElementById('m-level').value = q.level.includes("/") ? q.level : q.level + "/5";
+        document.getElementById('m-level').value = q.level.replace("Bậc ", "");
         document.getElementById('m-basis').value = q.newBasis || "";
         document.getElementById('m-quote').value = q.quote || "";
         document.getElementById('edit-modal').style.display = 'flex';
@@ -194,9 +213,9 @@
     window.closeModal = () => { document.getElementById('edit-modal').style.display = 'none'; }
 
     window.deleteQuestion = async (docId, qId) => {
-        if (confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN câu hỏi số ${qId}?`)) {
+        if (confirm(`Xác nhận XÓA VĨNH VIỄN câu hỏi ${qId}?`)) {
             try { await deleteDoc(doc(db, "questions", docId)); loadQuestions(); } 
-            catch (e) { alert("Lỗi khi xóa: " + e.message); }
+            catch (e) { alert("Lỗi: " + e.message); }
         }
     }
 
