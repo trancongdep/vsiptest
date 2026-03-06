@@ -107,8 +107,8 @@
                 </div>
 
                 <div class="button-group">
-                    <button type="submit" class="btn btn-primary">Bắt đầu</button>
-                    <a href="gopy.html" class="btn btn-orange">Xem góp ý</a>
+                    <button type="submit" class="btn btn-primary">Bắt đầu làm bài</button>
+                    <button type="button" class="btn btn-orange" id="btnGoGopy">Xem góp ý</button>
                 </div>
             </form>
         </div>
@@ -134,6 +134,20 @@
         appId: "1:670121705534:web:1027ad98550573ad37116f"
     };
 
+    // Thêm logic cho nút Xem góp ý
+    document.getElementById('btnGoGopy').onclick = () => {
+        const name = document.getElementById('displayName').innerText;
+        const dept = document.getElementById('displayDept').innerText;
+        // Truyền thông tin qua URL để gopy.html nhận biết ngay
+        window.location.href = `gopy.html?name=${encodeURIComponent(name)}&dept=${encodeURIComponent(dept)}`;
+    };
+
+    // Đảm bảo khi onAuthStateChanged chạy, nút Xem góp ý đã sẵn sàng
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) return show('auth');
+        // ... (phần code cũ) ...
+    });
+    
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
