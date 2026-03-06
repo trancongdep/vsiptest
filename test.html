@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sát hạch An toàn điện VSIP 2026 - v4.0</title>
+    <title>Sát hạch An toàn điện VSIP 2026 - v4.1</title>
     <style>
         :root { --primary: #004a99; --accent: #f37021; --success: #28a745; --danger: #dc3545; --bg: #f0f2f5; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; -webkit-tap-highlight-color: transparent; }
@@ -38,7 +38,7 @@
 <div class="container">
     <div id="loading" style="text-align:center; padding:50px;">
         <div style="border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
-        <p>Đang chuẩn bị bộ câu hỏi...</p>
+        <p id="loading-msg">Đang chuẩn bị dữ liệu...</p>
     </div>
 
     <div id="quiz-area" style="display:none;">
@@ -54,7 +54,7 @@
             <div id="options"></div>
 
             <div class="controls">
-                <button class="btn-gray" onclick="window.location.href='index.html'" style="grid-column: 1 / span 2;">« Thay đổi đề</button>
+                <button class="btn-gray" onclick="window.location.href='index.html'" style="grid-column: 1 / span 2;">« Về trang chủ</button>
                 <div class="btn-group-main">
                     <button class="btn-gray" onclick="move(-1)">Trước</button>
                     <button class="btn-blue" onclick="checkAnswer()">Kiểm tra</button>
@@ -84,6 +84,7 @@
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+    // Cấu hình Firebase chuẩn của anh
     const firebaseConfig = {
         apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
         authDomain: "tavietnam-78ae8.firebaseapp.com",
@@ -108,35 +109,54 @@
     let isMultipleChoice = false;
     let currentUser = null;
 
+    // Kiểm tra trạng thái đăng nhập
     onAuthStateChanged(auth, (user) => {
-        currentUser = user;
-        if (user) load();
-        else document.getElementById('loading').innerHTML = "<p>Vui lòng đăng nhập!</p><button onclick=\"location.href='index.html'\" class='btn-blue' style='margin:0 auto'>Về trang chủ</button>";
+        if (user) {
+            currentUser = user;
+            load();
+        } else {
+            document.getElementById('loading-msg').innerHTML = "Vui lòng đăng nhập để làm bài!<br><br><button onclick=\"location.href='index.html'\" class='btn-blue' style='margin:10px auto'>Quay lại trang chủ</button>";
+        }
     });
 
     async function load() {
-        if (!levelParam) { document.getElementById('loading').innerHTML = "<b style='color:red'>Thiếu thông tin Bậc!</b>"; return; }
+        if (!levelParam) { 
+            document.getElementById('loading-msg').innerHTML = "<b style='color:red'>Lỗi: Thiếu thông tin chọn Bậc!</b><br><br><button onclick=\"location.href='index.html'\" class='btn-gray' style='margin:10px auto'>Quay lại trang chủ</button>";
+            return; 
+        }
         try {
             document.getElementById('badge-name').innerText = userName;
             const levelStr = String(levelParam);
             const levelClean = levelStr.replace("Bậc ", "");
+            
             const qRef = collection(db, "questions");
             const q = query(qRef, where("level", "in", [levelStr, "Bậc " + levelStr, levelClean]));
+            
             const snap = await getDocs(q);
             let pool = [];
             snap.forEach(d => pool.push({dbId: d.id, ...d.data()}));
+            
             if (topicIdx !== "0") {
                 const searchStr = "Chuyên đề " + topicIdx;
                 questions = pool.filter(item => (item.category || "").toString().includes(searchStr));
                 if (questions.length === 0) questions = pool.filter(item => (item.category || "").toString().includes("Kiến thức chung"));
-            } else { questions = pool; }
-            if (questions.length === 0) { document.getElementById('loading').innerText = "Chưa có dữ liệu cho bậc này."; return; }
+            } else { 
+                questions = pool; 
+            }
+
+            if (questions.length === 0) { 
+                document.getElementById('loading-msg').innerText = "Chưa có dữ liệu cho bậc này."; 
+                return; 
+            }
+
             questions.sort(() => Math.random() - 0.5);
             document.getElementById('loading').style.display = 'none';
             document.getElementById('quiz-area').style.display = 'block';
             document.getElementById('badge-lvl').innerText = "Bậc: " + levelStr;
             render();
-        } catch (e) { document.getElementById('loading').innerText = "Lỗi: " + e.message; }
+        } catch (e) { 
+            document.getElementById('loading-msg').innerText = "Lỗi tải đề: " + e.message; 
+        }
     }
 
     function render() {
@@ -148,7 +168,6 @@
         document.getElementById('feedback').value = "";
         document.getElementById('q-count').innerText = `${curIdx + 1}/${questions.length}`;
         
-        // CẬP NHẬT: Hiển thị số câu gốc từ bộ đề
         document.getElementById('q-text').innerHTML = `<span class="q-num-label">(Câu ${q.questionId})</span> ${q.content}`;
         
         document.getElementById('options').innerHTML = `
@@ -164,7 +183,10 @@
 
     window.handleSelect = (el) => {
         if (isMultipleChoice) el.classList.toggle('selected');
-        else { document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected', 'correct', 'wrong')); el.classList.add('selected'); }
+        else { 
+            document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected', 'correct', 'wrong')); 
+            el.classList.add('selected'); 
+        }
     }
 
     window.checkAnswer = () => {
@@ -185,7 +207,6 @@
         const msg = document.getElementById('feedback').value;
         if (!msg.trim()) return alert("Nhập nội dung!");
         try {
-            // CẬP NHẬT: Lưu số câu gốc vào feedback để truy xuất nhanh
             await addDoc(collection(db, "feedback"), {
                 qNum: questions[curIdx].questionId || "N/A",
                 qContent: questions[curIdx].content || "",
@@ -195,11 +216,10 @@
                 feedback: msg,
                 time: new Date().toISOString()
             });
-            alert("Gửi thành công!");
+            alert("Gửi góp ý thành công!");
             document.getElementById('feedback').value = "";
-        } catch (e) { alert("Lỗi: " + e.message); }
+        } catch (e) { alert("Lỗi gửi góp ý: " + e.message); }
     }
 </script>
-<style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
 </body>
 </html>
