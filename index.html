@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sát hạch An toàn điện VSIP 2026</title>
+    <title>Sát hạch An toàn điện VSIP 2026 - v2.8</title>
     <style>
         :root { --primary-blue: #004a99; --accent: #f37021; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); }
@@ -21,10 +21,17 @@
         input[type="text"], select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; box-sizing: border-box; outline: none; transition: 0.3s; }
         input[type="text"]:focus, select:focus { border-color: var(--primary-blue); background: #fff; }
 
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
-        .btn-google { background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-primary { background: var(--primary-blue); color: white; margin-top: 10px; }
+        .btn { padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+        .btn-full { width: 100%; }
+        .btn-google { background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; }
+        .btn-primary { background: var(--primary-blue); color: white; }
         .btn-primary:hover { background: #003366; transform: translateY(-1px); }
+        .btn-orange { background: var(--accent); color: white; }
+        .btn-orange:hover { background: #d45d1a; transform: translateY(-1px); }
+
+        /* Nhóm nút điều hướng */
+        .button-group { display: flex; gap: 10px; margin-top: 10px; }
+        .button-group button, .button-group a { flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; }
 
         footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); line-height: 1.6; }
         .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
@@ -65,7 +72,7 @@
             <input type="text" id="userName" placeholder="Nhập đầy đủ họ tên...">
             <label for="userDept">Bộ phận công tác:</label>
             <input type="text" id="userDept" placeholder="VD: Phòng Kỹ thuật - VDC">
-            <button class="btn btn-primary" id="saveNameBtn">Xác nhận & Tiếp tục</button>
+            <button class="btn btn-primary btn-full" id="saveNameBtn">Xác nhận & Tiếp tục</button>
         </div>
 
         <div id="selection-section">
@@ -103,7 +110,10 @@
                     </select>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Bắt đầu làm bài</button>
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Bắt đầu làm bài</button>
+                    <a href="gopy.html" class="btn btn-orange">Xem góp ý</a>
+                </div>
             </form>
         </div>
     </div>
@@ -137,7 +147,6 @@
     const sections = { loader: document.getElementById('loader'), auth: document.getElementById('auth-section'), name: document.getElementById('name-section'), selection: document.getElementById('selection-section') };
     function show(s) { Object.values(sections).forEach(x => x.style.display = 'none'); sections[s].style.display = 'block'; }
 
-    // Theo dõi trạng thái đăng nhập
     onAuthStateChanged(auth, async (user) => {
         if (!user) return show('auth');
         show('loader');
@@ -157,10 +166,8 @@
         }
     });
 
-    // Xử lý Login
     document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
 
-    // Xử lý Lưu thông tin cá nhân
     document.getElementById('saveNameBtn').onclick = async () => {
         const n = document.getElementById('userName').value.trim();
         const d = document.getElementById('userDept').value.trim();
@@ -174,36 +181,30 @@
                 email: auth.currentUser.email,
                 updatedAt: new Date().toISOString()
             });
-            // Tự động load lại trạng thái nhờ onAuthStateChanged
         } catch (e) {
             alert("Lỗi khi lưu dữ liệu: " + e.message);
             show('name');
         }
     };
 
-    // LOGIC QUAN TRỌNG: Ẩn hiện chuyên đề dựa trên bậc
     const levelSelect = document.getElementById('level');
     const topicContainer = document.getElementById('topic-container');
     levelSelect.onchange = () => {
         const val = levelSelect.value;
-        // Chỉ hiện chuyên đề cho bậc 3, 4, 5
         if (['3/5', '4/5', '5/5'].includes(val)) {
             topicContainer.style.display = 'block';
         } else {
             topicContainer.style.display = 'none';
-            document.getElementById('topic').value = "0"; // Reset về mặc định
+            document.getElementById('topic').value = "0";
         }
     };
 
-    // Chuyển trang làm bài
     document.getElementById('quizForm').onsubmit = (e) => {
         e.preventDefault();
         const lvl = levelSelect.value;
         const tp = document.getElementById('topic').value;
         const name = document.getElementById('displayName').innerText;
         const dept = document.getElementById('displayDept').innerText;
-        
-        // Truyền dữ liệu sang test.html
         window.location.href = `test.html?level=${lvl}&topic=${tp}&name=${encodeURIComponent(name)}&dept=${encodeURIComponent(dept)}`;
     };
 
