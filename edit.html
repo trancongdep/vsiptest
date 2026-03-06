@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hiệu chỉnh Bộ đề - VSIP 2026 - v1.2</title>
+    <title>Hiệu chỉnh Bộ đề - VSIP 2026 - v1.3</title>
     <style>
         :root { --primary-blue: #004a99; --accent: #f37021; --success: #28a745; --danger: #dc3545; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); }
@@ -46,7 +46,7 @@
 <div class="container">
     <div id="loader" style="text-align: center; padding: 100px 0;">
         <div class="spinner"></div>
-        <p id="loader-msg">Đang nạp dữ liệu câu hỏi...</p>
+        <p id="loader-msg">Đang kiểm tra quyền Admin...</p>
     </div>
 
     <div id="main-content" style="display:none">
@@ -134,49 +134,38 @@
     let currentEditDocId = null;
 
     onAuthStateChanged(auth, (user) => {
-        if (user && user.email === MASTER_ADMIN) {
+        if (!user) {
+            // TRƯỜNG HỢP 1: Chưa đăng nhập -> Đẩy về user.html
+            window.location.href = 'user.html';
+        } else if (user.email !== MASTER_ADMIN) {
+            // TRƯỜNG HỢP 2: Đăng nhập nhưng không phải admin -> Đẩy về index.html
+            window.location.href = 'index.html';
+        } else {
+            // TRƯỜNG HỢP 3: Là Master Admin -> Mở trang
+            document.getElementById('loader').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
-            loadQuestions(); // Tải mặc định Bậc 1/5
-        } else { window.location.href = 'index.html'; }
+            loadQuestions(); 
+        }
     });
 
-    // Cập nhật hàm tải dữ liệu: Chỉ tải theo Bậc đã chọn
     async function loadQuestions() {
         const listBody = document.getElementById('question-list');
         const selectedLevel = document.getElementById('level-filter').value;
-        
-        // Hiển thị trạng thái tải
-        listBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 50px;">
-            <div class="spinner"></div><br>Đang tải dữ liệu Bậc ${selectedLevel}...</td></tr>`;
+        listBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 50px;"><div class="spinner"></div><br>Đang tải dữ liệu Bậc ${selectedLevel}...</td></tr>`;
         
         try {
             const qRef = collection(db, "questions");
-            // Truy vấn lọc theo Bậc và sắp xếp theo ID
-            const q = query(
-                qRef, 
-                where("level", "in", [selectedLevel, "Bậc " + selectedLevel]),
-                orderBy("questionId")
-            );
-            
+            const q = query(qRef, where("level", "in", [selectedLevel, "Bậc " + selectedLevel]), orderBy("questionId"));
             const snap = await getDocs(q);
             currentQuestions = [];
             snap.forEach(d => currentQuestions.push({ docId: d.id, ...d.data() }));
-            
             renderQuestions(currentQuestions);
-            document.getElementById('loader').style.display = 'none';
-        } catch (e) { 
-            console.error(e);
-            listBody.innerHTML = '<tr><td colspan="5" style="color:red; text-align:center;">Lỗi: ' + e.message + '</td></tr>'; 
-        }
+        } catch (e) { listBody.innerHTML = '<tr><td colspan="5" style="color:red; text-align:center;">Lỗi: ' + e.message + '</td></tr>'; }
     }
 
     function renderQuestions(data) {
         const listBody = document.getElementById('question-list');
-        listBody.innerHTML = '';
-        if(data.length === 0) {
-            listBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">Không có dữ liệu cho Bậc này.</td></tr>';
-            return;
-        }
+        listBody.innerHTML = data.length === 0 ? '<tr><td colspan="5" style="text-align:center; padding:30px;">Không có dữ liệu cho Bậc này.</td></tr>' : '';
         data.forEach(q => {
             const row = document.createElement('tr');
             row.innerHTML = `<td><strong>${q.questionId}</strong></td><td><small>${q.level || ''}</small></td><td>${q.content}</td><td><b style="color:var(--accent)">${q.correctAnswer}</b></td><td class="action-btns"><button class="btn-edit-small" onclick="openEdit('${q.docId}')">Sửa</button><button class="btn-del-small" onclick="deleteQuestion('${q.docId}', '${q.questionId}')">Xóa</button></td>`;
@@ -184,12 +173,9 @@
         });
     }
 
-    // Lọc dữ liệu cục bộ (đã tải về máy)
     window.filterQuestions = () => {
         const keyword = document.getElementById('search-input').value.toLowerCase();
-        const filtered = currentQuestions.filter(q => {
-            return q.content.toLowerCase().includes(keyword) || q.questionId.toString().includes(keyword);
-        });
+        const filtered = currentQuestions.filter(q => q.content.toLowerCase().includes(keyword) || q.questionId.toString().includes(keyword));
         renderQuestions(filtered);
     }
 
@@ -199,10 +185,8 @@
         currentEditDocId = docId;
         document.getElementById('m-id').innerText = q.questionId;
         document.getElementById('m-content').value = q.content;
-        document.getElementById('m-optA').value = q.optionA;
-        document.getElementById('m-optB').value = q.optionB;
-        document.getElementById('m-optC').value = q.optionC;
-        document.getElementById('m-optD').value = q.optionD;
+        document.getElementById('m-optA').value = q.optionA; document.getElementById('m-optB').value = q.optionB;
+        document.getElementById('m-optC').value = q.optionC; document.getElementById('m-optD').value = q.optionD;
         document.getElementById('m-correct').value = q.correctAnswer;
         document.getElementById('m-level').value = q.level.replace("Bậc ", "");
         document.getElementById('m-basis').value = q.newBasis || "";
@@ -224,10 +208,8 @@
         try {
             const updatedData = {
                 content: document.getElementById('m-content').value,
-                optionA: document.getElementById('m-optA').value,
-                optionB: document.getElementById('m-optB').value,
-                optionC: document.getElementById('m-optC').value,
-                optionD: document.getElementById('m-optD').value,
+                optionA: document.getElementById('m-optA').value, optionB: document.getElementById('m-optB').value,
+                optionC: document.getElementById('m-optC').value, optionD: document.getElementById('m-optD').value,
                 correctAnswer: document.getElementById('m-correct').value.toUpperCase(),
                 level: document.getElementById('m-level').value,
                 newBasis: document.getElementById('m-basis').value,
