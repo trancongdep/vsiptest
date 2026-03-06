@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sát hạch An toàn điện VSIP 2026 - v2.11</title>
+    <title>Sát hạch An toàn điện VSIP 2026 - v2.13</title>
     <style>
         :root { --primary-blue: #004a99; --accent: #f37021; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); }
@@ -34,6 +34,7 @@
         footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); line-height: 1.6; }
         .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
 
+        /* Các vùng ẩn/hiện */
         #auth-section, #name-section, #selection-section, #loader { display: none; }
         #topic-container { display: none; }
         
@@ -49,9 +50,9 @@
 
 <div class="main-content">
     <div class="card">
-        <div id="loader" style="text-align: center;">
+        <div id="loader" style="display: block; text-align: center;">
             <div class="spinner"></div>
-            <p style="color:#666">Đang xác thực hệ thống...</p>
+            <p style="color:#666">Đang kiểm tra phiên làm việc...</p>
         </div>
 
         <div id="auth-section" style="text-align: center;">
@@ -68,7 +69,7 @@
             <label for="userName">Họ và tên người kiểm tra:</label>
             <input type="text" id="userName" placeholder="Nhập đầy đủ họ tên...">
             <label for="userDept">Bộ phận công tác:</label>
-            <input type="text" id="userDept" placeholder="VD: Phòng M&E">
+            <input type="text" id="userDept" placeholder="VD: Phòng Kỹ thuật - VDC">
             <button class="btn btn-primary btn-full" id="saveNameBtn">Xác nhận & Tiếp tục</button>
         </div>
 
@@ -122,7 +123,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -134,30 +135,31 @@
         appId: "1:670121705534:web:1027ad98550573ad37116f"
     };
 
-    // Thêm logic cho nút Xem góp ý
-    document.getElementById('btnGoGopy').onclick = () => {
-        const name = document.getElementById('displayName').innerText;
-        const dept = document.getElementById('displayDept').innerText;
-        // Truyền thông tin qua URL để gopy.html nhận biết ngay
-        window.location.href = `gopy.html?name=${encodeURIComponent(name)}&dept=${encodeURIComponent(dept)}`;
-    };
-
-    // Đảm bảo khi onAuthStateChanged chạy, nút Xem góp ý đã sẵn sàng
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) return show('auth');
-        // ... (phần code cũ) ...
-    });
-    
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    const sections = { loader: document.getElementById('loader'), auth: document.getElementById('auth-section'), name: document.getElementById('name-section'), selection: document.getElementById('selection-section') };
-    function show(s) { Object.values(sections).forEach(x => x.style.display = 'none'); sections[s].style.display = 'block'; }
+    // Duy trì phiên đăng nhập cục bộ
+    setPersistence(auth, browserLocalPersistence);
+
+    const sections = { 
+        loader: document.getElementById('loader'), 
+        auth: document.getElementById('auth-section'), 
+        name: document.getElementById('name-section'), 
+        selection: document.getElementById('selection-section') 
+    };
+
+    function show(s) { 
+        Object.values(sections).forEach(x => x.style.display = 'none'); 
+        if(sections[s]) sections[s].style.display = 'block'; 
+    }
 
     onAuthStateChanged(auth, async (user) => {
-        if (!user) return show('auth');
+        if (!user) {
+            show('auth');
+            return;
+        }
         show('loader');
         try {
             const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -168,7 +170,10 @@
             } else {
                 show('name');
             }
-        } catch (e) { show('auth'); }
+        } catch (e) {
+            console.error("Lỗi Firestore:", e);
+            show('auth');
+        }
     });
 
     document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
@@ -186,7 +191,6 @@
                 email: auth.currentUser.email,
                 updatedAt: new Date().toISOString()
             });
-            // Cập nhật giao diện ngay lập tức sau khi lưu thành công
             document.getElementById('displayName').innerText = n;
             document.getElementById('displayDept').innerText = d;
             show('selection');
@@ -194,6 +198,13 @@
             alert("Lỗi khi lưu dữ liệu: " + e.message);
             show('name');
         }
+    };
+
+    // Chuyển sang gopy.html kèm thông tin
+    document.getElementById('btnGoGopy').onclick = () => {
+        const name = document.getElementById('displayName').innerText;
+        const dept = document.getElementById('displayDept').innerText;
+        window.location.href = `gopy.html?name=${encodeURIComponent(name)}&dept=${encodeURIComponent(dept)}`;
     };
 
     const levelSelect = document.getElementById('level');
