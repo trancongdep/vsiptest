@@ -3,99 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tổng hợp Góp ý - VSIP 2026</title>
+    <title>Quản trị Góp ý VSIP 2026 - v1.2</title>
     <style>
-        :root { 
-            --primary-blue: #004a99; 
-            --accent-orange: #f37021; 
-            --success: #28a745; 
-            --danger: #dc3545; 
-            --bg-color: #f4f7f9; 
-            --text-main: #1a1a1a;
-        }
-
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: var(--bg-color); 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 100vh; 
-        }
+        :root { --primary: #004a99; --accent: #f37021; --danger: #dc3545; --bg: #f4f7f9; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        header { background: var(--primary); color: white; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .container { flex: 1; max-width: 1200px; margin: 30px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); min-height: 300px; }
+        .header-table { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
         
-        header { background: var(--primary-blue); color: white; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        header h1 { margin: 0; font-size: 1.5rem; text-transform: uppercase; font-weight: 700; }
-
-        .container { flex: 1; max-width: 1100px; margin: 30px auto; padding: 0 20px; width: 100%; box-sizing: border-box; }
-        
-        .admin-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
-
-        .summary-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #eee; }
-        .summary-bar h2 { margin: 0; color: var(--primary-blue); font-size: 1.2rem; }
-
         /* Bảng dữ liệu */
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #f8f9fa; color: var(--primary-blue); font-weight: 700; text-align: left; padding: 12px; border-bottom: 2px solid #dee2e6; }
-        td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: top; font-size: 0.95rem; }
-        tr:hover { background-color: #f1f8ff; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: #f8f9fa; color: var(--primary); padding: 15px; text-align: left; border-bottom: 2px solid #dee2e6; font-size: 0.9rem; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 0.95rem; vertical-align: top; }
+        .q-box { background: #f0f7ff; padding: 10px; border-radius: 6px; font-size: 0.85rem; color: #444; border-left: 3px solid var(--primary); margin-top: 8px; }
+        .user-info { font-weight: bold; color: var(--accent); }
+        .feedback-text { font-weight: 600; color: #1a1a1a; display: block; margin-bottom: 5px; }
+        
+        /* Nút bấm */
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-del { color: var(--danger); border: 1px solid var(--danger); background: none; padding: 5px 10px; border-radius: 4px; }
+        .btn-del:hover { background: var(--danger); color: white; }
+        
+        /* Phần đăng nhập */
+        #auth-check { text-align: center; padding: 50px 20px; }
+        .btn-google { background: white; color: #444; border: 1px solid #ddd; display: inline-flex; align-items: center; gap: 10px; }
 
-        .user-tag { font-weight: bold; color: var(--accent-orange); display: block; }
-        .dept-tag { font-size: 0.8rem; color: #666; }
-        .q-content { font-size: 0.9rem; color: #555; font-style: italic; max-width: 300px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .fb-text { color: var(--text-main); font-weight: 500; }
-        .time-tag { font-size: 0.8rem; color: #999; }
-
-        .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 0.85rem; }
-        .btn-delete { background: #fff1f0; color: var(--danger); border: 1px solid #ffa39e; }
-        .btn-delete:hover { background: var(--danger); color: white; }
-        .btn-refresh { background: var(--primary-blue); color: white; }
-
-        #loading { text-align: center; padding: 50px; font-weight: bold; color: var(--primary-blue); }
-
-        footer { background: #eef2f6; color: #444; padding: 25px 15px; text-align: center; font-size: 0.95rem; border-top: 3px solid var(--primary-blue); margin-top: auto; }
+        footer { background: #eef2f6; color: #444; padding: 20px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary); margin-top: auto; }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>TỔNG HỢP Ý KIẾN CẢI TIẾN CÂU HỎI 2026</h1>
-</header>
+<header><h1>HỆ THỐNG QUẢN TRỊ GÓP Ý VSIP 2026</h1></header>
 
 <div class="container">
-    <div class="admin-card">
-        <div class="summary-bar">
-            <h2>Danh sách Phản hồi (<span id="count">0</span>)</h2>
-            <button class="btn btn-refresh" onclick="fetchFeedback()">Làm mới dữ liệu</button>
+    <div class="card">
+        <div id="auth-check">
+            <p>Vui lòng đăng nhập quyền Quản trị để xem góp ý.</p>
+            <button class="btn btn-google" id="loginBtn">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="20"> Đăng nhập với Google
+            </button>
         </div>
 
-        <div id="loading">Đang tải dữ liệu từ hệ thống...</div>
-
-        <div class="table-container" id="tableArea" style="display:none;">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 150px;">Người gửi</th>
-                        <th style="width: 250px;">Câu hỏi liên quan</th>
-                        <th>Nội dung góp ý</th>
-                        <th style="width: 150px;">Thời gian</th>
-                        <th style="width: 80px;">Tác vụ</th>
-                    </tr>
-                </thead>
-                <tbody id="feedbackBody">
-                    </tbody>
-            </table>
+        <div id="admin-content" style="display:none">
+            <div class="header-table">
+                <h2 style="margin:0; color:var(--primary)">Danh sách phản hồi (<span id="count">0</span>)</h2>
+                <div style="display:flex; gap:10px">
+                    <button class="btn btn-primary" onclick="loadFeedback()">Làm mới</button>
+                    <button class="btn" style="background:#666; color:white" id="logoutBtn">Đăng xuất</button>
+                </div>
+            </div>
+            
+            <div id="status" style="text-align:center; padding:20px; font-weight:bold; color:var(--primary)">Đang tải dữ liệu...</div>
+            
+            <div id="table-area" style="display:none">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:200px">Người gửi</th>
+                            <th>Nội dung & Câu hỏi liên quan</th>
+                            <th style="width:160px">Thời gian</th>
+                            <th style="width:80px">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <footer>
     <div>Nhóm biên soạn bộ đề trắc nghiệm An toàn điện VDC @2026</div>
-    <div style="font-weight:600; color:var(--primary-blue); margin-top:5px;">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882 - email: deptc.gvatvsld@gmail.com</div>
+    <div style="font-weight:600; color:var(--primary); margin-top:5px;">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882</div>
 </footer>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -109,73 +95,81 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
 
-    async function fetchFeedback() {
-        const loader = document.getElementById('loading');
-        const tableArea = document.getElementById('tableArea');
-        const tbody = document.getElementById('feedbackBody');
+    // Theo dõi trạng thái đăng nhập
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById('auth-check').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+            loadFeedback();
+        } else {
+            document.getElementById('auth-check').style.display = 'block';
+            document.getElementById('admin-content').style.display = 'none';
+        }
+    });
+
+    async function loadFeedback() {
+        const body = document.getElementById('data-body');
+        const status = document.getElementById('status');
+        const tableArea = document.getElementById('table-area');
         
-        loader.style.display = 'block';
+        body.innerHTML = '';
+        status.style.display = 'block';
+        status.innerText = "Đang tải dữ liệu...";
         tableArea.style.display = 'none';
-        tbody.innerHTML = '';
 
         try {
-            // Lấy feedback, sắp xếp mới nhất lên đầu
             const q = query(collection(db, "feedback"), orderBy("time", "desc"));
             const snap = await getDocs(q);
             
             document.getElementById('count').innerText = snap.size;
 
             if (snap.empty) {
-                loader.innerText = "Hiện chưa có góp ý nào từ người dùng.";
+                status.innerText = "Hiện chưa có góp ý nào.";
                 return;
             }
 
-            snap.forEach((d) => {
-                const data = d.data();
-                const date = data.time ? new Date(data.time).toLocaleString('vi-VN') : 'N/A';
-                
+            snap.forEach(s => {
+                const d = s.data();
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
-                        <span class="user-tag">${data.user || 'Nặc danh'}</span>
-                        <span class="dept-tag">${data.dept || 'Không rõ bộ phận'}</span>
+                        <div class="user-info">${d.user || 'Học viên'}</div>
+                        <div style="font-size:0.8rem; color:#666">${d.dept || ''}</div>
                     </td>
                     <td>
-                        <div class="q-content" title="${data.qContent || ''}">
-                            <strong>ID: ${data.qId || 'N/A'}</strong><br>
-                            ${data.qContent || 'Không có nội dung câu hỏi'}
+                        <span class="feedback-text">${d.feedback}</span>
+                        <div class="q-box">
+                            <strong>Câu hỏi (ID: ${d.qId}):</strong> ${d.qContent || 'Không rõ nội dung'}
                         </div>
                     </td>
-                    <td class="fb-text">${data.feedback}</td>
-                    <td class="time-tag">${date}</td>
-                    <td>
-                        <button class="btn btn-delete" onclick="deleteFeedback('${d.id}')">Xóa</button>
-                    </td>
+                    <td><small>${d.time ? new Date(d.time).toLocaleString('vi-VN') : 'N/A'}</small></td>
+                    <td><button class="btn-del" onclick="deleteFB('${s.id}')">Xóa</button></td>
                 `;
-                tbody.appendChild(row);
+                body.appendChild(row);
             });
-
-            loader.style.display = 'none';
+            status.style.display = 'none';
             tableArea.style.display = 'block';
         } catch (e) {
+            status.innerText = "Lỗi truy cập: " + e.message;
             console.error(e);
-            loader.innerText = "Lỗi khi tải dữ liệu. Hãy kiểm tra phân quyền (Rules)!";
         }
     }
 
-    window.deleteFeedback = async (id) => {
-        if (!confirm("Bạn có chắc chắn muốn xóa góp ý này?")) return;
-        try {
-            await deleteDoc(doc(db, "feedback", id));
-            fetchFeedback(); // Tải lại bảng
-        } catch (e) {
-            alert("Lỗi khi xóa: " + e.message);
+    window.deleteFB = async (id) => {
+        if(confirm("Xóa vĩnh viễn góp ý này?")) {
+            try {
+                await deleteDoc(doc(db, "feedback", id));
+                loadFeedback();
+            } catch (e) { alert("Lỗi khi xóa: " + e.message); }
         }
     }
 
-    window.fetchFeedback = fetchFeedback;
-    fetchFeedback();
+    document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
+    document.getElementById('logoutBtn').onclick = () => signOut(auth);
+    window.loadFeedback = loadFeedback;
 </script>
 </body>
 </html>
