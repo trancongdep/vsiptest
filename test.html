@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Làm bài Sát hạch An toàn điện - VSIP</title>
+    <title>Hệ thống Sát hạch An toàn điện - v1.3</title>
     <style>
         :root {
             --primary: #004a99;
@@ -11,25 +11,27 @@
             --success: #28a745;
             --danger: #dc3545;
             --light: #f8f9fa;
+            --dark: #2c3e50;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #e9ecef;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
+            color: var(--dark);
         }
 
-        .quiz-container {
-            max-width: 800px;
-            margin: auto;
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
-        .quiz-header {
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -38,156 +40,165 @@
             margin-bottom: 20px;
         }
 
-        .info-label {
-            font-size: 14px;
-            color: #555;
-            background: #eee;
-            padding: 5px 10px;
-            border-radius: 5px;
+        .badge {
+            font-size: 13px;
+            background: #eef2f7;
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: var(--primary);
+            font-weight: 600;
+            margin-right: 5px;
+            border: 1px solid #d1d9e6;
         }
 
-        .question-box {
-            margin-bottom: 25px;
+        .question-area {
+            min-height: 250px;
         }
 
         .question-text {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: 20px;
-            color: #333;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            color: #1a1a1a;
         }
 
-        .options {
+        .options-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
 
-        .option-item {
-            padding: 15px;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
+        .option {
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            font-size: 1rem;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
         }
 
-        .option-item:hover {
-            background-color: #f1f8ff;
+        .option:hover {
             border-color: var(--primary);
+            background-color: #f8fbff;
         }
 
-        .option-item.selected {
-            background-color: #e7f1ff;
+        .option.selected {
             border-color: var(--primary);
+            background-color: #eef6ff;
+            font-weight: 500;
         }
 
-        .option-item.correct {
-            background-color: #d4edda;
-            border-color: var(--success);
+        .option.correct {
+            background-color: #e6ffed !important;
+            border-color: var(--success) !important;
+            color: #155724;
         }
 
-        .option-item.wrong {
-            background-color: #f8d7da;
-            border-color: var(--danger);
+        .option.wrong {
+            background-color: #fff5f5 !important;
+            border-color: var(--danger) !important;
+            color: #721c24;
         }
 
-        .nav-buttons {
+        .controls {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-top: 30px;
-            gap: 10px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
         }
 
         button {
-            padding: 12px 25px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
+            font-size: 0.95rem;
+            transition: 0.2s;
         }
 
-        .btn-nav { background: #6c757d; color: white; }
-        .btn-check { background: var(--primary); color: white; }
-        .btn-support { background: var(--secondary); color: white; }
+        .btn-gray { background: #6c757d; color: white; }
+        .btn-blue { background: var(--primary); color: white; }
+        .btn-orange { background: var(--secondary); color: white; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* Panel Hỗ trợ */
-        .support-panel {
+        .support-box {
             margin-top: 20px;
             padding: 20px;
-            background: #fff3e0;
+            background: #fff9f1;
             border-left: 5px solid var(--secondary);
-            border-radius: 5px;
-            display: none;
-        }
-
-        .support-panel h3 { margin-top: 0; color: #e65100; font-size: 1rem; }
-        .quote-box { font-style: italic; background: white; padding: 10px; border-radius: 4px; margin: 10px 0; font-size: 0.9rem; }
-
-        textarea {
-            width: 100%;
-            height: 60px;
-            margin-top: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
             border-radius: 4px;
-            box-sizing: border-box;
+            display: none;
+            animation: slideDown 0.3s ease-out;
         }
 
-        .btn-submit-feedback {
-            background: #5d4037;
-            color: white;
-            font-size: 12px;
-            margin-top: 5px;
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        #loading { text-align: center; padding: 50px; }
+        .support-box h4 { margin-top: 0; color: #af4c00; text-transform: uppercase; font-size: 0.9rem; }
+        .quote { background: white; padding: 12px; border-radius: 6px; border: 1px solid #ffe0b2; font-style: italic; margin: 10px 0; font-size: 0.95rem; line-height: 1.4; }
+
+        .feedback-area { margin-top: 15px; }
+        textarea { width: 100%; height: 70px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+        
+        #loader { text-align: center; padding: 60px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div class="quiz-container">
-    <div id="loading">Đang tải câu hỏi từ hệ thống...</div>
-    
-    <div id="quiz-content" style="display:none;">
-        <div class="quiz-header">
+<div class="container">
+    <div id="loader">
+        <div class="spinner"></div>
+        <p>Đang đồng bộ dữ liệu với Firebase...</p>
+    </div>
+
+    <div id="main-content" style="display:none;">
+        <div class="header">
             <div>
-                <span id="levelBadge" class="info-label">Bậc: --</span>
-                <span id="topicBadge" class="info-label">Chuyên đề: --</span>
+                <span id="levelTag" class="badge">Bậc: --</span>
+                <span id="topicTag" class="badge">Chuyên đề: --</span>
             </div>
-            <div id="progressText" style="font-weight:bold;">Câu 1/--</div>
+            <div id="counter" style="font-weight:700; color: var(--primary);">Câu 1/--</div>
         </div>
 
-        <div class="question-box">
-            <div id="questionText" class="question-text">Đang tải nội dung...</div>
-            <div class="options" id="optionsContainer">
-                </div>
+        <div class="question-area">
+            <div id="qText" class="question-text"></div>
+            <div id="options" class="options-list"></div>
         </div>
 
-        <div class="nav-buttons">
-            <button class="btn-nav" onclick="prevQuestion()">Câu Trước</button>
-            <div>
-                <button class="btn-check" onclick="checkAnswer()">Kiểm tra</button>
-                <button class="btn-support" onclick="toggleSupport()">Hỗ trợ</button>
+        <div class="controls">
+            <button class="btn-gray" onclick="changeQ(-1)" id="prevBtn">« Câu Trước</button>
+            <div style="display:flex; gap:8px;">
+                <button class="btn-blue" onclick="checkAnswer()">Kiểm tra</button>
+                <button class="btn-orange" onclick="toggleSupport()">Hỗ trợ</button>
             </div>
-            <button class="btn-nav" onclick="nextQuestion()">Câu Tiếp</button>
+            <button class="btn-gray" onclick="changeQ(1)" id="nextBtn">Câu Tiếp »</button>
         </div>
 
-        <div id="supportPanel" class="support-panel">
-            <h3>Chi tiết hỗ trợ & Pháp lý</h3>
-            <p><strong>Đáp án đúng:</strong> <span id="correctLabel">--</span></p>
-            <p><strong>Căn cứ:</strong> <span id="basisLabel">--</span></p>
-            <div class="quote-box">
+        <div id="supportPanel" class="support-box">
+            <h4>Thông tin giải thích & Căn cứ</h4>
+            <p><strong>Đáp án đúng:</strong> <span id="correctAns" style="color: var(--success); font-weight:700"></span></p>
+            <p><strong>Căn cứ pháp lý:</strong> <span id="basisTxt"></span></p>
+            <div class="quote">
                 <strong>Trích dẫn:</strong> <br>
-                <span id="quoteLabel">--</span>
+                <span id="quoteTxt"></span>
             </div>
             
-            <hr>
-            <label for="feedback"><strong>Ý kiến phản hồi câu hỏi:</strong></label>
-            <textarea id="feedbackText" placeholder="Ghi nhận xét của bạn để chúng tôi cải thiện câu hỏi này..."></textarea>
-            <button class="btn-submit-feedback" onclick="sendFeedback()">Gửi góp ý</button>
+            <div class="feedback-area">
+                <p style="margin-bottom:8px; font-weight:600; font-size:0.9rem;">Góp ý cải tiến câu hỏi:</p>
+                <textarea id="feedbackInp" placeholder="Ví dụ: Câu hỏi sai kiến thức, lỗi chính tả, căn cứ chưa cập nhật..."></textarea>
+                <button class="btn-blue" style="margin-top:8px; font-size:12px; padding: 8px 16px;" onclick="submitFeedback()">Gửi ý kiến</button>
+            </div>
         </div>
     </div>
 </div>
@@ -208,148 +219,151 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Lấy thông tin từ URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const selectedLevel = urlParams.get('level');
-    const selectedTopic = urlParams.get('topic');
+    const params = new URLSearchParams(window.location.search);
+    const selLevel = params.get('level') || "";
+    const selTopicIdx = params.get('topic') || "0";
 
-    let questions = [];
-    let currentIndex = 0;
-    let selectedOption = null;
+    let allQuestions = [];
+    let currentIdx = 0;
+    let userPicked = null;
 
-    async function loadQuestions() {
-        document.getElementById('levelBadge').innerText = `Bậc: ${selectedLevel}`;
+    async function init() {
+        console.log("Loading for Level:", selLevel, "Topic Index:", selTopicIdx);
         
         try {
+            // Bước 1: Lấy tất cả câu hỏi của Bậc này (Tối ưu hóa Index)
             const qRef = collection(db, "questions");
-            let q;
+            const q = query(qRef, where("level", "==", selLevel.trim()));
+            
+            const snap = await getDocs(q);
+            let rawData = [];
+            snap.forEach(doc => rawData.push({ dbId: doc.id, ...doc.data() }));
 
-            // Xây dựng query dựa trên lựa chọn
-            if (selectedTopic && selectedTopic !== "0") {
-                const topicName = "Chuyên đề " + selectedTopic;
-                document.getElementById('topicBadge').innerText = topicName;
-                q = query(qRef, where("level", "==", selectedLevel), where("category", "==", topicName));
+            console.log("Tổng số câu bậc", selLevel, "tải được:", rawData.length);
+
+            // Bước 2: Lọc Chuyên đề tại máy khách (Client-side filtering)
+            if (selTopicIdx === "0") {
+                allQuestions = rawData; // Lấy tất cả (bao gồm Kiến thức chung + các chuyên đề)
+                document.getElementById('topicTag').innerText = "Tất cả chuyên đề";
             } else {
-                document.getElementById('topicBadge').innerText = "Kiến thức chung";
-                q = query(qRef, where("level", "==", selectedLevel));
+                const topicName = "Chuyên đề " + selTopicIdx;
+                allQuestions = rawData.filter(item => 
+                    item.category && item.category.trim() === topicName
+                );
+                document.getElementById('topicTag').innerText = topicName;
             }
 
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-                questions.push({ id: doc.id, ...doc.data() });
-            });
+            if (allQuestions.length === 0) {
+                // Trường hợp đặc biệt: Nếu không tìm thấy theo "Chuyên đề X", thử tìm theo "Kiến thức chung"
+                allQuestions = rawData.filter(item => item.category === "Kiến thức chung");
+                document.getElementById('topicTag').innerText = "Kiến thức chung (Mặc định)";
+            }
 
-            if (questions.length === 0) {
-                document.getElementById('loading').innerHTML = "Không tìm thấy câu hỏi phù hợp. Vui lòng quay lại.";
+            if (allQuestions.length === 0) {
+                document.getElementById('loader').innerHTML = `
+                    <p style="color:red; font-weight:bold">KHÔNG TÌM THẤY CÂU HỎI!</p>
+                    <p style="font-size:13px">Dữ liệu Bậc <b>${selLevel}</b> có thể chưa được upload hoặc sai tên trường.</p>
+                    <button class="btn-blue" onclick="location.href='index.html'">Quay lại</button>
+                `;
                 return;
             }
 
-            // Trộn câu hỏi ngẫu nhiên nếu muốn
-            questions.sort(() => Math.random() - 0.5);
+            // Trộn ngẫu nhiên
+            allQuestions.sort(() => Math.random() - 0.5);
+            
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('levelTag').innerText = "Bậc: " + selLevel;
+            
+            renderQuestion();
 
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('quiz-content').style.display = 'block';
-            showQuestion();
-
-        } catch (error) {
-            console.error("Error loading questions:", error);
-            document.getElementById('loading').innerText = "Lỗi kết nối Firebase.";
+        } catch (err) {
+            console.error(err);
+            document.getElementById('loader').innerText = "Lỗi kết nối: " + err.message;
         }
     }
 
-    function showQuestion() {
-        const q = questions[currentIndex];
-        selectedOption = null;
+    function renderQuestion() {
+        const q = allQuestions[currentIdx];
+        userPicked = null;
+        
+        // Reset UI
         document.getElementById('supportPanel').style.display = 'none';
-        document.getElementById('progressText').innerText = `Câu ${currentIndex + 1}/${questions.length}`;
-        document.getElementById('questionText').innerText = q.content;
-        document.getElementById('feedbackText').value = "";
-
-        const optionsHtml = `
-            <div class="option-item" onclick="selectOpt(this, 'A')">A. ${q.optionA}</div>
-            <div class="option-item" onclick="selectOpt(this, 'B')">B. ${q.optionB}</div>
-            <div class="option-item" onclick="selectOpt(this, 'C')">C. ${q.optionC}</div>
-            <div class="option-item" onclick="selectOpt(this, 'D')">D. ${q.optionD}</div>
+        document.getElementById('feedbackInp').value = "";
+        document.getElementById('counter').innerText = `Câu ${currentIdx + 1}/${allQuestions.length}`;
+        document.getElementById('qText').innerText = q.content;
+        
+        const html = `
+            <div class="option" onclick="pick(this, 'A')">A. ${q.optionA}</div>
+            <div class="option" onclick="pick(this, 'B')">B. ${q.optionB}</div>
+            <div class="option" onclick="pick(this, 'C')">C. ${q.optionC}</div>
+            <div class="option" onclick="pick(this, 'D')">D. ${q.optionD}</div>
         `;
-        document.getElementById('optionsContainer').innerHTML = optionsHtml;
+        document.getElementById('options').innerHTML = html;
 
-        // Điền data vào panel hỗ trợ
-        document.getElementById('correctLabel').innerText = q.correctAnswer;
-        document.getElementById('basisLabel').innerText = q.newBasis || "Chưa cập nhật";
-        document.getElementById('quoteLabel').innerText = q.quote || "Không có trích dẫn";
+        // Cập nhật thông tin hỗ trợ ẩn
+        document.getElementById('correctAns').innerText = q.correctAnswer;
+        document.getElementById('basisTxt').innerText = q.newBasis || "Theo quy chuẩn an toàn điện hiện hành.";
+        document.getElementById('quoteTxt').innerText = q.quote || "Nội dung trích dẫn đang được cập nhật.";
+        
+        // Disable/Enable nút
+        document.getElementById('prevBtn').disabled = (currentIdx === 0);
+        document.getElementById('nextBtn').disabled = (currentIdx === allQuestions.length - 1);
     }
 
-    window.selectOpt = (el, val) => {
-        // Xóa class selected của các option khác
-        document.querySelectorAll('.option-item').forEach(opt => opt.classList.remove('selected', 'correct', 'wrong'));
+    window.pick = (el, val) => {
+        document.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'wrong'));
         el.classList.add('selected');
-        selectedOption = val;
+        userPicked = val;
     };
 
     window.checkAnswer = () => {
-        if (!selectedOption) {
-            alert("Vui lòng chọn một đáp án!");
-            return;
-        }
-        const q = questions[currentIndex];
-        const items = document.querySelectorAll('.option-item');
+        if (!userPicked) return alert("Vui lòng chọn 1 đáp án!");
+        const q = allQuestions[currentIdx];
+        const opts = document.querySelectorAll('.option');
         
-        items.forEach(item => {
-            const text = item.innerText;
-            if (text.startsWith(q.correctAnswer + ".")) {
-                item.classList.add('correct');
+        opts.forEach(opt => {
+            const txt = opt.innerText.trim();
+            // So khớp đáp án (ví dụ "A.")
+            if (txt.startsWith(q.correctAnswer.trim() + ".")) {
+                opt.classList.add('correct');
             }
-            if (item.classList.contains('selected') && !text.startsWith(q.correctAnswer + ".")) {
-                item.classList.add('wrong');
+            if (opt.classList.contains('selected') && !txt.startsWith(q.correctAnswer.trim() + ".")) {
+                opt.classList.add('wrong');
             }
         });
     };
 
     window.toggleSupport = () => {
         const panel = document.getElementById('supportPanel');
-        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        panel.style.display = (panel.style.display === 'block' ? 'none' : 'block');
     };
 
-    window.nextQuestion = () => {
-        if (currentIndex < questions.length - 1) {
-            currentIndex++;
-            showQuestion();
-        } else {
-            alert("Bạn đã hoàn thành bộ câu hỏi!");
-        }
+    window.changeQ = (step) => {
+        currentIdx += step;
+        renderQuestion();
     };
 
-    window.prevQuestion = () => {
-        if (currentIndex > 0) {
-            currentIndex--;
-            showQuestion();
-        }
-    };
-
-    window.sendFeedback = async () => {
-        const fbText = document.getElementById('feedbackText').value;
-        if (!fbText.trim()) {
-            alert("Vui lòng nhập ý kiến!");
-            return;
-        }
-
+    window.submitFeedback = async () => {
+        const text = document.getElementById('feedbackInp').value;
+        if (!text.trim()) return alert("Vui lòng nhập nội dung góp ý!");
+        
         try {
-            const q = questions[currentIndex];
             await addDoc(collection(db, "feedback"), {
-                questionId: q.questionId,
-                content: q.content,
-                feedback: fbText,
+                questionId: allQuestions[currentIdx].id || "N/A",
+                questionContent: allQuestions[currentIdx].content,
+                feedback: text,
+                userLevel: selLevel,
                 timestamp: new Date().toISOString()
             });
-            alert("Cảm ơn góp ý của bạn!");
-            document.getElementById('feedbackText').value = "";
+            alert("Cảm ơn bạn! Góp ý đã được gửi đến ban quản trị.");
+            document.getElementById('feedbackInp').value = "";
         } catch (e) {
-            alert("Lỗi khi gửi góp ý.");
+            alert("Lỗi khi gửi phản hồi.");
         }
     };
 
-    // Khởi chạy
-    loadQuestions();
+    init();
 </script>
 
 </body>
