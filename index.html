@@ -3,496 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đánh Giá Ngân Hàng Câu Hỏi Trắc Nghiệm An Toàn Điện</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+    <title>Hệ Thống Sát Hạch An Toàn Điện - VSIP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-        .option-label {
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
+        :root {
+            --vsip-blue: #004a99;
+            --vsip-orange: #f37021;
+            --bg-light: #f8f9fa;
         }
-        .option-label:hover:not(.disabled) {
-            background-color: #f8f9fa;
-            border-color: #b6d4fe;
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
-        .option-label.selected {
-            background-color: #e7f1ff;
-            border-color: #0d6efd;
-            color: #084298;
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            border-top: 6px solid var(--vsip-blue);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: var(--vsip-blue);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
             font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #333;
         }
-        .option-label.correct {
-            background-color: #d1e7dd !important;
-            border-color: #198754 !important;
-            color: #0f5132 !important;
-            font-weight: 600;
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: white;
+            transition: border-color 0.3s;
+            cursor: pointer;
         }
-        .option-label.incorrect {
-            background-color: #f8d7da !important;
-            border-color: #dc3545 !important;
-            color: #842029 !important;
-            text-decoration: line-through;
+
+        select:focus {
+            outline: none;
+            border-color: var(--vsip-blue);
         }
-        .option-label.disabled {
-            cursor: default;
+
+        #chuyenDeSection {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn-start {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--vsip-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-start:hover {
+            background-color: #003366;
+        }
+
+        .version {
+            text-align: right;
+            font-size: 11px;
+            color: #ccc;
+            margin-top: 1rem;
         }
     </style>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-        // Firebase Configuration do người dùng cung cấp
-        const firebaseConfig = {
-            apiKey: "AIzaSyBPNk4J9npcClKFD0daia4W8nPwwg3bX_A",
-            authDomain: "vsiptest-bdbc5.firebaseapp.com",
-            projectId: "vsiptest-bdbc5",
-            storageBucket: "vsiptest-bdbc5.firebasestorage.app",
-            messagingSenderId: "1056019256354",
-            appId: "1:1056019256354:web:8f864b8b2edc4c9b1ca67b",
-            measurementId: "G-42WSD293BH"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let currentUser = null;
-        let userFullName = "";
-        let currentQuestionIndex = 0;
-        let activeQuestions = [];
-        let userResponses = {}; 
-        let isEvaluated = false;
-
-        // Cơ sở dữ liệu câu hỏi mẫu đã bổ sung cấu trúc đáp án, giải thích, tham chiếu, bậc, nhóm ngành
-        const allQuestions = [
-            {
-                id: 1,
-                text: "Trước khi đưa hệ thống hàng rào điện (sử dụng điện làm phương tiện bảo vệ trực tiếp) vào sử dụng, chủ đầu tư bắt buộc phải hoàn thành những công việc nào dưới đây?",
-                options: [
-                    "A. Bố trí đủ nhân sự và ban hành quy trình quản lý vận hành, an toàn điện.",
-                    "B. Bàn giao thiết bị cho chính quyền địa phương để quản lý và vận hành.",
-                    "C. Xin phép Sở Công Thương để đóng điện lưới quốc gia vào hàng rào.",
-                    "D. Tổ chức diễn tập phòng cháy chữa cháy quy mô lớn tại khu vực hàng rào."
-                ],
-                type: "single",
-                correctAnswers: ["0"], // Vị trí index của đáp án đúng (A)
-                explanation: "Chủ đầu tư chỉ được phép đưa hàng rào điện vào sử dụng khi đã hoàn thành nghiệm thu, bàn giao hồ sơ, bố trí đủ nhân sự. Phải ban hành quy trình quản lý vận hành và quy trình an toàn điện.",
-                reference: "Khoản 3 và Khoản 4 Điều 4 Thông tư 02/2025/TT-BCT.",
-                bacAnToan: [2, 3, 4, 5],
-                nhomNganh: [1, 3, 5]
-            },
-            {
-                id: 2,
-                text: "Khi thiết kế hàng rào điện bảo vệ trực tiếp bố trí độc lập, khoảng cách tối thiểu giữa hàng rào điện và hàng rào bảo vệ (phía ngoài và phía trong) được quy định là bao nhiêu?",
-                options: [
-                    "A. Không nhỏ hơn 1,0 m.",
-                    "B. Không nhỏ hơn 1,5 m.",
-                    "C. Không nhỏ hơn 2,0 m.",
-                    "D. Không nhỏ hơn 2,5 m."
-                ],
-                type: "single",
-                correctAnswers: ["2"], // C
-                explanation: "Khoảng cách giữa hàng rào điện bố trí độc lập với hàng rào bảo vệ không được nhỏ hơn 2,0 m để đề phòng người, động vật tiếp xúc ngẫu nhiên.",
-                reference: "Điểm b Khoản 2 Điều 5 Thông tư 02/2025/TT-BCT.",
-                bacAnToan: [3, 4, 5],
-                nhomNganh: [1, 2, 4, 5]
-            },
-            {
-                id: 3,
-                text: "Quy định nào sau đây là ĐÚNG khi lắp đặt biển báo an toàn cho hệ thống hàng rào điện dùng làm phương tiện bảo vệ trực tiếp?",
-                options: [
-                    "A. Phải đặt biển báo 'DỪNG LẠI! CÓ ĐIỆN NGUY HIỂM CHẾT NGƯỜI' dọc theo cả 2 phía hàng rào.",
-                    "B. Khoảng cách giữa 2 biển báo liên tiếp trên hàng rào không được vượt quá 20 m.",
-                    "C. Biển báo phải được gắn cố định ở độ cao từ 1,7 m đến 2,0 m so với mặt đất.",
-                    "D. Chỉ cần đặt biển báo ở các cửa ra vào và các góc khuất của hệ thống hàng rào."
-                ],
-                type: "multiple",
-                correctAnswers: ["0", "1", "2"], // A, B, C
-                explanation: "Biển báo phải được đặt dọc theo suốt hàng rào ở cả 2 phía (A đúng), khoảng cách không quá 20m (B đúng) và độ cao từ 1,7m - 2,0m (C đúng). D sai vì bắt buộc đặt dọc suốt chiều dài.",
-                reference: "Khoản 3 Điều 5 Thông tư 02/2025/TT-BCT.",
-                bacAnToan: [1, 2, 3, 4, 5],
-                nhomNganh: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-            }
-        ];
-
-        // Khởi tạo select cho 11 Nhóm ngành
-        window.addEventListener('DOMContentLoaded', () => {
-            const groupSelect = document.getElementById('groupSelect');
-            for(let i = 1; i <= 11; i++) {
-                let opt = document.createElement('option');
-                opt.value = i;
-                opt.innerText = `Nhóm ngành ${i}`;
-                groupSelect.appendChild(opt);
-            }
-        });
-
-        const authScreen = document.getElementById('authScreen');
-        const infoScreen = document.getElementById('infoScreen');
-        const quizScreen = document.getElementById('quizScreen');
-        
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const startBtn = document.getElementById('startBtn');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const recheckBtn = document.getElementById('recheckBtn');
-
-        // Authentication Logic
-        loginBtn.addEventListener('click', () => {
-            const provider = new GoogleAuthProvider();
-            signInWithPopup(auth, provider).catch(error => alert("Lỗi đăng nhập: " + error.message));
-        });
-
-        logoutBtn.addEventListener('click', () => signOut(auth));
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                authScreen.classList.add('d-none');
-                
-                try {
-                    const userDoc = await getDoc(doc(db, "users", user.uid));
-                    if (userDoc.exists() && userDoc.data().fullName) {
-                        document.getElementById('fullNameInput').value = userDoc.data().fullName;
-                        // Lưu lại lastQuestionId nếu có để tự động nhảy đến khi Start
-                        window.lastSavedQuestionId = userDoc.data().lastQuestionId || null;
-                    }
-                } catch (error) {
-                    console.warn("Chưa thể đọc dữ liệu Firestore:", error);
-                }
-                
-                infoScreen.classList.remove('d-none');
-                quizScreen.classList.add('d-none');
-                document.getElementById('userEmailDisplay').innerText = user.email;
-            } else {
-                currentUser = null;
-                authScreen.classList.remove('d-none');
-                infoScreen.classList.add('d-none');
-                quizScreen.classList.add('d-none');
-            }
-        });
-
-        // Start Quiz Logic
-        startBtn.addEventListener('click', async () => {
-            const nameInput = document.getElementById('fullNameInput').value.trim();
-            if (!nameInput) {
-                alert("Vui lòng nhập họ tên để tiếp tục!");
-                return;
-            }
-            userFullName = nameInput;
-
-            // Lấy giá trị lọc
-            const selectedBac = document.getElementById('levelSelect').value;
-            const selectedNhom = document.getElementById('groupSelect').value;
-
-            // Lọc câu hỏi dựa trên cài đặt
-            activeQuestions = allQuestions.filter(q => {
-                const matchBac = selectedBac === 'all' || (q.bacAnToan && q.bacAnToan.includes(parseInt(selectedBac)));
-                const matchNhom = selectedNhom === 'all' || (q.nhomNganh && q.nhomNganh.includes(parseInt(selectedNhom)));
-                return matchBac && matchNhom;
-            });
-
-            if(activeQuestions.length === 0) {
-                alert("Không có câu hỏi nào khớp với tiêu chí Bậc an toàn & Nhóm ngành bạn chọn!");
-                return;
-            }
-            
-            try {
-                await setDoc(doc(db, "users", currentUser.uid), {
-                    email: currentUser.email,
-                    fullName: userFullName,
-                    lastLogin: new Date()
-                }, { merge: true });
-            } catch (error) {}
-
-            infoScreen.classList.add('d-none');
-            quizScreen.classList.remove('d-none');
-            document.getElementById('quizUserInfo').innerText = `${userFullName} - ${currentUser.email}`;
-            
-            // Resume progress
-            let startIndex = 0;
-            if (window.lastSavedQuestionId) {
-                const foundIndex = activeQuestions.findIndex(q => q.id === window.lastSavedQuestionId);
-                if (foundIndex !== -1) startIndex = foundIndex;
-            }
-            
-            loadQuestion(startIndex);
-        });
-
-        function loadQuestion(index) {
-            currentQuestionIndex = index;
-            const q = activeQuestions[index];
-            isEvaluated = false;
-            
-            document.getElementById('questionNumber').innerText = `Câu ${index + 1}/${activeQuestions.length}`;
-            document.getElementById('questionText').innerHTML = `<b>[${q.type === 'single' ? '1 Lựa chọn' : 'Nhiều lựa chọn'}]</b> ${q.text}`;
-            
-            const optionsContainer = document.getElementById('optionsContainer');
-            optionsContainer.innerHTML = '';
-            
-            // Kiểm tra xem câu này đã làm chưa trong session
-            const savedResponse = userResponses[q.id] || { answers: [], feedback: "", evaluated: false };
-
-            q.options.forEach((opt, i) => {
-                const isChecked = savedResponse.answers.includes(i.toString());
-                const div = document.createElement('div');
-                div.className = `option-label p-3 mb-2 d-flex align-items-center ${isChecked ? 'selected' : ''}`;
-                div.id = `label-opt${i}`;
-                
-                div.innerHTML = `
-                    <input class="form-check-input me-3" type="${q.type === 'multiple' ? 'checkbox' : 'radio'}" name="qOption" value="${i}" id="opt${i}" style="transform: scale(1.3);" ${isChecked ? 'checked' : ''}>
-                    <label class="form-check-label flex-grow-1" style="cursor: pointer; pointer-events: none;">${opt}</label>
-                `;
-
-                // Handle whole-block click
-                div.addEventListener('click', () => {
-                    if(isEvaluated) return; // Khóa nếu đã check
-                    
-                    const input = div.querySelector('input');
-                    if (q.type === 'single') {
-                        // Reset all
-                        document.querySelectorAll('.option-label').forEach(el => {
-                            el.classList.remove('selected');
-                            el.querySelector('input').checked = false;
-                        });
-                        input.checked = true;
-                        div.classList.add('selected');
-                    } else {
-                        input.checked = !input.checked;
-                        div.classList.toggle('selected');
-                    }
-                });
-
-                optionsContainer.appendChild(div);
-            });
-
-            // Ẩn/Hiện khu vực feedback & eval
-            document.getElementById('feedbackArea').classList.add('d-none');
-            document.getElementById('feedbackInput').value = savedResponse.feedback || "";
-            document.getElementById('evalResult').classList.add('d-none');
-
-            // Set button states
-            prevBtn.disabled = index === 0;
-            
-            if (savedResponse.evaluated) {
-                // Đã chấm điểm rồi thì show lại kết quả ngay
-                renderEvaluation(q, savedResponse.answers);
-            } else {
-                nextBtn.innerHTML = 'Kiểm tra & Xem đáp án';
-                nextBtn.classList.replace('btn-primary', 'btn-success');
-            }
-        }
-
-        function renderEvaluation(q, selectedArray) {
-            isEvaluated = true;
-            document.querySelectorAll('.option-label').forEach(el => el.classList.add('disabled'));
-
-            const isCorrect = JSON.stringify([...selectedArray].sort()) === JSON.stringify([...q.correctAnswers].sort());
-            
-            // Xòe màu sắc
-            q.options.forEach((opt, i) => {
-                const labelDiv = document.getElementById(`label-opt${i}`);
-                if (q.correctAnswers.includes(i.toString())) {
-                    labelDiv.classList.add('correct');
-                } else if (selectedArray.includes(i.toString())) {
-                    labelDiv.classList.add('incorrect');
-                }
-            });
-
-            // Hiển thị khung giải thích
-            document.getElementById('evalResult').classList.remove('d-none');
-            const statusEl = document.getElementById('evalStatus');
-            statusEl.innerText = isCorrect ? "CHÍNH XÁC!" : "CHƯA CHÍNH XÁC!";
-            statusEl.className = isCorrect ? "text-success fw-bold fs-5 mb-2" : "text-danger fw-bold fs-5 mb-2";
-            
-            document.getElementById('evalExplanation').innerText = q.explanation;
-            document.getElementById('evalReference').innerText = q.reference;
-
-            // Đổi nút next
-            nextBtn.innerHTML = currentQuestionIndex === activeQuestions.length - 1 ? 'Hoàn thành' : 'Câu tiếp theo ►';
-            nextBtn.classList.replace('btn-success', 'btn-primary');
-        }
-
-        async function processEvaluationAndSave() {
-            const q = activeQuestions[currentQuestionIndex];
-            const inputs = document.querySelectorAll('input[name="qOption"]:checked');
-            const selected = Array.from(inputs).map(inp => inp.value);
-            const feedback = document.getElementById('feedbackInput').value.trim();
-
-            const isCorrect = JSON.stringify([...selected].sort()) === JSON.stringify([...q.correctAnswers].sort());
-
-            // Lưu local
-            userResponses[q.id] = { answers: selected, feedback: feedback, evaluated: true };
-
-            // Render UI
-            renderEvaluation(q, selected);
-
-            // Ghi dữ liệu lên Firebase
-            try {
-                const docId = `${currentUser.uid}_q${q.id}`;
-                await setDoc(doc(db, "answers", docId), {
-                    uid: currentUser.uid,
-                    email: currentUser.email,
-                    fullName: userFullName,
-                    questionId: q.id,
-                    answers: selected,
-                    isCorrect: isCorrect,
-                    feedback: feedback,
-                    timestamp: new Date()
-                });
-                
-                // Cập nhật lastQuestionId
-                await setDoc(doc(db, "users", currentUser.uid), {
-                    lastQuestionId: q.id
-                }, { merge: true });
-
-            } catch (error) {
-                console.error("Lỗi lưu câu trả lời vào Firestore:", error);
-            }
-        }
-
-        async function saveFeedbackOnly() {
-            // Dùng để lưu khi bấm "Câu tiếp" mà trước đó có gõ thêm Recheck
-            const q = activeQuestions[currentQuestionIndex];
-            const feedback = document.getElementById('feedbackInput').value.trim();
-            if (userResponses[q.id] && userResponses[q.id].feedback !== feedback) {
-                userResponses[q.id].feedback = feedback;
-                try {
-                    const docId = `${currentUser.uid}_q${q.id}`;
-                    await setDoc(doc(db, "answers", docId), { feedback: feedback }, { merge: true });
-                } catch(e){}
-            }
-        }
-
-        nextBtn.addEventListener('click', async () => {
-            if (!isEvaluated) {
-                // Bước 1: Kiểm tra & Chấm điểm
-                await processEvaluationAndSave();
-            } else {
-                // Bước 2: Sang câu tiếp theo
-                await saveFeedbackOnly();
-                if (currentQuestionIndex < activeQuestions.length - 1) {
-                    loadQuestion(currentQuestionIndex + 1);
-                } else {
-                    alert("Bạn đã hoàn thành bộ rà soát!");
-                }
-            }
-        });
-
-        prevBtn.addEventListener('click', async () => {
-            if(isEvaluated) await saveFeedbackOnly();
-            if (currentQuestionIndex > 0) loadQuestion(currentQuestionIndex - 1);
-        });
-
-        recheckBtn.addEventListener('click', () => {
-            const feedbackArea = document.getElementById('feedbackArea');
-            feedbackArea.classList.toggle('d-none');
-            if (!feedbackArea.classList.contains('d-none')) {
-                document.getElementById('feedbackInput').focus();
-            }
-        });
-
-    </script>
 </head>
-<body class="bg-light">
-    <div class="container mt-2">
-        <div class="row">
-            <div class="col text-end">
-                <span class="badge bg-secondary">v1.2</span>
-            </div>
-        </div>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Sát hạch An toàn điện 2026</h1>
+        <p>Hệ thống ôn tập và kiểm tra trực tuyến</p>
     </div>
 
-    <div class="container mt-3 mb-5" style="max-width: 900px;">
-        <h2 class="text-center text-primary mb-4 fw-bold">Rà Soát Ngân Hàng Câu Hỏi - VSIP</h2>
-
-        <div id="authScreen" class="card shadow border-0 text-center p-5">
-            <h4 class="mb-4 text-muted">Vui lòng đăng nhập để bắt đầu phiên đánh giá</h4>
-            <button id="loginBtn" class="btn btn-outline-danger btn-lg mx-auto d-flex align-items-center justify-content-center gap-2" style="width: 280px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-google" viewBox="0 0 16 16">
-                    <path d="M15.545 6.558a9.42 9.42 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.689 7.689 0 0 1 5.352 2.082l-2.284 2.284A4.347 4.347 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.792 4.792 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.702 3.702 0 0 0 1.599-2.431H8v-3.08h7.545z"/>
-                </svg>
-                Đăng nhập bằng Google
-            </button>
+    <form id="selectionForm">
+        <div class="form-group">
+            <label for="bacAnToan">1. Chọn bậc an toàn điện:</label>
+            <select id="bacAnToan" required>
+                <option value="" disabled selected>-- Chọn bậc --</option>
+                <option value="1/5">Bậc 1/5</option>
+                <option value="2/5">Bậc 2/5</option>
+                <option value="3/5">Bậc 3/5</option>
+                <option value="4/5">Bậc 4/5</option>
+                <option value="5/5">Bậc 5/5</option>
+            </select>
         </div>
 
-        <div id="infoScreen" class="card shadow border-0 p-4 d-none">
-            <div class="text-end mb-4">
-                <span id="userEmailDisplay" class="text-muted me-3 fw-medium"></span>
-                <button id="logoutBtn" class="btn btn-sm btn-outline-secondary">Đăng xuất</button>
-            </div>
-            
-            <h4 class="mb-4 text-center text-dark">Thiết lập bài Rà soát</h4>
-            
-            <div class="mb-3">
-                <label for="fullNameInput" class="form-label fw-bold">Họ và Tên (Tự động lưu lại):</label>
-                <input type="text" class="form-control form-control-lg bg-light" id="fullNameInput" placeholder="Ví dụ: Trần Công Đẹp">
-            </div>
-
-            <div class="row mb-4">
-                <div class="col-md-6 mb-3 mb-md-0">
-                    <label class="form-label fw-bold">Chọn Bậc An Toàn:</label>
-                    <select id="levelSelect" class="form-select border-primary shadow-sm">
-                        <option value="all">Tất cả các bậc</option>
-                        <option value="1">Bậc 1</option>
-                        <option value="2">Bậc 2</option>
-                        <option value="3">Bậc 3</option>
-                        <option value="4">Bậc 4</option>
-                        <option value="5">Bậc 5</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-bold">Chọn Nhóm Ngành:</label>
-                    <select id="groupSelect" class="form-select border-primary shadow-sm">
-                        <option value="all">Tất cả nhóm ngành</option>
-                        </select>
-                </div>
-            </div>
-
-            <button id="startBtn" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm">Bắt Đầu Vào Đánh Giá</button>
+        <div id="chuyenDeSection" class="form-group">
+            <label for="chuyenDe">2. Chọn chuyên đề đào tạo:</label>
+            <select id="chuyenDe">
+                <option value="0" selected>-- Tất cả chuyên đề --</option>
+                <option value="1">Chuyên đề 1: Trạm biến áp 110/22kV</option>
+                <option value="2">Chuyên đề 2: Đường dây dẫn điện 110kV/22kV/0.4kV</option>
+                <option value="3">Chuyên đề 3: Hệ thống điện mặt trời áp mái (Rooftop Solar)</option>
+                <option value="4">Chuyên đề 4: Hệ thống lưu trữ năng lượng pin (BESS)</option>
+                <option value="5">Chuyên đề 5: Thiết bị điện hạ thế văn phòng VSIP</option>
+                <option value="6">Chuyên đề 6: Hệ thống SCADA và OCC</option>
+                <option value="7">Chuyên đề 7: Nhà máy điện áp đến 22kV</option>
+                <option value="8">Chuyên đề 8: Nhà máy xử lý nước thải</option>
+                <option value="9">Chuyên đề 9: Nhà xưởng xây sẵn (Hạ tầng & PCCC)</option>
+                <option value="10">Chuyên đề 10: Thi công xây dựng & Nhà ở thấp tầng</option>
+            </select>
         </div>
 
-        <div id="quizScreen" class="card shadow border-0 p-4 d-none">
-            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
-                <span class="fw-bold text-secondary" id="quizUserInfo"></span>
-                <span class="badge bg-dark px-3 py-2 fs-6 shadow-sm" id="questionNumber">Câu 1/65</span>
-            </div>
-            
-            <div class="mb-4 bg-white p-3 rounded border-start border-4 border-primary shadow-sm">
-                <h5 id="questionText" class="lh-base mb-0 text-dark" style="font-weight: 500;">Nội dung câu hỏi...</h5>
-            </div>
-            
-            <div id="optionsContainer" class="mb-4">
-                </div>
+        <button type="submit" class="btn-start">BẮT ĐẦU LÀM BÀI</button>
+    </form>
 
-            <div id="evalResult" class="mb-4 p-4 rounded bg-light border d-none">
-                <div id="evalStatus"></div>
-                <p class="mb-2"><strong>Giải thích:</strong> <span id="evalExplanation"></span></p>
-                <p class="mb-0 text-muted"><em><strong>Căn cứ:</strong> <span id="evalReference"></span></em></p>
-            </div>
+    <div class="version">Phiên bản 1.0 | 06/03/2026</div>
+</div>
 
-            <div id="feedbackArea" class="mb-4 d-none">
-                <label for="feedbackInput" class="form-label fw-bold text-danger d-flex align-items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-chat-square-dots-fill" viewBox="0 0 16 16">
-                        <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.5a1 1 0 0 0-.8.4l-1.9 2.533a1 1 0 0 1-1.6 0L5.3 12.4a1 1 0 0 0-.8-.4H2a2 2 0 0 1-2-2V2zm5 4a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
-                    </svg>
-                    Ô nhập ý kiến chỉnh sửa (Recheck):
-                </label>
-                <textarea class="form-control border-warning shadow-sm" id="feedbackInput" rows="3" placeholder="Ghi chú lỗi, ý kiến thay đổi câu/đáp án..."></textarea>
-            </div>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 
-            <div class="d-flex justify-content-between flex-wrap gap-2 mt-4 pt-4 border-top">
-                <button id="prevBtn" class="btn btn-outline-secondary px-4 fw-bold shadow-sm">◄ Về câu trước</button>
-                <div class="d-flex gap-2">
-                    <button id="recheckBtn" class="btn btn-warning px-4 fw-bold shadow-sm">Báo lỗi / Góp ý ✎</button>
-                    <button id="nextBtn" class="btn btn-success px-5 fw-bold shadow-sm text-uppercase">Kiểm tra & Xem đáp án</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
+        authDomain: "tavietnam-78ae8.firebaseapp.com",
+        projectId: "tavietnam-78ae8",
+        storageBucket: "tavietnam-78ae8.firebasestorage.app",
+        messagingSenderId: "670121705534",
+        appId: "1:670121705534:web:1027ad98550573ad37116f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+
+    const bacAnToanSelect = document.getElementById('bacAnToan');
+    const chuyenDeSection = document.getElementById('chuyenDeSection');
+    const form = document.getElementById('selectionForm');
+
+    // Logic ẩn hiện chuyên đề
+    bacAnToanSelect.addEventListener('change', function() {
+        const value = this.value;
+        if (value === '3/5' || value === '4/5' || value === '5/5') {
+            chuyenDeSection.style.display = 'block';
+        } else {
+            chuyenDeSection.style.display = 'none';
+            document.getElementById('chuyenDe').value = "0"; // Reset về mặc định
+        }
+    });
+
+    // Xử lý gửi form
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const bac = bacAnToanSelect.value;
+        const cd = document.getElementById('chuyenDe').value;
+        
+        // Chuyển hướng sang trang làm bài (ví dụ test.html)
+        // Truyền tham số qua URL
+        window.location.href = `test.html?level=${encodeURIComponent(bac)}&topic=${cd}`;
+    });
+</script>
+
 </body>
 </html>
