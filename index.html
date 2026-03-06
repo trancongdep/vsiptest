@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sát hạch An toàn điện VSIP 2026 - v2.14</title>
+    <title>Sát hạch An toàn điện VSIP 2026 - v2.15</title>
     <style>
         :root { --primary-blue: #004a99; --accent: #f37021; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); }
@@ -29,7 +29,8 @@
         .button-group { display: flex; gap: 10px; margin-top: 10px; }
         .button-group button, .button-group a { flex: 1; }
 
-        footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); }
+        footer { background: #eef2f6; color: #444; padding: 20px 15px; text-align: center; font-size: 0.9rem; border-top: 3px solid var(--primary-blue); line-height: 1.6; }
+        .footer-line-2 { font-weight: 600; color: var(--primary-blue); margin-top: 5px; }
         
         #auth-section, #name-section, #selection-section, #loader { display: none; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
@@ -101,7 +102,7 @@
                 </div>
 
                 <div class="button-group">
-                    <button type="submit" class="btn btn-primary">Làm bài</button>
+                    <button type="submit" class="btn btn-primary">Bắt đầu</button>
                     <button type="button" class="btn btn-orange" id="btnGoGopy">Góp ý</button>
                 </div>
             </form>
@@ -111,7 +112,7 @@
 
 <footer>
     <div>Nhóm biên soạn bộ đề trắc nghiệm An toàn điện VDC @2026</div>
-    <div style="font-weight:600; color:var(--primary-blue); margin-top:5px;">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882</div>
+    <div class="footer-line-2">Liên hệ: Trần Công Đẹp - Phone: 0963.292.882 - email: deptc.gvatvsld@gmail.com</div>
 </footer>
 
 <script type="module">
@@ -141,14 +142,11 @@
         document.getElementById(id).style.display = 'block'; 
     }
 
-    // Cơ chế Timeout phòng ngừa treo máy
     let isLoaded = false;
     setTimeout(() => {
-        if (!isLoaded && auth.currentUser) {
-            console.log("Hệ thống phản hồi chậm, đang ép tải lại dữ liệu...");
-            checkUserData(auth.currentUser);
-        } else if (!isLoaded && !auth.currentUser) {
-            show('auth');
+        if (!isLoaded) {
+            if (auth.currentUser) checkUserData(auth.currentUser);
+            else show('auth');
         }
     }, 4000);
 
@@ -169,10 +167,7 @@
                 show('name');
             }
             isLoaded = true;
-        } catch (e) {
-            console.error(e);
-            show('auth');
-        }
+        } catch (e) { show('auth'); }
     }
 
     document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
