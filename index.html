@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sát hạch An toàn điện VSIP 2026 - v2.18</title>
+    <title>Sát hạch An toàn điện VSIP 2026 - v3.0</title>
     <style>
         :root { --primary-blue: #004a99; --accent: #f37021; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); }
@@ -36,7 +36,7 @@
     <div class="card">
         <div id="loader" style="display: block; text-align: center;">
             <div class="spinner"></div>
-            <p id="loader-text" style="color:#666">Đang đồng bộ dữ liệu...</p>
+            <p>Đang đồng bộ dữ liệu...</p>
         </div>
 
         <div id="auth-section" style="text-align: center;">
@@ -74,6 +74,14 @@
                         <option value="0">-- Tất cả chuyên đề --</option>
                         <option value="1">Chuyên đề 1: Trạm biến áp 110/22kV</option>
                         <option value="2">Chuyên đề 2: Đường dây dẫn điện</option>
+                        <option value="3">Chuyên đề 3: Điện mặt trời áp mái</option>
+                        <option value="4">Chuyên đề 4: Hệ thống pin (BESS)</option>
+                        <option value="5">Chuyên đề 5: Hạ thế văn phòng VSIP</option>
+                        <option value="6">Chuyên đề 6: Hệ thống SCADA và OCC</option>
+                        <option value="7">Chuyên đề 7: Nhà máy điện đến 22kV</option>
+                        <option value="8">Chuyên đề 8: Nhà máy xử lý nước thải</option>
+                        <option value="9">Chuyên đề 9: Nhà xưởng xây sẵn (PCCC)</option>
+                        <option value="10">Chuyên đề 10: Thi công & Nhà ở thấp tầng</option>
                     </select>
                 </div>
                 <div class="button-group">
@@ -96,12 +104,13 @@
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo",
-        authDomain: "tavietnam-78ae8.firebaseapp.com",
-        projectId: "tavietnam-78ae8",
-        storageBucket: "tavietnam-78ae8.firebasestorage.app",
-        messagingSenderId: "670121705534",
-        appId: "1:670121705534:web:1027ad98550573ad37116f"
+      apiKey: "AIzaSyBPNk4J9npcClKFD0daia4W8nPwwg3bX_A",
+      authDomain: "vsiptest-bdbc5.firebaseapp.com",
+      projectId: "vsiptest-bdbc5",
+      storageBucket: "vsiptest-bdbc5.firebasestorage.app",
+      messagingSenderId: "1056019256354",
+      appId: "1:1056019256354:web:8f864b8b2edc4c9b1ca67b",
+      measurementId: "G-42WSD293BH"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -117,23 +126,19 @@
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { show('auth-section'); return; }
+        // Tự động chuyển hướng Master Admin
+        if (user.email === 'deptc.gvatvsld@gmail.com') { window.location.href = './admin/index.html'; return; }
+        
         show('loader');
         try {
-            const userRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userRef);
+            const userSnap = await getDoc(doc(db, "users", user.uid));
             if (userSnap.exists() && userSnap.data().fullName) {
                 const data = userSnap.data();
                 document.getElementById('displayName').innerText = data.fullName;
                 document.getElementById('displayDept').innerText = data.department || "N/A";
                 show('selection-section');
             } else { show('name-section'); }
-        } catch (e) { 
-            console.error("Lỗi Firestore:", e);
-            if(e.code === 'permission-denied') {
-                alert("Lỗi phân quyền! Hãy kiểm tra lại Firebase Rules.");
-            }
-            show('auth-section'); 
-        }
+        } catch (e) { show('auth-section'); }
     });
 
     document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
@@ -145,7 +150,7 @@
         try {
             await setDoc(doc(db, "users", auth.currentUser.uid), { fullName: n, department: d, email: auth.currentUser.email, updatedAt: new Date().toISOString() }, { merge: true });
             location.reload();
-        } catch (e) { alert("Lỗi lưu dữ liệu!"); show('name-section'); }
+        } catch (e) { alert("Lỗi!"); show('name-section'); }
     };
 
     document.getElementById('btnGoGopy').onclick = () => { window.location.href = `gopy.html?name=${encodeURIComponent(document.getElementById('displayName').innerText)}`; };
