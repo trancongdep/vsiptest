@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Questions - v3.0</title>
+    <title>Edit Questions - VSIP 2026 - v3.0</title>
     <style>
         :root { --primary: #004a99; --accent: #f37021; --success: #28a745; --danger: #dc3545; --bg: #f4f7f9; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
@@ -15,88 +15,70 @@
         .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .filter-bar input, .filter-bar select { padding: 12px; border: 2px solid #ddd; border-radius: 8px; flex: 1; min-width: 200px; }
         .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid #eee; }
-        table { width: 100%; border-collapse: collapse; background: white; }
+        table { width: 100%; border-collapse: collapse; }
         th { background: #f8f9fa; color: var(--primary); padding: 15px; text-align: left; }
         td { padding: 15px; border-bottom: 1px solid #eee; font-size: 0.9rem; vertical-align: top; }
         .btn-edit-small { background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
         .btn-del-small { background: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-        #edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        #edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 800px; border-radius: 12px; padding: 30px; max-height: 90vh; overflow-y: auto; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-weight: 700; margin-bottom: 5px; color: var(--primary); }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        .form-group { margin-bottom: 15px; } .form-group label { display: block; font-weight: 700; margin-bottom: 5px; color: var(--primary); }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
         footer { background: #eef2f6; padding: 20px; text-align: center; border-top: 3px solid var(--primary); margin-top: auto; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 100px auto; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 50px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 <header><a href="index.html" class="btn-nav">« Quản trị</a><h1>HIỆU CHỈNH BỘ ĐỀ</h1></header>
 <div class="container">
-    <div id="loader" style="display: block;"><div class="spinner"></div></div>
-    <div id="main-content" style="display:none">
-        <div class="card">
-            <div class="filter-bar">
-                <select id="level-filter" onchange="loadQuestions()">
-                    <option value="1/5" selected>Bậc 1/5</option><option value="2/5">Bậc 2/5</option><option value="3/5">Bậc 3/5</option><option value="4/5">Bậc 4/5</option><option value="5/5">Bậc 5/5</option>
-                </select>
-                <input type="text" id="search-input" placeholder="Tìm ID hoặc nội dung..." oninput="filterQuestions()">
-                <button onclick="loadQuestions()" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Làm mới</button>
-            </div>
-            <div class="table-wrapper">
-                <table>
-                    <thead><tr><th style="width:70px">ID</th><th style="width:100px">Bậc</th><th>Nội dung câu hỏi</th><th style="width:60px">Đ/A</th><th style="width:140px">Thao tác</th></tr></thead>
-                    <tbody id="question-list"></tbody>
-                </table>
-            </div>
+    <div id="main-content" class="card">
+        <div class="filter-bar">
+            <select id="level-filter" onchange="loadQuestions()"><option value="1/5" selected>Bậc 1/5</option><option value="2/5">Bậc 2/5</option><option value="3/5">Bậc 3/5</option><option value="4/5">Bậc 4/5</option><option value="5/5">Bậc 5/5</option></select>
+            <input type="text" id="search-input" placeholder="Tìm ID hoặc nội dung..." oninput="filterQuestions()">
+            <button onclick="loadQuestions()" style="background:var(--primary); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">Làm mới</button>
         </div>
+        <div id="loading-table" style="display:none"><div class="spinner"></div></div>
+        <div class="table-wrapper"><table><thead><tr><th>ID</th><th>Bậc</th><th>Nội dung</th><th>Đ/A</th><th>Thao tác</th></tr></thead><tbody id="question-list"></tbody></table></div>
     </div>
 </div>
-<div id="edit-modal"><div class="modal-content"><h2 style="color:var(--primary); margin-top:0">Sửa Câu hỏi ID: <span id="m-id"></span></h2><div class="form-group"><label>Câu hỏi:</label><textarea id="m-content" rows="3"></textarea></div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px"><div class="form-group"><label>A:</label><input type="text" id="m-optA"></div><div class="form-group"><label>B:</label><input type="text" id="m-optB"></div><div class="form-group"><label>C:</label><input type="text" id="m-optC"></div><div class="form-group"><label>D:</label><input type="text" id="m-optD"></div></div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px"><div class="form-group"><label>Đáp án đúng:</label><input type="text" id="m-correct"></div><div class="form-group"><label>Bậc:</label><select id="m-level"><option value="1/5">1/5</option><option value="2/5">2/5</option><option value="3/5">3/5</option><option value="4/5">4/5</option><option value="5/5">5/5</option></select></div></div><div class="form-group"><label>Căn cứ:</label><input type="text" id="m-basis"></div><div class="form-group"><label>Trích dẫn:</label><textarea id="m-quote" rows="3"></textarea></div><div class="modal-footer"><button onclick="closeModal()" style="padding:10px 20px; background:#6c757d; color:white; border:none; border-radius:6px; cursor:pointer;">Hủy</button><button id="btn-save-update" style="padding:10px 20px; background:var(--success); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Lưu thay đổi</button></div></div></div>
-<footer>
-    <div>Nhóm biên soạn bộ đề An toàn điện VDC @2026</div>
-    <div style="font-weight:600; color:var(--primary); margin-top:5px;">Admin: Trần Công Đẹp - 0963.292.882</div>
-</footer>
+<div id="edit-modal"><div class="modal-content"><h2 style="color:var(--primary); margin-top:0">Sửa Câu hỏi ID: <span id="m-id"></span></h2><div class="form-group"><label>Câu hỏi:</label><textarea id="m-content" rows="3"></textarea></div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px"><div class="form-group"><label>A:</label><input type="text" id="m-optA"></div><div class="form-group"><label>B:</label><input type="text" id="m-optB"></div><div class="form-group"><label>C:</label><input type="text" id="m-optC"></div><div class="form-group"><label>D:</label><input type="text" id="m-optD"></div></div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px"><div class="form-group"><label>Đáp án đúng:</label><input type="text" id="m-correct"></div><div class="form-group"><label>Bậc:</label><select id="m-level"><option value="1/5">1/5</option><option value="2/5">2/5</option><option value="3/5">3/5</option><option value="4/5">4/5</option><option value="5/5">5/5</option></select></div></div><div class="form-group"><label>Căn cứ:</label><input type="text" id="m-basis"></div><div class="form-group"><label>Trích dẫn:</label><textarea id="m-quote" rows="3"></textarea></div><div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;"><button onclick="closeModal()" style="padding:10px 20px; background:#6c757d; color:white; border:none; border-radius:6px; cursor:pointer;">Hủy</button><button id="btn-save-update" style="padding:10px 20px; background:var(--success); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Lưu</button></div></div></div>
+<footer><div>Nhóm biên soạn bộ đề An toàn điện VDC @2026</div><div style="font-weight:600; color:var(--primary); margin-top:5px;">Admin: Trần Công Đẹp - 0963.292.882</div></footer>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     const firebaseConfig = { apiKey: "AIzaSyBPNk4J9npcClKFD0daia4W8nPwwg3bX_A", authDomain: "vsiptest-bdbc5.firebaseapp.com", projectId: "vsiptest-bdbc5", storageBucket: "vsiptest-bdbc5.firebasestorage.app", messagingSenderId: "1056019256354", appId: "1:1056019256354:web:8f864b8b2edc4c9b1ca67b", measurementId: "G-42WSD293BH" };
     const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
-    const MASTER_ADMIN = "deptc.gvatvsld@gmail.com";
-    let currentQuestions = []; let currentEditDocId = null;
-    onAuthStateChanged(auth, (user) => {
-        if (user && user.email === MASTER_ADMIN) { document.getElementById('loader').style.display = 'none'; document.getElementById('main-content').style.display = 'block'; loadQuestions(); }
-        else { window.location.href = '../index.html'; }
-    });
+    const MASTER_ADMIN = "deptc.gvatvsld@gmail.com"; let currentQuestions = []; let currentEditDocId = null;
+    onAuthStateChanged(auth, (user) => { if (user && user.email === MASTER_ADMIN) loadQuestions(); else window.location.href = '../index.html'; });
     async function loadQuestions() {
         const body = document.getElementById('question-list'); const lvl = document.getElementById('level-filter').value;
-        body.innerHTML = '<tr><td colspan="5" style="text-align:center">Đang nạp dữ liệu...</td></tr>';
+        document.getElementById('loading-table').style.display = 'block'; body.innerHTML = '';
         try {
             const snap = await getDocs(query(collection(db, "questions"), where("level", "in", [lvl, "Bậc " + lvl]), orderBy("questionId")));
             currentQuestions = []; snap.forEach(d => currentQuestions.push({ docId: d.id, ...d.data() })); render(currentQuestions);
-        } catch (e) { body.innerHTML = '<tr><td colspan="5">Lỗi tải dữ liệu.</td></tr>'; }
+        } catch (e) { body.innerHTML = '<tr><td colspan="5">Lỗi.</td></tr>'; }
+        document.getElementById('loading-table').style.display = 'none';
     }
     function render(data) {
-        const body = document.getElementById('question-list'); body.innerHTML = data.length === 0 ? '<tr><td colspan="5">Không có dữ liệu.</td></tr>' : '';
-        data.forEach(q => { const row = document.createElement('tr'); row.innerHTML = `<td><strong>${q.questionId}</strong></td><td><small>${q.level || ''}</small></td><td>${q.content}</td><td><b style="color:var(--accent)">${q.correctAnswer}</b></td><td><button class="btn-edit-small" onclick="openEdit('${q.docId}')">Sửa</button> <button class="btn-del-small" onclick="deleteQuestion('${q.docId}', '${q.questionId}')">Xóa</button></td>`; body.appendChild(row); });
+        const body = document.getElementById('question-list'); body.innerHTML = '';
+        data.forEach(q => { const row = document.createElement('tr'); row.innerHTML = `<td><strong>${q.questionId}</strong></td><td><small>${q.level || ''}</small></td><td>${q.content}</td><td><b>${q.correctAnswer}</b></td><td><button class="btn-edit-small" onclick="openEdit('${q.docId}')">Sửa</button> <button class="btn-del-small" onclick="deleteQuestion('${q.docId}', '${q.questionId}')">Xóa</button></td>`; body.appendChild(row); });
     }
     window.filterQuestions = () => { const key = document.getElementById('search-input').value.toLowerCase(); render(currentQuestions.filter(q => q.content.toLowerCase().includes(key) || q.questionId.toString().includes(key))); }
     window.openEdit = (docId) => {
-        const q = currentQuestions.find(i => i.docId === docId); if (!q) return; currentEditDocId = docId;
+        const q = currentQuestions.find(i => i.docId === docId); currentEditDocId = docId;
         document.getElementById('m-id').innerText = q.questionId; document.getElementById('m-content').value = q.content;
-        document.getElementById('m-optA').value = q.optionA; document.getElementById('m-optB').value = q.optionB;
-        document.getElementById('m-optC').value = q.optionC; document.getElementById('m-optD').value = q.optionD;
+        document.getElementById('m-optA').value = q.optionA; document.getElementById('m-optB').value = q.optionB; document.getElementById('m-optC').value = q.optionC; document.getElementById('m-optD').value = q.optionD;
         document.getElementById('m-correct').value = q.correctAnswer; document.getElementById('m-level').value = q.level.replace("Bậc ", "");
         document.getElementById('m-basis').value = q.newBasis || ""; document.getElementById('m-quote').value = q.quote || "";
         document.getElementById('edit-modal').style.display = 'flex';
     }
     window.closeModal = () => document.getElementById('edit-modal').style.display = 'none';
-    window.deleteQuestion = async (docId, qId) => { if (confirm(`Xóa câu hỏi ${qId}?`)) { await deleteDoc(doc(db, "questions", docId)); loadQuestions(); } }
+    window.deleteQuestion = async (docId, qId) => { if (confirm(`Xóa câu ${qId}?`)) { await deleteDoc(doc(db, "questions", docId)); loadQuestions(); } }
     document.getElementById('btn-save-update').onclick = async () => {
-        const data = { content: document.getElementById('m-content').value, optionA: document.getElementById('m-optA').value, optionB: document.getElementById('m-optB').value, optionC: document.getElementById('m-optC').value, optionD: document.getElementById('m-optD').value, correctAnswer: document.getElementById('m-correct').value.toUpperCase(), level: document.getElementById('m-level').value, newBasis: document.getElementById('m-basis').value, quote: document.getElementById('m-quote').value, updatedAt: new Date().toISOString() };
-        await updateDoc(doc(db, "questions", currentEditDocId), data); closeModal(); loadQuestions();
+        await updateDoc(doc(db, "questions", currentEditDocId), { content: document.getElementById('m-content').value, optionA: document.getElementById('m-optA').value, optionB: document.getElementById('m-optB').value, optionC: document.getElementById('m-optC').value, optionD: document.getElementById('m-optD').value, correctAnswer: document.getElementById('m-correct').value.toUpperCase(), level: document.getElementById('m-level').value, newBasis: document.getElementById('m-basis').value, quote: document.getElementById('m-quote').value, updatedAt: new Date().toISOString() });
+        closeModal(); loadQuestions();
     };
 </script>
 </body>
