@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma trận Bộ đề - VSIP 2026 - v1.0</title>
+    <style>
+        :root { --primary: #004a99; --accent: #f37021; --bg: #f4f7f9; --text: #333; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); }
+        header { background: var(--primary); color: white; padding: 20px 15px; text-align: center; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; }
+        .btn-back { position: absolute; left: 15px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 600; }
+        header h1 { margin: 0; font-size: 1.4rem; flex: 1; text-transform: uppercase; }
+        
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 15px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); }
+        
+        .stats-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-item { background: #eef2f6; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #d1d9e6; }
+        .stat-item span { display: block; font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+        .stat-item label { font-size: 0.85rem; font-weight: 600; color: #666; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; font-size: 0.95rem; }
+        th { background: #f8f9fa; color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; }
+        th, td { border: 1px solid #dee2e6; padding: 12px; text-align: center; }
+        tr:hover { background-color: #f1f7ff; }
+        .topic-name { text-align: left; font-weight: 600; color: #444; min-width: 180px; }
+        
+        .zero { color: #ccc; font-weight: normal; }
+        .has-data { color: var(--success); font-weight: 700; background: #f6fff8; }
+        .total-row { background: #eef2f6; font-weight: 800; color: var(--primary); }
+
+        .loading-overlay { text-align: center; padding: 50px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        footer { background: #eef2f6; padding: 20px; text-align: center; border-top: 3px solid var(--primary); margin-top: 50px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="btn-back">« Quản trị</a>
+    <h1>MA TRẬN TỔNG HỢP BỘ ĐỀ</h1>
+</header>
+
+<div class="container">
+    <div id="main-content" class="card">
+        <div id="loading" class="loading-overlay">
+            <div class="spinner"></div>
+            <p>Đang quét dữ liệu từ máy chủ...</p>
+        </div>
+
+        <div id="data-area" style="display: none;">
+            <div class="stats-summary">
+                <div class="stat-item"><span id="total-q">0</span><label>Tổng số câu hỏi</label></div>
+                <div class="stat-item"><span id="total-topics">0</span><label>Số Chuyên đề</label></div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Chuyên đề / Phân nhóm</th>
+                        <th>Bậc 1/5</th>
+                        <th>Bậc 2/5</th>
+                        <th>Bậc 3/5</th>
+                        <th>Bậc 4/5</th>
+                        <th>Bậc 5/5</th>
+                        <th>TỔNG</th>
+                    </tr>
+                </thead>
+                <tbody id="matrix-body">
+                    </tbody>
+                <tfoot>
+                    <tr id="matrix-footer" class="total-row">
+                        </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div>Nhóm biên soạn bộ đề An toàn điện VDC @2026</div>
+    <div style="font-weight:600; color:var(--primary); margin-top:5px;">Admin: Trần Công Đẹp - 0963.292.882</div>
+</footer>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo", 
+        authDomain: "tavietnam-78ae8.firebaseapp.com", 
+        projectId: "tavietnam-78ae8", 
+        storageBucket: "tavietnam-78ae8.firebasestorage.app", 
+        messagingSenderId: "670121705534", 
+        appId: "1:670121705534:web:1027ad98550573ad37116f" 
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const MASTER_ADMIN = "deptc.gvatvsld@gmail.com";
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user || user.email !== MASTER_ADMIN) {
+            window.location.href = 'index.html';
+        } else {
+            fetchAndBuildMatrix();
+        }
+    });
+
+    async function fetchAndBuildMatrix() {
+        try {
+            const querySnapshot = await getDocs(collection(db, "questions"));
+            const matrix = {};
+            const levels = ["1/5", "2/5", "3/5", "4/5", "5/5"];
+            let totalQuestions = 0;
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const topic = data.category || "Chưa phân nhóm";
+                let level = data.level || "N/A";
+                
+                // Chuẩn hóa level (ví dụ: "3" -> "3/5", "Bậc 4" -> "4/5")
+                if (!level.includes("/5")) {
+                    const match = level.match(/\d+/);
+                    if (match) level = match[0] + "/5";
+                }
+
+                if (!matrix[topic]) {
+                    matrix[topic] = { "1/5": 0, "2/5": 0, "3/5": 0, "4/5": 0, "5/5": 0, "rowTotal": 0 };
+                }
+
+                if (matrix[topic].hasOwnProperty(level)) {
+                    matrix[topic][level]++;
+                    matrix[topic].rowTotal++;
+                    totalQuestions++;
+                }
+            });
+
+            renderMatrix(matrix, levels, totalQuestions);
+        } catch (error) {
+            console.error("Lỗi:", error);
+            alert("Không thể lấy dữ liệu từ Server.");
+        }
+    }
+
+    function renderMatrix(matrix, levels, totalQ) {
+        const body = document.getElementById('matrix-body');
+        const footer = document.getElementById('matrix-footer');
+        const sortedTopics = Object.keys(matrix).sort();
+        
+        let html = '';
+        const colTotals = { "1/5": 0, "2/5": 0, "3/5": 0, "4/5": 0, "5/5": 0 };
+
+        sortedTopics.forEach(topic => {
+            html += `<tr><td class="topic-name">${topic}</td>`;
+            levels.forEach(lvl => {
+                const count = matrix[topic][lvl];
+                colTotals[lvl] += count;
+                html += `<td class="${count > 0 ? 'has-data' : 'zero'}">${count}</td>`;
+            });
+            html += `<td style="background:#f8f9fa; font-weight:700;">${matrix[topic].rowTotal}</td></tr>`;
+        });
+
+        body.innerHTML = html;
+
+        // Render Footer
+        let footerHtml = `<td>TỔNG CỘNG</td>`;
+        levels.forEach(lvl => {
+            footerHtml += `<td>${colTotals[lvl]}</td>`;
+        });
+        footerHtml += `<td>${totalQ}</td>`;
+        footer.innerHTML = footerHtml;
+
+        // Cập nhật tóm tắt
+        document.getElementById('total-q').innerText = totalQ;
+        document.getElementById('total-topics').innerText = sortedTopics.length;
+        
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('data-area').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
