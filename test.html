@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sát hạch An toàn điện VSIP 2026 - v6.3</title>
+    <title>Sát hạch An toàn điện VSIP 2026 - v6.4</title>
     <style>
         :root { --primary-blue: #004a99; --accent: #f37021; --success: #28a745; --danger: #dc3545; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); -webkit-tap-highlight-color: transparent; }
@@ -25,11 +25,10 @@
         .btn-blue { background: var(--primary-blue); color: white; }
         .btn-gray { background: #6c757d; color: white; }
         
-        /* Cấu trúc phần hiển thị giải thích */
-        .support-panel { background: #fff9f1; border-left: 6px solid var(--accent); padding: 20px; border-radius: 8px; transition: 0.3s; }
+        .support-panel { background: #fff9f1; border-left: 6px solid var(--accent); padding: 20px; border-radius: 8px; transition: opacity 0.3s ease; }
         .quote-box { background: white; padding: 15px; border-radius: 6px; border: 1px solid #ffe0b2; font-style: italic; margin-top: 10px; color: #5d4037; font-size: 0.95rem; }
         
-        /* Nút Bật/Tắt giải thích */
+        /* Toggle Switch */
         .toggle-wrapper { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ddd; }
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -47,7 +46,7 @@
 
 <header>
     <a href="index.html" class="btn-home-nav">« Trang chủ</a>
-    <h1>BỘ ĐỀ AN TOÀN ĐIỆN - v6.3</h1>
+    <h1>BỘ ĐỀ AN TOÀN ĐIỆN - v6.4</h1>
 </header>
 
 <div class="container">
@@ -73,7 +72,7 @@
                     <div class="toggle-wrapper">
                         <span style="font-size: 0.9rem; font-weight: 700; color: var(--primary-blue);">Chế độ ôn tập:</span>
                         <label class="switch">
-                            <input type="checkbox" id="toggle-explanation" checked onchange="toggleExplanationView()">
+                            <input type="checkbox" id="toggle-explanation" onchange="handleToggleChange()">
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -116,7 +115,22 @@
 
     let questions = []; let curIdx = 0; let currentUser = null;
 
-    onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; load(); } else { window.location.href = 'index.html'; } });
+    onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; initSettings(); load(); } else { window.location.href = 'index.html'; } });
+
+    // 1. Hàm khởi tạo cài đặt từ bộ nhớ
+    function initSettings() {
+        const savedSetting = localStorage.getItem('study_mode');
+        // Nếu chưa bao giờ lưu, mặc định là Bật (true)
+        const isStudyMode = savedSetting === null ? true : savedSetting === 'true';
+        document.getElementById('toggle-explanation').checked = isStudyMode;
+    }
+
+    // 2. Hàm xử lý khi thay đổi nút gạt
+    window.handleToggleChange = () => {
+        const isShow = document.getElementById('toggle-explanation').checked;
+        localStorage.setItem('study_mode', isShow); // Lưu vào bộ nhớ trình duyệt
+        applyExplanationsVisibility(isShow);
+    }
 
     async function load() {
         try {
@@ -154,18 +168,22 @@
         document.getElementById('options').innerHTML = `
             <div class="opt" data-val="A" onclick="sel(this)">A. ${q.optionA}</div>
             <div class="opt" data-val="B" onclick="sel(this)">B. ${q.optionB}</div>
-            <div class="opt" data-val="C" onclick="handleSelect(this)">C. ${q.optionC}</div>
+            <div class="opt" data-val="C" onclick="sel(this)">C. ${q.optionC}</div>
             <div class="opt" data-val="D" onclick="sel(this)">D. ${q.optionD}</div>
         `;
-        // Chỉnh sửa lỗi nhỏ: tất cả gọi sel(this)
-        document.getElementById('options').querySelectorAll('.opt').forEach(el => el.setAttribute('onclick', 'sel(this)'));
 
         document.getElementById('ans-label').innerText = q.correctAnswer;
         document.getElementById('basis-label').innerText = q.newBasis || "---";
         document.getElementById('quote-label').innerText = q.quote || "---";
         document.getElementById('feedback').value = "";
         
-        toggleExplanationView(); // Cập nhật trạng thái ẩn hiện ngay khi chuyển câu
+        applyExplanationsVisibility(document.getElementById('toggle-explanation').checked);
+    }
+
+    function applyExplanationsVisibility(isShow) {
+        const section = document.getElementById('explanation-section');
+        section.style.opacity = isShow ? '1' : '0';
+        section.style.visibility = isShow ? 'visible' : 'hidden';
     }
 
     window.sel = (el) => {
@@ -185,13 +203,6 @@
 
     window.move = (d) => { if (curIdx+d >= 0 && curIdx+d < questions.length) { curIdx+=d; render(); window.scrollTo(0,0); } }
 
-    window.toggleExplanationView = () => {
-        const isShow = document.getElementById('toggle-explanation').checked;
-        document.getElementById('explanation-section').style.visibility = isShow ? 'visible' : 'hidden';
-        document.getElementById('explanation-section').style.opacity = isShow ? '1' : '0';
-    }
-
-    // Lưu góp ý
     document.getElementById('feedback').onblur = async function() {
         const val = this.value.trim();
         if(!val || !currentUser) return;
@@ -207,8 +218,6 @@
             }, { merge: true });
         } catch (e) { console.error("Lỗi lưu góp ý"); }
     };
-
-    window.handleSelect = window.sel; // Alias để tránh lỗi hàm cũ
 </script>
 </body>
 </html>
