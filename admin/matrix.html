@@ -3,71 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ma trận Bộ đề Chi tiết - VSIP 2026 - v1.4</title>
+    <title>Ma trận vsiptest - v1.6</title>
     <style>
         :root { --primary: #004a99; --accent: #f37021; --bg: #f4f7f9; --text: #333; --success: #28a745; --multi: #6f42c1; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: var(--text); }
-        header { background: var(--primary); color: white; padding: 20px 15px; text-align: center; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; }
-        .btn-back { position: absolute; left: 15px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 600; }
-        header h1 { margin: 0; font-size: 1.4rem; flex: 1; text-transform: uppercase; }
+        header { background: var(--primary); color: white; padding: 20px; text-align: center; display: flex; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .btn-back { position: absolute; left: 15px; color: white; text-decoration: none; border: 1px solid #fff; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; }
         .container { max-width: 1100px; margin: 30px auto; padding: 0 15px; }
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        h2 { color: var(--primary); border-left: 5px solid var(--accent); padding-left: 15px; font-size: 1.2rem; margin-bottom: 20px; text-transform: uppercase; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; font-size: 0.9rem; border-radius: 8px; overflow: hidden; }
-        th { background: #eef2f6; color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; }
-        th, td { border: 1px solid #dee2e6; padding: 12px; text-align: center; }
-        .topic-name { text-align: left; font-weight: 600; color: #444; min-width: 220px; background: #fcfcfc; }
-        .zero { color: #ccc; font-weight: normal; }
-        .has-data { color: var(--success); font-weight: 700; background: #f6fff8; }
-        .has-multi { color: var(--multi); font-weight: 700; background: #f9f2ff; }
-        .total-row { background: #eef2f6; font-weight: 800; color: var(--primary); }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .cache-info { font-size: 0.85rem; color: #666; font-style: italic; }
+        .btn-refresh { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-refresh:hover { background: #d45d1a; transform: scale(1.05); }
+
+        h2 { color: var(--primary); border-left: 5px solid var(--accent); padding-left: 15px; font-size: 1.1rem; text-transform: uppercase; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
+        th, td { border: 1px solid #dee2e6; padding: 10px; text-align: center; }
+        th { background: #eef2f6; color: var(--primary); }
+        .topic-name { text-align: left; font-weight: 600; min-width: 200px; }
+        .zero { color: #ccc; } 
+        .has-data { color: var(--success); font-weight: 700; } 
+        .has-multi { color: var(--multi); font-weight: 700; }
+        .total-row { background: #eef2f6; font-weight: 800; }
+        
+        #loading-overlay { display: none; text-align: center; padding: 50px; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <p>Đang tổng hợp dữ liệu từ Server... vui lòng đợi trong giây lát.</p>
+</div>
+
 <header>
-    <a href="index.html" class="btn-back">« Quản trị</a>
-    <h1>MA TRẬN CHI TIẾT BỘ ĐỀ - v1.4</h1>
+    <a href="index.html" class="btn-back">« Quay lại</a>
+    <h1 style="flex:1; margin:0; font-size: 1.3rem;">MA TRẬN CÂU HỎI - v1.6</h1>
 </header>
 
 <div class="container">
-    <div id="loading" style="text-align:center; padding:100px;"><div class="spinner"></div><p>Đang phân tích loại câu hỏi...</p></div>
+    <div class="toolbar">
+        <div class="cache-info" id="cache-time">Chưa có dữ liệu tổng hợp.</div>
+        <button class="btn-refresh" onclick="fetchFromFirestore()">🔄 CẬP NHẬT DỮ LIỆU MỚI</button>
+    </div>
 
-    <div id="data-area" style="display: none;">
-        <div class="card">
-            <h2>1. Tổng hợp chung (Tất cả loại câu)</h2>
-            <table>
-                <thead>
-                    <tr><th>Chuyên đề</th><th>1/5</th><th>2/5</th><th>3/5</th><th>4/5</th><th>5/5</th><th>TỔNG</th></tr>
-                </thead>
-                <tbody id="matrix-all"></tbody>
-                <tfoot><tr id="footer-all" class="total-row"></tr></tfoot>
-            </table>
-        </div>
-
-        <div class="card">
-            <h2>2. Câu hỏi 01 đáp án đúng</h2>
-            <table>
-                <thead>
-                    <tr><th>Chuyên đề</th><th>1/5</th><th>2/5</th><th>3/5</th><th>4/5</th><th>5/5</th><th>TỔNG</th></tr>
-                </thead>
-                <tbody id="matrix-single"></tbody>
-                <tfoot><tr id="footer-single" class="total-row"></tr></tfoot>
-            </table>
-        </div>
-
-        <div class="card">
-            <h2>3. Câu hỏi NHIỀU đáp án đúng</h2>
-            <table>
-                <thead>
-                    <tr><th>Chuyên đề</th><th>1/5</th><th>2/5</th><th>3/5</th><th>4/5</th><th>5/5</th><th>TỔNG</th></tr>
-                </thead>
-                <tbody id="matrix-multi"></tbody>
-                <tfoot><tr id="footer-multi" class="total-row"></tr></tfoot>
-            </table>
-        </div>
+    <div id="data-area">
+        <div class="card"><h2>1. Tổng hợp chung</h2><table id="matrix-all"></table></div>
+        <div class="card"><h2>2. Câu hỏi 01 Đáp án</h2><table id="matrix-single"></table></div>
+        <div class="card"><h2>3. Câu hỏi Nhiều đáp án</h2><table id="matrix-multi"></table></div>
     </div>
 </div>
 
@@ -75,93 +61,104 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo", 
-        authDomain: "tavietnam-78ae8.firebaseapp.com", 
-        projectId: "tavietnam-78ae8", 
-        storageBucket: "tavietnam-78ae8.firebasestorage.app", 
-        messagingSenderId: "670121705534", 
-        appId: "1:670121705534:web:1027ad98550573ad37116f" 
+    const firebaseConfig = { apiKey: "AIzaSyBPNk4J9npcClKFD0daia4W8nPwwg3bX_A", authDomain: "vsiptest-bdbc5.firebaseapp.com", projectId: "vsiptest-bdbc5", storageBucket: "vsiptest-bdbc5.firebasestorage.app", messagingSenderId: "1056019256354", appId: "1:1056019256354:web:8f864b8b2edc4c9b1ca67b", measurementId: "G-42WSD293BH" };
+
+    const app = initializeApp(firebaseConfig); 
+    const db = getFirestore(app);
+    const levels = ["1/5", "2/5", "3/5", "4/5", "5/5"];
+
+    // 1. Hàm khởi tạo khi mở trang
+    window.onload = () => {
+        const cachedData = localStorage.getItem('matrix_cache');
+        const cachedTime = localStorage.getItem('matrix_time');
+        
+        if (cachedData) {
+            document.getElementById('cache-time').innerText = "Dữ liệu lưu lúc: " + cachedTime;
+            const parsedData = JSON.parse(cachedData);
+            displayTables(parsedData);
+        } else {
+            fetchFromFirestore();
+        }
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    async function fetchData() {
+    // 2. Hàm lấy dữ liệu trực tiếp từ Firestore (Chủ động gọi)
+    window.fetchFromFirestore = async () => {
+        const overlay = document.getElementById('loading-overlay');
+        overlay.style.display = 'flex';
+        
         try {
             const snap = await getDocs(collection(db, "questions"));
-            const data = { all: {}, single: {}, multi: {} };
-            const levels = ["1/5", "2/5", "3/5", "4/5", "5/5"];
+            const dataMap = { all: {}, single: {}, multi: {} };
 
             snap.forEach(d => {
-                const q = d.data();
-                const topic = (q.category || "N/A").toString().trim();
-                let lv = (q.level || "").toString().trim();
-                if (lv && !lv.includes("/5")) {
-                    const m = lv.match(/\d+/);
-                    if (m) lv = m[0] + "/5";
+                const q = d.data(); 
+                const topic = (q.category || "N/A").trim();
+                let lv = q.level || ""; 
+                if (lv && !lv.includes("/5")) { 
+                    const m = lv.match(/\d+/); 
+                    if (m) lv = m[0] + "/5"; 
                 }
+                const isMulti = (q.correctAnswer || "").replace(/[\s,]/g, "").length > 1;
+                const type = isMulti ? "multi" : "single";
 
-                // Kiểm tra loại câu hỏi (dựa trên số ký tự trong đáp án đúng)
-                const ans = (q.correctAnswer || "").replace(/[\s,]/g, "");
-                const type = ans.length > 1 ? "multi" : "single";
-
-                initRow(data.all, topic);
-                initRow(data[type], topic);
-
-                if (levels.includes(lv)) {
-                    data.all[topic][lv]++;
-                    data.all[topic].total++;
-                    data[type][topic][lv]++;
-                    data[type][topic].total++;
-                }
+                [dataMap.all, dataMap[type]].forEach(obj => {
+                    if (!obj[topic]) obj[topic] = { "1/5":0,"2/5":0,"3/5":0,"4/5":0,"5/5":0, total:0 };
+                    if (levels.includes(lv)) { obj[topic][lv]++; obj[topic].total++; }
+                });
             });
 
-            renderTable('matrix-all', 'footer-all', data.all, levels, 'has-data');
-            renderTable('matrix-single', 'footer-single', data.single, levels, 'has-data');
-            renderTable('matrix-multi', 'footer-multi', data.multi, levels, 'has-multi');
-
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('data-area').style.display = 'block';
-        } catch (e) { console.error(e); }
-    }
-
-    function initRow(obj, topic) {
-        if (!obj[topic]) {
-            obj[topic] = { "1/5":0, "2/5":0, "3/5":0, "4/5":0, "5/5":0, total: 0 };
+            // Lưu vào Cache
+            const timeStr = new Date().toLocaleString('vi-VN');
+            localStorage.setItem('matrix_cache', JSON.stringify(dataMap));
+            localStorage.setItem('matrix_time', timeStr);
+            
+            document.getElementById('cache-time').innerText = "Dữ liệu lưu lúc: " + timeStr;
+            displayTables(dataMap);
+            
+        } catch (e) { 
+            console.error(e);
+            alert("Lỗi tải dữ liệu từ Server!");
+        } finally {
+            overlay.style.display = 'none';
         }
+    };
+
+    // 3. Hàm hiển thị dữ liệu ra bảng
+    function displayTables(data) {
+        renderTable('matrix-all', data.all, 'has-data');
+        renderTable('matrix-single', data.single, 'has-data');
+        renderTable('matrix-multi', data.multi, 'has-multi');
     }
 
-    function renderTable(bodyId, footerId, matrix, levels, cellClass) {
-        const body = document.getElementById(bodyId);
-        const sorted = Object.keys(matrix).sort((a, b) => {
-            if (a.toLowerCase().includes("kiến thức chung")) return -1;
-            if (b.toLowerCase().includes("kiến thức chung")) return 1;
-            return parseInt(a.match(/\d+/) || 0) - parseInt(b.match(/\d+/) || 0);
+    function renderTable(id, matrix, cellClass) {
+        const sorted = Object.keys(matrix).sort((a,b) => {
+            if (a.toLowerCase().includes("chung")) return -1; 
+            if (b.toLowerCase().includes("chung")) return 1;
+            const numA = parseInt(a.match(/\d+/)||0);
+            const numB = parseInt(b.match(/\d+/)||0);
+            return numA - numB;
         });
 
-        let html = '';
-        const colTotals = { "1/5":0, "2/5":0, "3/5":0, "4/5":0, "5/5":0, grand: 0 };
+        let h = `<thead><tr><th>Chuyên đề</th><th>1/5</th><th>2/5</th><th>3/5</th><th>4/5</th><th>5/5</th><th>TỔNG</th></tr></thead><tbody>`;
+        const colT = { "1/5":0,"2/5":0,"3/5":0,"4/5":0,"5/5":0, g:0 };
 
         sorted.forEach(t => {
-            html += `<tr><td class="topic-name">${t}</td>`;
-            levels.forEach(l => {
-                const c = matrix[t][l];
-                colTotals[l] += c;
-                html += `<td class="${c > 0 ? cellClass : 'zero'}">${c}</td>`;
+            h += `<tr><td class="topic-name">${t}</td>`;
+            levels.forEach(l => { 
+                const c = matrix[t][l]; 
+                colT[l]+=c; 
+                h += `<td class="${c>0?cellClass:'zero'}">${c}</td>`; 
             });
-            colTotals.grand += matrix[t].total;
-            html += `<td style="font-weight:700">${matrix[t].total}</td></tr>`;
+            colT.g += matrix[t].total; 
+            h += `<td style="font-weight:700">${matrix[t].total}</td></tr>`;
         });
-        body.innerHTML = html;
-
-        let f = `<td>TỔNG CỘNG</td>`;
-        levels.forEach(l => f += `<td>${colTotals[l]}</td>`);
-        f += `<td style="background:var(--accent); color:white">${colTotals.grand}</td>`;
-        document.getElementById(footerId).innerHTML = f;
+        
+        h += `</tbody><tfoot class="total-row"><td>TỔNG CỘNG</td>`;
+        levels.forEach(l => h += `<td>${colT[l]}</td>`); 
+        h += `<td style="background:var(--accent); color:white">${colT.g}</td></tfoot>`;
+        
+        document.getElementById(id).innerHTML = h;
     }
-
-    fetchData();
 </script>
 </body>
 </html>
