@@ -3,56 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sát hạch An toàn điện VSIP 2026 - v6.2</title>
+    <title>Sát hạch An toàn điện VSIP 2026 - v6.3</title>
     <style>
-        /* [Giữ nguyên CSS cũ của anh] */
         :root { --primary-blue: #004a99; --accent: #f37021; --success: #28a745; --danger: #dc3545; --bg-color: #f4f7f9; --text-main: #1a1a1a; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); }
-        header { background: var(--primary-blue); color: white; padding: 25px 15px; text-align: center; position: sticky; top: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; }
-        header h1 { margin: 0; font-size: 1.5rem; text-transform: uppercase; flex: 1; }
-        .btn-home-nav { position: absolute; left: 15px; background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 15px; border-radius: 6px; font-size: 0.9rem; text-decoration: none; font-weight: 600; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; color: var(--text-main); -webkit-tap-highlight-color: transparent; }
+        header { background: var(--primary-blue); color: white; padding: 25px 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        header h1 { margin: 0; font-size: 1.5rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; flex: 1; }
+        .btn-home-nav { position: absolute; left: 15px; background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 15px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: 0.3s; text-decoration: none; display: flex; align-items: center; gap: 5px; font-weight: 600; }
         .container { flex: 1; max-width: 1200px; margin: 20px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
         .layout-wrapper { display: flex; flex-direction: column; gap: 20px; }
+        .quiz-main { flex: 2; } .quiz-sidebar { flex: 1; } 
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .badge { background: #eef2f6; padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--primary-blue); border: 1px solid #d1d9e6; width: 100%; box-sizing: border-box; margin-bottom: 8px; text-align: center; }
-        .question-text { font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; line-height: 1.5; }
-        .opt { padding: 16px; border: 2px solid #ddd; border-radius: 10px; cursor: pointer; margin-bottom: 12px; font-size: 1.05rem; background: #fff; }
+        .question-text { font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; line-height: 1.5; text-align: justify; }
+        .opt { padding: 16px; border: 2px solid #ddd; border-radius: 10px; cursor: pointer; transition: 0.2s; font-size: 1.05rem; background: #fff; line-height: 1.4; display: flex; margin-bottom: 12px; }
         .opt.selected { background: #e7f1ff; border-color: var(--primary-blue); font-weight: 600; }
         .opt.correct { background: #e6ffed !important; border-color: var(--success) !important; color: #155724; font-weight: 700; }
         .opt.wrong { background: #fff5f5 !important; border-color: var(--danger) !important; color: #721c24; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
-        button { padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding-top: 20px; border-top: 1px solid #eee; }
+        button { padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
         .btn-blue { background: var(--primary-blue); color: white; }
         .btn-gray { background: #6c757d; color: white; }
-        .support-panel { background: #fff9f1; border-left: 6px solid var(--accent); padding: 20px; border-radius: 8px; margin-top: 15px; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 0 auto; }
+        
+        /* Cấu trúc phần hiển thị giải thích */
+        .support-panel { background: #fff9f1; border-left: 6px solid var(--accent); padding: 20px; border-radius: 8px; transition: 0.3s; }
+        .quote-box { background: white; padding: 15px; border-radius: 6px; border: 1px solid #ffe0b2; font-style: italic; margin-top: 10px; color: #5d4037; font-size: 0.95rem; }
+        
+        /* Nút Bật/Tắt giải thích */
+        .toggle-wrapper { display: flex; align-items: center; justify-content: space-between; background: #f8f9fa; padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ddd; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @media (min-width: 992px) { .layout-wrapper { flex-direction: row; } .quiz-main { flex: 2; } .quiz-sidebar { flex: 1; } }
     </style>
 </head>
 <body>
-<header><a href="index.html" class="btn-home-nav">« Trang chủ</a><h1>BỘ ĐỀ AN TOÀN ĐIỆN - v6.2</h1></header>
+
+<header>
+    <a href="index.html" class="btn-home-nav">« Trang chủ</a>
+    <h1>BỘ ĐỀ AN TOÀN ĐIỆN - v6.3</h1>
+</header>
+
 <div class="container">
     <div id="loading" style="text-align:center; padding:100px 20px;"><div class="spinner"></div><p id="loading-msg">Đang nạp câu hỏi...</p></div>
+    
     <div id="quiz-area" style="display:none;">
         <div class="layout-wrapper">
             <div class="quiz-main">
                 <div class="card">
-                    <div id="q-instruction" style="font-size:12px; font-weight:800; color:var(--accent); margin-bottom:10px;">...</div>
+                    <div id="q-instruction" style="font-size:12px; font-weight:800; color:var(--accent); margin-bottom:10px; text-transform:uppercase;">...</div>
                     <div id="q-text" class="question-text"></div>
                     <div id="options"></div>
-                    <div class="controls"><button class="btn-gray" onclick="move(-1)">Trước</button><button class="btn-blue" onclick="checkAnswer()">Kiểm tra</button><button class="btn-gray" onclick="move(1)">Tiếp »</button></div>
+                    <div class="controls">
+                        <button class="btn-gray" onclick="move(-1)">Trước</button>
+                        <button class="btn-blue" onclick="checkAnswer()">Kiểm tra</button>
+                        <button class="btn-gray" onclick="move(1)">Tiếp »</button>
+                    </div>
                 </div>
             </div>
+
             <div class="quiz-sidebar">
                 <div class="card">
+                    <div class="toggle-wrapper">
+                        <span style="font-size: 0.9rem; font-weight: 700; color: var(--primary-blue);">Chế độ ôn tập:</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-explanation" checked onchange="toggleExplanationView()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
                     <div id="q-count" class="badge">Câu --/--</div>
                     <div class="badge">Học viên: <span id="badge-name" style="color:var(--accent)">...</span></div>
                     <div id="badge-lvl" class="badge">Bậc thi: --</div>
-                    <div id="support-panel" class="support-panel">
-                        <p><strong>Đáp án đúng:</strong> <span id="ans-label" style="color:var(--success)"></span></p>
+                    
+                    <div id="explanation-section" class="support-panel">
+                        <p><strong>Đáp án đúng:</strong> <span id="ans-label" style="color:var(--success); font-weight: 800;"></span></p>
                         <p><strong>Căn cứ:</strong> <span id="basis-label"></span></p>
-                        <div id="quote-label" style="font-style:italic; font-size:0.9rem; color:#555; background:white; padding:10px; border-radius:5px;"></div>
+                        <div id="quote-label" class="quote-box"></div>
+                        <div style="margin-top: 15px;">
+                            <p style="font-weight:600; margin-bottom:5px; font-size:0.85rem; color:var(--primary-blue)">Góp ý câu này:</p>
+                            <textarea id="feedback" style="width:100%; height:60px; border-radius:6px; border:1px solid #ddd; padding:8px; font-family:inherit; resize:none;" placeholder="Nhập ý kiến..."></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -63,16 +100,9 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo", 
-        authDomain: "tavietnam-78ae8.firebaseapp.com", 
-        projectId: "tavietnam-78ae8", 
-        storageBucket: "tavietnam-78ae8.firebasestorage.app", 
-        messagingSenderId: "670121705534", 
-        appId: "1:670121705534:web:1027ad98550573ad37116f" 
-    };
+    const firebaseConfig = { apiKey: "AIzaSyBPNk4J9npcClKFD0daia4W8nPwwg3bX_A", authDomain: "vsiptest-bdbc5.firebaseapp.com", projectId: "vsiptest-bdbc5", storageBucket: "vsiptest-bdbc5.firebasestorage.app", messagingSenderId: "1056019256354", appId: "1:1056019256354:web:8f864b8b2edc4c9b1ca67b", measurementId: "G-42WSD293BH" };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -82,19 +112,19 @@
     const levelParam = params.get('level');
     const topicIdx = params.get('topic') || "0";
     const userName = decodeURIComponent(params.get('name') || "Học viên");
+    const userDept = decodeURIComponent(params.get('dept') || "N/A");
 
-    let questions = []; let curIdx = 0;
+    let questions = []; let curIdx = 0; let currentUser = null;
 
-    onAuthStateChanged(auth, (user) => { if (user) load(); else window.location.href = 'index.html'; });
+    onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; load(); } else { window.location.href = 'index.html'; } });
 
     async function load() {
         try {
             const levelStr = String(levelParam);
             const qRef = collection(db, "questions");
-            // Lọc linh hoạt cho cả "3" và "3/5"
             const q = query(qRef, where("level", "in", [levelStr, levelStr + "/5", "Bậc " + levelStr]));
             const snap = await getDocs(q);
-            let pool = []; snap.forEach(d => pool.push(d.data()));
+            let pool = []; snap.forEach(d => pool.push({...d.data(), dbId: d.id}));
 
             if (topicIdx !== "0") {
                 const s = "Chuyên đề " + topicIdx;
@@ -124,12 +154,18 @@
         document.getElementById('options').innerHTML = `
             <div class="opt" data-val="A" onclick="sel(this)">A. ${q.optionA}</div>
             <div class="opt" data-val="B" onclick="sel(this)">B. ${q.optionB}</div>
-            <div class="opt" data-val="C" onclick="sel(this)">C. ${q.optionC}</div>
+            <div class="opt" data-val="C" onclick="handleSelect(this)">C. ${q.optionC}</div>
             <div class="opt" data-val="D" onclick="sel(this)">D. ${q.optionD}</div>
         `;
+        // Chỉnh sửa lỗi nhỏ: tất cả gọi sel(this)
+        document.getElementById('options').querySelectorAll('.opt').forEach(el => el.setAttribute('onclick', 'sel(this)'));
+
         document.getElementById('ans-label').innerText = q.correctAnswer;
         document.getElementById('basis-label').innerText = q.newBasis || "---";
         document.getElementById('quote-label').innerText = q.quote || "---";
+        document.getElementById('feedback').value = "";
+        
+        toggleExplanationView(); // Cập nhật trạng thái ẩn hiện ngay khi chuyển câu
     }
 
     window.sel = (el) => {
@@ -147,7 +183,32 @@
         });
     }
 
-    window.move = (d) => { if (curIdx+d >= 0 && curIdx+d < questions.length) { curIdx+=d; render(); } }
+    window.move = (d) => { if (curIdx+d >= 0 && curIdx+d < questions.length) { curIdx+=d; render(); window.scrollTo(0,0); } }
+
+    window.toggleExplanationView = () => {
+        const isShow = document.getElementById('toggle-explanation').checked;
+        document.getElementById('explanation-section').style.visibility = isShow ? 'visible' : 'hidden';
+        document.getElementById('explanation-section').style.opacity = isShow ? '1' : '0';
+    }
+
+    // Lưu góp ý
+    document.getElementById('feedback').onblur = async function() {
+        const val = this.value.trim();
+        if(!val || !currentUser) return;
+        try {
+            await setDoc(doc(db, "feedback", `${currentUser.uid}_${questions[curIdx].questionId}`), {
+                qNum: questions[curIdx].questionId,
+                qContent: questions[curIdx].content,
+                user: userName,
+                dept: userDept,
+                email: currentUser.email,
+                feedback: val,
+                time: new Date().toISOString()
+            }, { merge: true });
+        } catch (e) { console.error("Lỗi lưu góp ý"); }
+    };
+
+    window.handleSelect = window.sel; // Alias để tránh lỗi hàm cũ
 </script>
 </body>
 </html>
