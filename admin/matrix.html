@@ -3,43 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ma trận Bộ đề - VSIP 2026 - v1.1</title>
+    <title>Ma trận Bộ đề - VSIP 2026 - v1.3</title>
     <style>
-        :root { --primary: #004a99; --accent: #f37021; --bg: #f4f7f9; --text: #333; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); }
+        :root { --primary: #004a99; --accent: #f37021; --bg: #f4f7f9; --text: #333; --success: #28a745; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: var(--text); }
         header { background: var(--primary); color: white; padding: 20px 15px; text-align: center; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; }
         .btn-back { position: absolute; left: 15px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 600; }
         header h1 { margin: 0; font-size: 1.4rem; flex: 1; text-transform: uppercase; }
-        .container { max-width: 1000px; margin: 30px auto; padding: 0 15px; }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 15px; }
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; font-size: 0.95rem; }
-        th { background: #f8f9fa; color: var(--primary); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; }
-        th, td { border: 1px solid #dee2e6; padding: 12px; text-align: center; }
-        .topic-name { text-align: left; font-weight: 600; color: #444; min-width: 180px; }
-        .zero { color: #ccc; }
-        .has-data { color: #28a745; font-weight: 700; background: #f6fff8; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; font-size: 0.95rem; border-radius: 8px; overflow: hidden; }
+        th { background: #004a99; color: white; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; }
+        th, td { border: 1px solid #dee2e6; padding: 14px; text-align: center; }
+        .topic-name { text-align: left; font-weight: 600; color: #444; min-width: 200px; background: #fcfcfc; }
+        .zero { color: #ccc; font-weight: normal; }
+        .has-data { color: var(--success); font-weight: 700; background: #f6fff8; }
         .total-row { background: #eef2f6; font-weight: 800; color: var(--primary); }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        tr:nth-child(even) { background-color: #fafafa; }
     </style>
 </head>
 <body>
-<header><a href="index.html" class="btn-back">« Quản trị</a><h1>MA TRẬN TỔNG HỢP - v1.1</h1></header>
+<header><a href="index.html" class="btn-back">« Quản trị</a><h1>MA TRẬN TỔNG HỢP BỘ ĐỀ - v1.3</h1></header>
 <div class="container">
     <div id="main-content" class="card">
-        <div id="loading" style="text-align:center; padding:50px;"><div class="spinner"></div><p>Đang quét dữ liệu...</p></div>
+        <div id="loading" style="text-align:center; padding:50px;"><div class="spinner"></div><p>Đang sắp xếp dữ liệu chuyên đề...</p></div>
         <div id="data-area" style="display: none;">
             <table>
-                <thead><tr><th>Chuyên đề</th><th>1/5</th><th>2/5</th><th>3/5</th><th>4/5</th><th>5/5</th><th>TỔNG</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Chuyên đề / Phân nhóm</th>
+                        <th>Bậc 1/5</th>
+                        <th>Bậc 2/5</th>
+                        <th>Bậc 3/5</th>
+                        <th>Bậc 4/5</th>
+                        <th>Bậc 5/5</th>
+                        <th>TỔNG</th>
+                    </tr>
+                </thead>
                 <tbody id="matrix-body"></tbody>
                 <tfoot><tr id="matrix-footer" class="total-row"></tr></tfoot>
             </table>
         </div>
     </div>
 </div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = { 
@@ -53,43 +64,90 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app);
 
-    onAuthStateChanged(auth, (user) => { if (user) fetchAndBuildMatrix(); else window.location.href = 'index.html'; });
-
-    async function fetchAndBuildMatrix() {
+    async function fetchMatrix() {
         try {
             const snap = await getDocs(collection(db, "questions"));
-            const matrix = {}; const levels = ["1/5", "2/5", "3/5", "4/5", "5/5"];
+            const matrix = {}; 
+            const levels = ["1/5", "2/5", "3/5", "4/5", "5/5"];
+            let grandTotal = 0;
+
             snap.forEach(d => {
-                const q = d.data(); const topic = q.category || "N/A";
-                let lv = q.level || "";
-                if (!lv.includes("/5")) { const m = lv.match(/\d+/); if (m) lv = m[0] + "/5"; }
-                if (!matrix[topic]) matrix[topic] = { "1/5":0,"2/5":0,"3/5":0,"4/5":0,"5/5":0, total:0 };
-                if (matrix[topic].hasOwnProperty(lv)) { matrix[topic][lv]++; matrix[topic].total++; }
+                const q = d.data();
+                let topic = (q.category || "N/A").toString().trim();
+                let lv = (q.level || "").toString().trim();
+
+                if (lv && !lv.includes("/5")) {
+                    const m = lv.match(/\d+/);
+                    if (m) lv = m[0] + "/5";
+                }
+
+                if (!matrix[topic]) {
+                    matrix[topic] = { "1/5":0, "2/5":0, "3/5":0, "4/5":0, "5/5":0, total: 0 };
+                }
+
+                if (matrix[topic].hasOwnProperty(lv)) {
+                    matrix[topic][lv]++;
+                    matrix[topic].total++;
+                    grandTotal++;
+                }
             });
-            render(matrix, levels);
-        } catch (e) { alert("Lỗi tải dữ liệu"); }
+
+            renderMatrix(matrix, levels, grandTotal);
+        } catch (e) { 
+            console.error(e);
+            alert("Lỗi truy xuất dữ liệu."); 
+        }
     }
 
-    function render(matrix, levels) {
+    function renderMatrix(matrix, levels, grandTotal) {
         const body = document.getElementById('matrix-body');
-        const sorted = Object.keys(matrix).sort();
-        let html = ''; const colT = { "1/5":0,"2/5":0,"3/5":0,"4/5":0,"5/5":0, all:0 };
-        sorted.forEach(t => {
-            html += `<tr><td class="topic-name">${t}</td>`;
-            levels.forEach(l => { 
-                const c = matrix[t][l]; colT[l] += c; 
-                html += `<td class="${c>0?'has-data':'zero'}">${c}</td>`;
+        
+        // LOGIC SẮP XẾP ƯU TIÊN
+        const sortedTopics = Object.keys(matrix).sort((a, b) => {
+            const aIsKT = a.toLowerCase().includes("kiến thức chung");
+            const bIsKT = b.toLowerCase().includes("kiến thức chung");
+
+            // 1. Kiến thức chung luôn lên đầu
+            if (aIsKT && !bIsKT) return -1;
+            if (!aIsKT && bIsKT) return 1;
+
+            // 2. Sắp xếp theo số chuyên đề (1, 2, 3... 10)
+            const numA = parseInt(a.match(/\d+/) || 0);
+            const numB = parseInt(b.match(/\d+/) || 0);
+            
+            if (numA !== numB) return numA - numB;
+
+            // 3. Nếu cùng số hoặc không có số thì xếp theo chữ cái
+            return a.localeCompare(b);
+        });
+
+        let html = '';
+        const colTotals = { "1/5":0, "2/5":0, "3/5":0, "4/5":0, "5/5":0 };
+
+        sortedTopics.forEach(topic => {
+            if (matrix[topic].total === 0) return;
+
+            html += `<tr><td class="topic-name">${topic}</td>`;
+            levels.forEach(lvl => {
+                const count = matrix[topic][lvl];
+                colTotals[lvl] += count;
+                html += `<td class="${count > 0 ? 'has-data' : 'zero'}">${count}</td>`;
             });
-            colT.all += matrix[t].total;
-            html += `<td style="font-weight:700">${matrix[t].total}</td></tr>`;
+            html += `<td style="font-weight:800; background:#f8f9fa; color:var(--primary);">${matrix[topic].total}</td></tr>`;
         });
         body.innerHTML = html;
-        let f = `<td>TỔNG CỘNG</td>`; levels.forEach(l => f += `<td>${colT[l]}</td>`); f += `<td>${colT.all}</td>`;
-        document.getElementById('matrix-footer').innerHTML = f;
-        document.getElementById('loading').style.display='none'; document.getElementById('data-area').style.display='block';
+
+        let footerHtml = `<td style="font-weight:800">TỔNG CỘNG</td>`;
+        levels.forEach(lvl => footerHtml += `<td style="font-weight:800">${colTotals[lvl]}</td>`);
+        footerHtml += `<td style="font-weight:800; background:var(--accent); color:white;">${grandTotal}</td>`;
+        document.getElementById('matrix-footer').innerHTML = footerHtml;
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('data-area').style.display = 'block';
     }
+
+    fetchMatrix();
 </script>
 </body>
 </html>
