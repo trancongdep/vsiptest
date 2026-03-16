@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Questions - VSIP 2026 - v3.0</title>
+    <title>Upload Questions - VSIP 2026 - v3.3</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root { --primary: #004a99; --accent: #f37021; --success: #28a745; --bg: #f4f7f9; }
@@ -16,16 +16,15 @@
         .upload-zone { border: 3px dashed #ddd; padding: 40px; border-radius: 12px; cursor: pointer; transition: 0.3s; margin-bottom: 20px; }
         .upload-zone:hover { border-color: var(--primary); background: #f0f7ff; }
         .btn-upload { background: var(--success); color: white; padding: 15px 40px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
-        #log { margin-top: 20px; text-align: left; background: #333; color: #0f0; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.8rem; max-height: 200px; overflow-y: auto; display: none; }
+        #log { margin-top: 20px; text-align: left; background: #333; color: #0f0; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.8rem; max-height: 250px; overflow-y: auto; display: none; }
         footer { background: #eef2f6; padding: 20px; text-align: center; border-top: 3px solid var(--primary); margin-top: auto; }
     </style>
 </head>
 <body>
-<header><a href="index.html" class="btn-nav">« Quản trị</a><h1>TẢI BỘ ĐỀ EXCEL</h1></header>
+<header><a href="index.html" class="btn-nav">« Quản trị</a><h1>TẢI BỘ ĐỀ EXCEL - v3.3</h1></header>
 <div class="container">
     <div id="main-content" class="card">
         <h3>Bước 1: Chọn file Excel (.xlsx)</h3>
-        <p style="color:#666; font-size:0.85rem">Hệ thống tự động ánh xạ tiêu đề: câu số, Bậc AT, nội dung, đáp án đúng...</p>
         <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
             <p>Nhấn vào đây để chọn file bộ đề</p>
             <input type="file" id="fileInput" accept=".xlsx" style="display:none" onchange="handleFile(this)">
@@ -36,31 +35,75 @@
     </div>
 </div>
 <footer><div>Nhóm biên soạn bộ đề An toàn điện VDC @2026</div><div style="font-weight:600; color:var(--primary); margin-top:5px;">Admin: Trần Công Đẹp - 0963.292.882</div></footer>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    const firebaseConfig = { apiKey: "AIzaSyBPNk4J9npcClKFD0daia4W8nPwwg3bX_A", authDomain: "vsiptest-bdbc5.firebaseapp.com", projectId: "vsiptest-bdbc5", storageBucket: "vsiptest-bdbc5.firebasestorage.app", messagingSenderId: "1056019256354", appId: "1:1056019256354:web:8f864b8b2edc4c9b1ca67b", measurementId: "G-42WSD293BH" };
-    const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
-    const MASTER_ADMIN = "deptc.gvatvsld@gmail.com"; let jsonData = [];
-    onAuthStateChanged(auth, (user) => { if (!user || user.email !== MASTER_ADMIN) window.location.href = '../index.html'; });
-    window.handleFile = (input) => {
-        const file = input.files[0]; if (!file) return; document.getElementById('fileName').innerText = file.name;
-        const reader = new FileReader(); reader.onload = (e) => {
-            const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array'});
-            jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]); document.getElementById('startBtn').disabled = false;
-        }; reader.readAsArrayBuffer(file);
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo", 
+        authDomain: "tavietnam-78ae8.firebaseapp.com", 
+        projectId: "tavietnam-78ae8", 
+        storageBucket: "tavietnam-78ae8.firebasestorage.app", 
+        messagingSenderId: "670121705534", 
+        appId: "1:670121705534:web:1027ad98550573ad37116f" 
     };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const MASTER_ADMIN = "deptc.gvatvsld@gmail.com";
+    let jsonData = [];
+
+    onAuthStateChanged(auth, (user) => { if (!user || user.email !== MASTER_ADMIN) window.location.href = 'index.html'; });
+
+    window.handleFile = (input) => {
+        const file = input.files[0]; if (!file) return;
+        document.getElementById('fileName').innerText = file.name;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const raw = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+            jsonData = raw.map(row => {
+                const clean = {};
+                for (let k in row) clean[k.toLowerCase().trim()] = row[k];
+                return clean;
+            });
+            document.getElementById('startBtn').disabled = false;
+        };
+        reader.readAsArrayBuffer(file);
+    };
+
     document.getElementById('startBtn').onclick = async () => {
-        const log = document.getElementById('log'); log.style.display = 'block'; log.innerHTML = 'Khởi động...<br>';
+        const log = document.getElementById('log'); log.style.display = 'block'; log.innerHTML = 'Đang tải lên...<br>';
+        let count = 0;
         for (let item of jsonData) {
             try {
-                const mapped = { questionId: item['câu số'] || item['id cũ'], level: item['Bậc AT'], category: item['Phân nhóm'], content: item['nội dung'], optionA: item['a'], optionB: item['b'], optionC: item['c'], optionD: item['d'], correctAnswer: (item['đáp án đúng'] || "").toString().toUpperCase(), newBasis: item['căn cứ mới cập nhật'], quote: item['trích dẫn'], updatedAt: new Date().toISOString() };
-                const id = mapped.questionId.toString(); await setDoc(doc(db, "questions", id), mapped, { merge: true });
-                log.innerHTML += `✅ Câu ${id}<br>`; log.scrollTop = log.scrollHeight;
+                const id = (item['câu số'] || item['stt'] || "").toString().trim();
+                if (!id) continue;
+                const mapped = {
+                    questionId: id,
+                    category: (item['phân nhóm'] || item['chuyên đề'] || "").toString().trim(),
+                    level: (item['bậc at'] || "").toString().trim(),
+                    content: (item['nội dung'] || "").toString().trim(),
+                    optionA: (item['a'] || "").toString().trim(),
+                    optionB: (item['b'] || "").toString().trim(),
+                    optionC: (item['c'] || "").toString().trim(),
+                    optionD: (item['d'] || "").toString().trim(),
+                    correctAnswer: (item['đáp án đúng'] || "").toString().toUpperCase().trim(),
+                    newBasis: (item['căn cứ mới cập nhật'] || "").toString().trim(),
+                    quote: (item['trích dẫn'] || "").toString().trim(),
+                    updatedAt: new Date().toISOString()
+                };
+                await setDoc(doc(db, "questions", id), mapped, { merge: true });
+                count++;
+                log.innerHTML += `✅ Câu ${id}<br>`;
+                log.scrollTop = log.scrollHeight;
             } catch (e) { log.innerHTML += `❌ Lỗi: ${e.message}<br>`; }
         }
-        alert('Hoàn thành!');
+        alert(`Thành công ${count} câu!`);
     };
 </script>
 </body>
