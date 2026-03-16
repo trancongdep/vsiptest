@@ -3,43 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Questions - VSIP 2026 - v3.3</title>
+    <title>Upload Questions - VSIP 2026 - v3.4</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { --primary: #004a99; --accent: #f37021; --success: #28a745; --bg: #f4f7f9; }
+        :root { --primary: #004a99; --accent: #f37021; --success: #28a745; --danger: #dc3545; --bg: #f4f7f9; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
-        header { background: var(--primary); color: white; padding: 25px 15px; text-align: center; position: sticky; top: 0; display: flex; align-items: center; justify-content: center; }
+        header { background: var(--primary); color: white; padding: 25px 15px; text-align: center; position: sticky; top: 0; display: flex; align-items: center; justify-content: center; z-index: 100; }
         header h1 { margin: 0; font-size: 1.5rem; text-transform: uppercase; flex: 1; }
         .btn-nav { position: absolute; left: 15px; background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 15px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; text-decoration: none; font-weight: 600; }
         .container { flex: 1; max-width: 800px; margin: 30px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
-        .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); text-align: center; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); text-align: center; margin-bottom: 20px; }
         .upload-zone { border: 3px dashed #ddd; padding: 40px; border-radius: 12px; cursor: pointer; transition: 0.3s; margin-bottom: 20px; }
         .upload-zone:hover { border-color: var(--primary); background: #f0f7ff; }
-        .btn-upload { background: var(--success); color: white; padding: 15px 40px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
+        .btn-upload { background: var(--success); color: white; padding: 15px 40px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1rem; width: 100%; }
+        .btn-danger { background: white; color: var(--danger); border: 2px solid var(--danger); padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-danger:hover { background: var(--danger); color: white; }
         #log { margin-top: 20px; text-align: left; background: #333; color: #0f0; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.8rem; max-height: 250px; overflow-y: auto; display: none; }
         footer { background: #eef2f6; padding: 20px; text-align: center; border-top: 3px solid var(--primary); margin-top: auto; }
     </style>
 </head>
 <body>
-<header><a href="index.html" class="btn-nav">« Quản trị</a><h1>TẢI BỘ ĐỀ EXCEL - v3.3</h1></header>
+<header><a href="index.html" class="btn-nav">« Quản trị</a><h1>TẢI BỘ ĐỀ EXCEL - v3.4</h1></header>
 <div class="container">
-    <div id="main-content" class="card">
-        <h3>Bước 1: Chọn file Excel (.xlsx)</h3>
+    <div class="card">
+        <h3>Bước 1: Chọn file dữ liệu (.xlsx)</h3>
         <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
             <p>Nhấn vào đây để chọn file bộ đề</p>
             <input type="file" id="fileInput" accept=".xlsx" style="display:none" onchange="handleFile(this)">
             <strong id="fileName" style="color:var(--primary)"></strong>
         </div>
-        <button id="startBtn" class="btn-upload" disabled>BẮT ĐẦU TẢI LÊN</button>
-        <div id="log"></div>
+        <button id="startBtn" class="btn-upload" disabled>BẮT ĐẦU TẢI LÊN SERVER</button>
     </div>
+
+    <div class="card" style="border: 1px solid #ffcccc;">
+        <h4 style="color:var(--danger); margin-top:0;">Vùng dọn dẹp</h4>
+        <p style="font-size: 0.85rem; color: #666;">Nếu số lượng câu hỏi trên trang Matrix bị sai, hãy dùng nút này để xóa sạch dữ liệu cũ trước khi tải lại file mới.</p>
+        <button id="deleteBtn" class="btn-danger">XÓA SẠCH TOÀN BỘ CÂU HỎI CŨ</button>
+    </div>
+
+    <div id="log"></div>
 </div>
 <footer><div>Nhóm biên soạn bộ đề An toàn điện VDC @2026</div><div style="font-weight:600; color:var(--primary); margin-top:5px;">Admin: Trần Công Đẹp - 0963.292.882</div></footer>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, deleteDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = { 
         apiKey: "AIzaSyCzWjfcD5Dgq7V-i2izb9tKLR6QM6qWPQo", 
@@ -58,6 +67,7 @@
 
     onAuthStateChanged(auth, (user) => { if (!user || user.email !== MASTER_ADMIN) window.location.href = 'index.html'; });
 
+    // XỬ LÝ ĐỌC FILE
     window.handleFile = (input) => {
         const file = input.files[0]; if (!file) return;
         document.getElementById('fileName').innerText = file.name;
@@ -76,8 +86,11 @@
         reader.readAsArrayBuffer(file);
     };
 
+    // XUẤT DỮ LIỆU LÊN SERVER
     document.getElementById('startBtn').onclick = async () => {
-        const log = document.getElementById('log'); log.style.display = 'block'; log.innerHTML = 'Đang tải lên...<br>';
+        const log = document.getElementById('log'); 
+        log.style.display = 'block'; 
+        log.innerHTML = '🚀 Bắt đầu tải lên...<br>';
         let count = 0;
         for (let item of jsonData) {
             try {
@@ -87,23 +100,47 @@
                     questionId: id,
                     category: (item['phân nhóm'] || item['chuyên đề'] || "").toString().trim(),
                     level: (item['bậc at'] || "").toString().trim(),
-                    content: (item['nội dung'] || "").toString().trim(),
+                    content: (item['nội dung'] || item['câu hỏi'] || "").toString().trim(),
                     optionA: (item['a'] || "").toString().trim(),
                     optionB: (item['b'] || "").toString().trim(),
                     optionC: (item['c'] || "").toString().trim(),
                     optionD: (item['d'] || "").toString().trim(),
                     correctAnswer: (item['đáp án đúng'] || "").toString().toUpperCase().trim(),
-                    newBasis: (item['căn cứ mới cập nhật'] || "").toString().trim(),
+                    newBasis: (item['căn cứ mới cập nhật'] || item['căn cứ'] || "").toString().trim(),
                     quote: (item['trích dẫn'] || "").toString().trim(),
                     updatedAt: new Date().toISOString()
                 };
                 await setDoc(doc(db, "questions", id), mapped, { merge: true });
                 count++;
-                log.innerHTML += `✅ Câu ${id}<br>`;
+                log.innerHTML += `✅ Lưu thành công câu ${id}<br>`;
                 log.scrollTop = log.scrollHeight;
-            } catch (e) { log.innerHTML += `❌ Lỗi: ${e.message}<br>`; }
+            } catch (e) { log.innerHTML += `❌ Lỗi tại câu ${item['câu số']}: ${e.message}<br>`; }
         }
-        alert(`Thành công ${count} câu!`);
+        alert(`Hoàn tất! Đã tải lên ${count} câu hỏi.`);
+    };
+
+    // XÓA TOÀN BỘ DỮ LIỆU
+    document.getElementById('deleteBtn').onclick = async () => {
+        if (!confirm("CẢNH BÁO: Hành động này sẽ xóa sạch toàn bộ câu hỏi hiện có trên Server. Anh có chắc chắn không?")) return;
+        
+        const log = document.getElementById('log');
+        log.style.display = 'block';
+        log.innerHTML = '♻️ Đang dọn dẹp dữ liệu cũ...<br>';
+        
+        try {
+            const querySnapshot = await getDocs(collection(db, "questions"));
+            let delCount = 0;
+            const promises = [];
+            querySnapshot.forEach((docSnap) => {
+                promises.push(deleteDoc(doc(db, "questions", docSnap.id)));
+                delCount++;
+            });
+            await Promise.all(promises);
+            log.innerHTML += `✨ Đã xóa hoàn toàn ${delCount} câu hỏi rác trên Server.<br>`;
+            alert("Đã xóa sạch bộ đề cũ. Bây giờ anh có thể tải file mới lên.");
+        } catch (e) {
+            log.innerHTML += `❌ Lỗi khi xóa: ${e.message}<br>`;
+        }
     };
 </script>
 </body>
