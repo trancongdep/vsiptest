@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - VSIP 2026 - v3.0</title>
+    <title>Admin Dashboard - VSIP 2026 - v3.2</title>
     <style>
-        :root { --primary: #004a99; --accent: #f37021; --bg: #f4f7f9; --danger: #dc3545; }
+        :root { --primary: #004a99; --accent: #f37021; --bg: #f4f7f9; --danger: #dc3545; --matrix: #6f42c1; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
         header { background: var(--primary); color: white; padding: 25px 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         .container { flex: 1; max-width: 1100px; margin: 25px auto; padding: 0 15px; width: 100%; box-sizing: border-box; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); }
         .toolbar { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 25px; }
-        .btn-tool { padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-decoration: none; text-align: center; transition: 0.3s; }
-        .btn-upload { background: #28a745; } .btn-edit { background: #512da8; } .btn-feedback { background: var(--accent); } .btn-logout { background: var(--danger); }
+        .btn-tool { padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; text-decoration: none; text-align: center; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-upload { background: #28a745; } .btn-edit { background: #512da8; } .btn-matrix { background: var(--matrix); } .btn-feedback { background: var(--accent); } .btn-logout { background: var(--danger); }
         .btn-tool:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { text-align: left; padding: 12px; background: #f8f9fa; border-bottom: 2px solid #eee; color: var(--primary); }
@@ -31,15 +31,16 @@
     <div id="loader" style="display: block;"><div class="spinner"></div></div>
     <div id="admin-check" style="text-align:center; padding:50px;">
         <h2 style="color:var(--danger)">TRUY CẬP BỊ TỪ CHỐI</h2>
-        <p>Khu vực này chỉ dành cho Master Admin (deptc.gvatvsld@gmail.com).</p>
+        <p>Chỉ dành cho Master Admin (deptc.gvatvsld@gmail.com).</p>
         <button onclick="location.href='../index.html'" style="padding:10px 20px; background:var(--primary); color:white; border:none; border-radius:5px; cursor:pointer;">Về trang học viên</button>
     </div>
     <div id="main-content">
         <div class="toolbar">
-            <a href="upload.html" class="btn-tool btn-upload">TẢI ĐỀ MỚI</a>
-            <a href="edit.html" class="btn-tool btn-edit">HIỆU CHỈNH CÂU HỎI</a>
-            <a href="../gopy.html" class="btn-tool btn-feedback">XEM GÓP Ý</a>
-            <button class="btn-tool btn-logout" id="logoutBtn">ĐĂNG XUẤT</button>
+            <a href="upload.html" class="btn-tool btn-upload">📤 TẢI ĐỀ MỚI</a>
+            <a href="matrix.html" class="btn-tool btn-matrix">📊 XEM MA TRẬN</a>
+            <a href="edit.html" class="btn-tool btn-edit">📝 HIỆU CHỈNH</a>
+            <a href="../gopy.html" class="btn-tool btn-feedback">💬 XEM GÓP Ý</a>
+            <button class="btn-tool btn-logout" id="logoutBtn">🚪 ĐĂNG XUẤT</button>
         </div>
         <div class="card">
             <h2 style="color:var(--primary); margin-top:0;">Quản lý Quyền xem Góp ý</h2>
@@ -48,18 +49,29 @@
     </div>
 </div>
 <footer><div>Nhóm biên soạn bộ đề An toàn điện VDC @2026</div><div style="font-weight:600; color:var(--primary); margin-top:5px;">Admin: Trần Công Đẹp - 0963.292.882</div></footer>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
     const firebaseConfig = { apiKey: "AIzaSyBPNk4J9npcClKFD0daia4W8nPwwg3bX_A", authDomain: "vsiptest-bdbc5.firebaseapp.com", projectId: "vsiptest-bdbc5", storageBucket: "vsiptest-bdbc5.firebasestorage.app", messagingSenderId: "1056019256354", appId: "1:1056019256354:web:8f864b8b2edc4c9b1ca67b", measurementId: "G-42WSD293BH" };
-    const app = initializeApp(firebaseConfig); const db = getFirestore(app); const auth = getAuth(app);
+
+    const app = initializeApp(firebaseConfig); 
+    const db = getFirestore(app); 
+    const auth = getAuth(app);
     const MASTER_ADMIN = "deptc.gvatvsld@gmail.com";
+
     onAuthStateChanged(auth, (user) => {
         document.getElementById('loader').style.display = 'none';
-        if (user && user.email === MASTER_ADMIN) { document.getElementById('main-content').style.display = 'block'; loadUsers(); }
-        else { document.getElementById('admin-check').style.display = 'block'; }
+        if (user && user.email === MASTER_ADMIN) { 
+            document.getElementById('main-content').style.display = 'block'; 
+            loadUsers(); 
+        } else { 
+            document.getElementById('admin-check').style.display = 'block'; 
+        }
     });
+
     async function loadUsers() {
         const body = document.getElementById('user-body'); body.innerHTML = '<tr><td colspan="4">Đang tải...</td></tr>';
         try {
@@ -73,9 +85,12 @@
             });
         } catch (e) { body.innerHTML = '<tr><td colspan="4">Lỗi tải dữ liệu.</td></tr>'; }
     }
+
     window.toggleRole = async (uid, currentRole) => {
         const newRole = currentRole === 'admin' ? 'user' : 'admin';
-        if (confirm(`Đổi quyền xem góp ý cho tài khoản này?`)) { await updateDoc(doc(db, "users", uid), { role: newRole }); loadUsers(); }
+        if (confirm(`Đổi quyền cho tài khoản này?`)) { 
+            await updateDoc(doc(db, "users", uid), { role: newRole }); loadUsers(); 
+        }
     };
     document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => location.href='../index.html');
 </script>
